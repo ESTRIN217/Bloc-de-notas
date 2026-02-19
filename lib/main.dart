@@ -2,17 +2,20 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-// ignore: unused_import
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'list_item.dart';
 import 'editor_screen.dart';
 import 'settings_screen.dart';
 import 'theme_provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   runApp(
@@ -48,12 +51,28 @@ class MyApp extends StatelessWidget {
               theme: ThemeData(
                 colorScheme: lightColorScheme,
                 useMaterial3: true,
+                textTheme: GoogleFonts.notoSansTextTheme(
+                  ThemeData(brightness: Brightness.light).textTheme,
+                ),
               ),
               darkTheme: ThemeData(
                 colorScheme: darkColorScheme,
                 useMaterial3: true,
+                textTheme: GoogleFonts.notoSansTextTheme(
+                  ThemeData(brightness: Brightness.dark).textTheme,
+                ),
               ),
               themeMode: themeProvider.themeMode,
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+                FlutterQuillLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale('en'),
+                Locale('es'),
+              ],
               home: const MyHomePage(),
             );
           },
@@ -98,22 +117,26 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _loadItems() async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/notes.json');
-
-      if (await file.exists()) {
-        final contents = await file.readAsString();
-        if (contents.isNotEmpty) {
-          final List<dynamic> jsonList = jsonDecode(contents);
-          setState(() {
-            _items = jsonList.map((json) => ListItem.fromJson(json)).toList();
-            _filteredItems = _items;
-            _sortFilteredItems();
-            _isLoading = false;
-          });
-        } else {
-          _createWelcomeNote();
+      String? contents;
+      if (kIsWeb) {
+        final prefs = await SharedPreferences.getInstance();
+        contents = prefs.getString('notes');
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/notes.json');
+        if (await file.exists()) {
+          contents = await file.readAsString();
         }
+      }
+
+      if (contents != null && contents.isNotEmpty) {
+        final List<dynamic> jsonList = jsonDecode(contents);
+        setState(() {
+          _items = jsonList.map((json) => ListItem.fromJson(json)).toList();
+          _filteredItems = _items;
+          _sortFilteredItems();
+          _isLoading = false;
+        });
       } else {
         _createWelcomeNote();
       }
@@ -131,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
         {'insert': 'Esta es una nota de ejemplo para ayudarte a explorar las funciones.\n'}
       ]),
       lastModified: DateTime.now(),
-      backgroundColor: Colors.amber[200]!.toARGB32(),
+      backgroundColor: Colors.amber[200]!.value,
     );
     setState(() {
       _items = [welcomeNote];
@@ -143,10 +166,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _saveItems() async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/notes.json');
       final List<Map<String, dynamic>> jsonList = _items.map((item) => item.toJson()).toList();
-      await file.writeAsString(jsonEncode(jsonList));
+      final contents = jsonEncode(jsonList);
+      if (kIsWeb) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('notes', contents);
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/notes.json');
+        await file.writeAsString(contents);
+      }
     } catch (e) {
       debugPrint("Error saving items: $e");
     }
@@ -472,7 +501,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         },
         child: Container(
-          decoration: item.backgroundImagePath != null
+          decoration: item.backgroundImagePath != null && !kIsWeb
               ? BoxDecoration(
                   image: DecorationImage(
                     image: FileImage(File(item.backgroundImagePath!)),

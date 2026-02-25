@@ -1,22 +1,22 @@
-import \'dart:convert\';
-import \'dart:io\';
+import 'dart:convert';
+import 'dart:io';
 
-import \'package:dynamic_color/dynamic_color.dart\';
-import \'package:flutter/foundation.dart\';
-import \'package:flutter/material.dart\';
-import \'package:flutter_quill/flutter_quill.dart\';
-import \'package:google_fonts/google_fonts.dart\';
-import \'package:path_provider/path_provider.dart\';
-import \'package:provider/provider.dart\';
-import \'package:reorderable_grid_view/reorderable_grid_view.dart\';
-import \'package:share_plus/share_plus.dart\';
-import \'package:shared_preferences/shared_preferences.dart\';
-import \'list_item.dart\';
-import \'editor_screen.dart\';
-import \'settings_screen.dart\';
-import \'theme_provider.dart\';
-import \'package:flutter_localizations/flutter_localizations.dart\';
-import \'l10n/app_localizations.dart\';
+import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'list_item.dart';
+import 'editor_screen.dart';
+import 'settings_screen.dart';
+import 'theme_provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'floating_service.dart';
 
 void main() {
   runApp(
@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
             }
 
             return MaterialApp(
-              title: \'Flutter Notes\',
+              title: 'Flutter Notes',
               theme: ThemeData(
                 colorScheme: lightColorScheme,
                 useMaterial3: true,
@@ -71,10 +71,10 @@ class MyApp extends StatelessWidget {
                 FlutterQuillLocalizations.delegate,
               ],
               supportedLocales: const [
-                Locale(\'en\'),
-                Locale(\'es\'),
+                Locale('en'),
+                Locale('es'),
               ],
-              home: const MyHomePage(),
+              home: const MyHomePage(), // Restored home property
             );
           },
         );
@@ -121,10 +121,10 @@ class _MyHomePageState extends State<MyHomePage> {
       String? contents;
       if (kIsWeb) {
         final prefs = await SharedPreferences.getInstance();
-        contents = prefs.getString(\'notes\');
+        contents = prefs.getString('notes');
       } else {
         final directory = await getApplicationDocumentsDirectory();
-        final file = File(\'${directory.path}/notes.json\');
+        final file = File('${directory.path}/notes.json');
         if (await file.exists()) {
           contents = await file.readAsString();
         }
@@ -149,13 +149,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _createWelcomeNote() {
     final welcomeNote = ListItem(
-      id: \'welcome_note\',
-      title: \'¡Bienvenido a Flutter Notes!\',
+      id: 'welcome_note',
+      title: '¡Bienvenido a Flutter Notes!',
       summary: jsonEncode([
-        {\'insert\': \'Esta es una nota de ejemplo para ayudarte a explorar las funciones.\\n\'}
+        {'insert': 'Esta es una nota de ejemplo para ayudarte a explorar las funciones.\n'}
       ]),
       lastModified: DateTime.now(),
-      backgroundColor: Colors.amber[200]!.value,
+      backgroundColor: Colors.amber[200]!.toARGB32(),
     );
     setState(() {
       _items = [welcomeNote];
@@ -171,10 +171,10 @@ class _MyHomePageState extends State<MyHomePage> {
       final contents = jsonEncode(jsonList);
       if (kIsWeb) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(\'notes\', contents);
+        await prefs.setString('notes', contents);
       } else {
         final directory = await getApplicationDocumentsDirectory();
-        final file = File(\'${directory.path}/notes.json\');
+        final file = File('${directory.path}/notes.json');
         await file.writeAsString(contents);
       }
     } catch (e) {
@@ -218,7 +218,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _navigateToEditor([ListItem? item]) async {
     if (_isSelectionMode) return; 
 
-    final originalItem = item ?? ListItem(id: DateTime.now().millisecondsSinceEpoch.toString(), title: \'\', summary: \'\', lastModified: DateTime.now());
+    final originalItem = item ?? ListItem(id: DateTime.now().millisecondsSinceEpoch.toString(), title: '', summary: '', lastModified: DateTime.now());
 
     final result = await Navigator.push(
       context,
@@ -298,11 +298,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _shareSelectedItems() {
-    final content = _selectedItems.map((item) => "${item.title}\\n${item.document.toPlainText()}").join(\'\\n\\n---\\n\\n\');
+    final content = _selectedItems.map((item) => "${item.title}\\n${item.document.toPlainText()}").join('\n\n---\n\n');
     SharePlus.instance.share(
         ShareParams(
             text: content,
-            subject: \'Mis notas\',
+            subject: 'Mis notas',
         ),
     );
     _exitSelectionMode();
@@ -313,9 +313,9 @@ class _MyHomePageState extends State<MyHomePage> {
       context: context,
       builder: (context) => Wrap(
         children: <Widget>[
-          ListTile(leading: const Icon(Icons.sort_by_alpha), title: const Text(\'Ordenar alfabéticamente\'), onTap: () => _sortAlphabetically()),
-          ListTile(leading: const Icon(Icons.date_range), title: const Text(\'Ordenar por fecha\'), onTap: () => _sortByDate()),
-          ListTile(leading: const Icon(Icons.drag_handle), title: const Text(\'Orden personalizado\'), onTap: () => _setCustomSort()),
+          ListTile(leading: const Icon(Icons.sort_by_alpha), title: const Text('Ordenar alfabéticamente'), onTap: () => _sortAlphabetically()),
+          ListTile(leading: Icon(Icons.date_range), title: Text('Ordenar por fecha'), onTap: () => _sortByDate()),
+          ListTile(leading: Icon(Icons.drag_handle), title: Text('Orden personalizado'), onTap: () => _setCustomSort()),
         ],
       ),
     );
@@ -366,10 +366,12 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_isSelectionMode) {
       return AppBar(
         leading: IconButton(icon: const Icon(Icons.close), onPressed: _exitSelectionMode),
-        title: Text(\'${_selectedItems.length} seleccionados\'),
+        title: Text('${_selectedItems.length} seleccionados'),
         actions: [
-          IconButton(icon: const Icon(Icons.share), onPressed: _shareSelectedItems, tooltip: \'Compartir\'),
-          IconButton(icon: const Icon(Icons.delete), onPressed: _deleteSelectedItems, tooltip: \'Eliminar\'),
+          if (!kIsWeb && Platform.isAndroid)
+            IconButton(icon: const Icon(Icons.picture_in_picture), onPressed: () => FloatingService.showFloatingWindow(context, _selectedItems.first), tooltip: 'Modo flotante'),
+          IconButton(icon: const Icon(Icons.share), onPressed: _shareSelectedItems, tooltip: 'Compartir'),
+          IconButton(icon: const Icon(Icons.delete), onPressed: _deleteSelectedItems, tooltip: 'Eliminar'),
         ],
       );
     }
@@ -379,7 +381,7 @@ class _MyHomePageState extends State<MyHomePage> {
       title: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: \'Buscar...\',
+          hintText: 'Buscar...',
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0), borderSide: BorderSide.none),
           filled: true,
@@ -388,8 +390,8 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       actions: [
-        IconButton(icon: Icon(_isListView ? Icons.grid_view : Icons.view_list), onPressed: _toggleView, tooltip: \'Cambiar vista\'),
-        IconButton(icon: const Icon(Icons.import_export), onPressed: _showSortOptions, tooltip: \'Ordenar\'),
+        IconButton(icon: Icon(_isListView ? Icons.grid_view : Icons.view_list), onPressed: _toggleView, tooltip: 'Cambiar vista'),
+        IconButton(icon: const Icon(Icons.import_export), onPressed: _showSortOptions, tooltip: 'Ordenar'),
       ],
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
     );
@@ -405,16 +407,16 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             DrawerHeader(
               decoration: BoxDecoration(color: Theme.of(context).colorScheme.primaryContainer),
-              child: Text(\'Menú\', style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer, fontSize: 24)),
+              child: Text('Menú', style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer, fontSize: 24)),
             ),
             ListTile(
               leading: const Icon(Icons.home),
-              title: const Text(\'Inicio\'),
+              title: const Text('Inicio'),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text(\'Ajustes\'),
+              title: const Text('Ajustes'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -425,7 +427,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const Divider(),
             const ListTile(
-              title: Text(\'v2.0\'),
+              title: Text('v3.0'),
               enabled: false,
             ),
           ],
@@ -436,7 +438,7 @@ class _MyHomePageState extends State<MyHomePage> {
           : (_isListView ? _buildListView() : _buildGridView()),
       floatingActionButton: _isSelectionMode ? null : FloatingActionButton(
         onPressed: () => _navigateToEditor(),
-        tooltip: \'Añadir nota\',
+        tooltip: 'Añadir nota',
         child: const Icon(Icons.add),
       ),
     );
@@ -472,14 +474,14 @@ class _MyHomePageState extends State<MyHomePage> {
           isListView
               ? Text(
                   plainTextSummary,
-                  style: TextStyle(color: textColor.withAlpha((255 * 0.8).round())),\
+                  style: TextStyle(color: textColor.withAlpha((255 * 0.8).round())),
                   maxLines: 10,
                   overflow: TextOverflow.ellipsis,
                 )
               : Expanded(
                   child: Text(
                     plainTextSummary,
-                    style: TextStyle(color: textColor.withAlpha((255 * 0.8).round())),\
+                    style: TextStyle(color: textColor.withAlpha((255 * 0.8).round())),
                     maxLines: 6,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -524,7 +526,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   index: _filteredItems.indexOf(item),
                   child: Padding(
                     padding: const EdgeInsets.only(right: 12.0, top: 12.0, left: 4.0),
-                    child: Icon(Icons.drag_handle, color: textColor.withAlpha((255 * 0.6).round())),\
+                    child: Icon(Icons.drag_handle, color: textColor.withAlpha((255 * 0.6).round())),
                   ),
                 ),
             ],

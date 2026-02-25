@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'list_item.dart';
+import 'floating_service.dart';
 
 class EditorScreen extends StatefulWidget {
   final ListItem item;
@@ -93,6 +94,13 @@ class _EditorScreenState extends State<EditorScreen> {
       context: context,
       builder: (ctx) {
         return Wrap(children: <Widget>[
+          ListTile(
+              leading: const Icon(Icons.picture_in_picture_alt),
+              title: const Text('Modo flotante'),
+              onTap: () {
+                Navigator.pop(ctx);
+                FloatingService.showFloatingWindow(context, widget.item);
+              }),
           ListTile(
               leading: const Icon(Icons.share),
               title: const Text('Compartir'),
@@ -283,7 +291,6 @@ class _EditorScreenState extends State<EditorScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: quill.QuillEditor.basic(
                     controller: _contentController,
-                    
                   ),
                 ),
               ),

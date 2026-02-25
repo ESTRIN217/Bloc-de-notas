@@ -1,7 +1,7 @@
 name: myapp
-description: "A new Flutter project."
+description: "A Blog de notas Flutter project."
 publish_to: 'none'
-version: 1.0.0+2
+version: 3.0.0+1
 
 environment:
   sdk: ^3.9.0
@@ -9,18 +9,22 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   cupertino_icons: ^1.0.8
   reorderable_grid_view: ^2.2.8
   share_plus: ^12.0.1
   image_picker: ^1.2.1
   flutter_quill: ^11.5.0
+  flutter_quill_extensions: ^11.0.0
   path_provider: ^2.1.5
   provider: ^6.1.5+1
   dynamic_color: ^1.8.1
   flutter_tts: ^4.2.5
   shared_preferences: ^2.5.4
   google_fonts: ^8.0.2
+  flutter_floating_window: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -30,3 +34,4 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true

@@ -1,33 +1,39 @@
 # Flutter Notes
 
-Una aplicación de notas simple e intuitiva creada con Flutter. Esta aplicación permite a los usuarios crear, editar y organizar notas con una interfaz moderna y fácil de usar.
+Una aplicación de notas simple e intuitiva creada con Flutter. Esta aplicación permite a los usuarios crear, editar y organizar notas con una interfaz moderna y fácil de usar, con funciones avanzadas de personalización y localización.
 
 ## Características
 
+### v3.0
+
+- **Temas Avanzados y UI:**
+    - **Modos de Tema:** Soporte completo para los modos **Claro y Oscuro**, además de una configuración del **Sistema** para sincronizarse con el sistema operativo.
+    - **Color Dinámico:** El esquema de colores de la aplicación se puede generar dinámicamente a partir del fondo de pantalla del usuario en versiones de Android compatibles (Material You).
+    - **Tipografía Personalizada:** Integración con **Google Fonts** para una apariencia de texto pulida y consistente.
+    - **Persistencia de Configuraciones:** Todas las preferencias del usuario, incluido el tema, el idioma y el orden de clasificación, se guardan entre sesiones de la aplicación utilizando `shared_preferences`.
+- **Internacionalización (i10n):**
+    - **Soporte Multilingüe:** La interfaz de usuario está completamente localizada para **Inglés** y **Español**.
+    - **Selección de Idioma:** Los usuarios pueden cambiar manualmente el idioma de la aplicación desde la nueva pantalla de configuraciones.
+- **Ventana de Nota Flotante:**
+    - **Modo Picture-in-Picture:** Al seleccionar una sola nota, el usuario puede tocar un ícono para mostrar esa nota en una ventana flotante y arrastrable que permanece en la parte superior de la pantalla principal, permitiendo una referencia rápida.
+- **Editor de Texto Enriquecido Mejorado (Flutter Quill):**
+    - El editor personalizado anterior ha sido reemplazado por la potente biblioteca **`flutter_quill`**, proporcionando una experiencia de edición más robusta y rica en funciones.
+- **Texto a Voz:**
+    - **Accesibilidad:** Una función integrada de texto a voz puede leer las notas en voz alta.
+
 ### v2.0
 
-- **Mejoras en el Editor:**
-    - **Funcionalidad de Deshacer/Rehacer:** Deshacer y rehacer cambios en el texto y el estilo directamente desde la barra de la aplicación.
-    - **Personalización del Fondo:** Cambia el color de fondo o establece una imagen de la galería como fondo de la nota.
-    - **Formato de Texto y Listas de Verificación:** Ajusta el tamaño de la fuente, aplica estilos de negrita e cursiva y crea listas de verificación interactivas, todo desde una barra de herramientas de texto enriquecido que aparece en la parte inferior.
+- **Mejoras en el Editor (Integradas en v3.0):**
+    - **Funcionalidad de Deshacer/Rehacer:** Deshacer y rehacer cambios en el texto y el estilo.
+    - **Personalización del Fondo:** Cambiar el color de fondo o establecer una imagen de la galería como fondo de la nota.
+    - **Formato de Texto y Listas de Verificación:** Ajustar el tamaño de la fuente, aplicar estilos de negrita e cursiva y crear listas de verificación.
 
 ### v1.0
 
 - **Pantalla Principal y Diseño:**
-    - **Vistas Dobles:** Cambia entre una vista de lista compacta y una vista de cuadrícula más visual.
-    - **Clasificación Personalizable:** Ordena las notas alfabéticamente, por fecha de modificación o en un orden personalizado.
-    - **Búsqueda Funcional:** Filtra las notas por título o contenido en tiempo real.
-
-- **Editor de Notas:**
-    - **Edición de Texto Enriquecido:** Crea y edita notas con campos separados para el título y el contenido.
-    - **Guardado Automático:** Los cambios se guardan automáticamente al volver a la pantalla principal.
-
-- **Selección y Acciones en Masa:**
-    - **Modo de Selección:** Mantén presionada una nota para seleccionar varias notas.
-    - **Acciones en Masa:** Comparte o elimina varias notas a la vez.
-
-- **Experiencia de Incorporación:**
-    - **Nota de Bienvenida:** Una nota preexistente guía a los usuarios a través de las características clave de la aplicación.
+    - **Vistas Dobles:** Cambiar entre una vista de lista compacta y una vista de cuadrícula más visual.
+    - **Clasificación Personalizable:** Ordenar las notas alfabéticamente, por fecha de modificación o en un orden personalizado.
+    - **Búsqueda Funcional:** Filtrar las notas por título o contenido en tiempo real.
 
 ## Instalación
 

@@ -7,7 +7,7 @@ class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
   void _launchURL() async {
-    const url = 'https://github.com/ESTRIN217';
+    const url = 'https://github.com/ESTRIN217/Blog-de-notas';
     if (!await launchUrl(Uri.parse(url))) {
       throw 'Could not launch $url';
     }

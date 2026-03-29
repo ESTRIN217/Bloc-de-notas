@@ -100,3 +100,100 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get repositorio => 'Ver repositorio';
 }
+
+/// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
+class AppLocalizationsEsVe extends AppLocalizationsEs {
+  AppLocalizationsEsVe() : super('es_VE');
+
+  @override
+  String get helloWorld => '¡Hola, mundo!';
+
+  @override
+  String get flutterNotes => 'BLOC DE NOTAS';
+
+  @override
+  String get search => 'Buscar...';
+
+  @override
+  String get toggleView => 'Cambiar vista';
+
+  @override
+  String get sort => 'Ordenar';
+
+  @override
+  String get menu => 'Menú';
+
+  @override
+  String get home => 'Inicio';
+
+  @override
+  String get settings => 'Configuración';
+
+  @override
+  String get addItem => 'Añadir nota';
+
+  @override
+  String selected(Object count) {
+    return '$count seleccionados';
+  }
+
+  @override
+  String get share => 'Compartir';
+
+  @override
+  String get delete => 'Eliminar';
+
+  @override
+  String get sortAlphabetically => 'Ordenar alfabéticamente';
+
+  @override
+  String get sortByDate => 'Ordenar por fecha de modificación';
+
+  @override
+  String get customSort => 'Orden personalizado';
+
+  @override
+  String get myNotes => 'Mis notas';
+
+  @override
+  String get imageFromGallery => 'Imagen de la galería';
+
+  @override
+  String get title => 'Título';
+
+  @override
+  String get useDynamicColors => 'Usar colores dinámicos';
+
+  @override
+  String get themeMode => 'Modo oscuro';
+
+  @override
+  String get system => 'Sistema';
+
+  @override
+  String get light => 'Apagado';
+
+  @override
+  String get dark => 'Encendido';
+
+  @override
+  String get apariencia => 'Apariencia';
+
+  @override
+  String get idioma => 'Idioma';
+
+  @override
+  String get informacion => 'Información';
+
+  @override
+  String get sobre => 'Sobre la aplicación';
+
+  @override
+  String get desarrolador => 'Desarrollado por';
+
+  @override
+  String get enlaces => 'Enlaces útiles';
+
+  @override
+  String get repositorio => 'Ver repositorio';
+}

@@ -30,7 +30,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get home => 'Início';
 
   @override
-  String get settings => 'Configurações';
+  String get settings => 'Definições';
 
   @override
   String get addItem => 'Adicionar nota';
@@ -41,10 +41,10 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get share => 'Compartilhar';
+  String get share => 'Partilhar';
 
   @override
-  String get delete => 'Excluir';
+  String get delete => 'Eliminar';
 
   @override
   String get sortAlphabetically => 'Ordenar alfabeticamente';
@@ -56,7 +56,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get customSort => 'Ordenação personalizada';
 
   @override
-  String get myNotes => 'Minhas notas';
+  String get myNotes => 'As minhas notas';
 
   @override
   String get imageFromGallery => 'Imagem da galeria';
@@ -89,13 +89,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String get informacion => 'Informação';
 
   @override
-  String get sobre => 'Sobre o aplicativo';
+  String get sobre => 'Sobre a aplicação';
 
   @override
   String get desarrolador => 'Desenvolvido por';
 
   @override
-  String get enlaces => 'Links úteis';
+  String get enlaces => 'Ligações úteis';
 
   @override
   String get repositorio => 'Ver repositório';

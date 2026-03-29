@@ -18,7 +18,7 @@ class ThemeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Locale _locale = const Locale('es'); // Idioma por defecto
+  Locale _locale = const Locale('es', 'VE'); // Idioma por defecto
   Locale get locale => _locale;
 
   // Constructor: Al crear el Provider, cargamos las preferencias guardadas

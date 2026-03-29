@@ -47,6 +47,14 @@ Este documento describe el diseño y las características de una aplicación mod
 
 ### 2.4 Versión 4.0.0
 
+- **Traducciones:**
+  - **Venezolano**
+  - **Brasileño**
+  - **Portugues**
+
+- **Actualizador:**
+  - **Verifica la version y la descarga**
+  
 - **Mejoras en el editor:**
   - **Soporte de imagen en nota**
   - **Soporte de audio en nota**

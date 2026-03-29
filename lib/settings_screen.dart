@@ -119,12 +119,14 @@ class SettingsScreen extends StatelessWidget {
                       // Mostramos el idioma actual basado en el locale del provider
                       title: Text(
                         themeProvider.locale.languageCode == 'es'
-                            ? 'Español'
+                            ? '🇪🇦 Español'
+                            : themeProvider.locale.languageCode == "VE"
+                            ? '🇻🇪 Español (Venezuela)'
                             : themeProvider.locale.languageCode == 'en'
-                            ? 'English'
+                            ? '🇺🇸 English'
                             : themeProvider.locale.languageCode == 'pt' && themeProvider.locale.countryCode == 'BR'
-                            ? 'Português (Brasil)'
-                            : 'Português (Portugal)',
+                            ? '🇧🇷 Português (Brasil)'
+                            : '🇵🇹 Português (Portugal)',
                       ),
                       subtitle: Text(
                         AppLocalizations.of(context)!.idioma,
@@ -179,6 +181,14 @@ class SettingsScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
+                leading: Text('🇻🇪'),
+                title: Text('Español (Venezuela)'),
+                onTap: () {
+                  themeProvider.setLocale(const Locale('es', 'VE'));
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
                 leading: const Text('🇪🇸'),
                 title: const Text('Español'),
                 onTap: () {
@@ -206,7 +216,7 @@ class SettingsScreen extends StatelessWidget {
                 leading: const Text('🇵🇹'),
                 title: const Text('Português (Portugal)'),
                 onTap: () {
-                  themeProvider.setLocale(const Locale('pt', 'PT'));
+                  themeProvider.setLocale(const Locale('pt'));
                   Navigator.pop(context);
                 },
               )

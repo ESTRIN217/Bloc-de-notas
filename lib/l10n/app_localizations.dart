@@ -111,7 +111,7 @@ abstract class AppLocalizations {
   /// No description provided for @flutterNotes.
   ///
   /// In en, this message translates to:
-  /// **'NOTEBOOK'**
+  /// **'NOTEPAD'**
   String get flutterNotes;
 
   /// No description provided for @search.

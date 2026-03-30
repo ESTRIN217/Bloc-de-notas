@@ -5,7 +5,6 @@ Una aplicación de notas simple e intuitiva creada con Flutter. Esta aplicación
 [![Latest release](https://img.shields.io/github/v/release/ESTRIN217/Bloc-de-notas?style=for-the-badge&labelColor=0d1117)](https://github.com/ESTRIN217/Bloc-de-notas/releases)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-
 ## Características
 
 ### v3.0

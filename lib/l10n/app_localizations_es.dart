@@ -9,16 +9,16 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get helloWorld => '¡Hola Mundo!';
+  String get helloWorld => '¡Hola, mundo!';
 
   @override
-  String get flutterNotes => 'BLOG DE NOTAS';
+  String get flutterNotes => 'BLOC DE NOTAS';
 
   @override
   String get search => 'Buscar...';
 
   @override
-  String get toggleView => 'Cambiar Vista';
+  String get toggleView => 'Cambiar vista';
 
   @override
   String get sort => 'Ordenar';
@@ -30,7 +30,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get home => 'Inicio';
 
   @override
-  String get settings => 'Configuración';
+  String get settings => 'Ajustes';
 
   @override
   String get addItem => 'Añadir nota';
@@ -47,16 +47,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get delete => 'Eliminar';
 
   @override
-  String get sortAlphabetically => 'Ordenar Alfabéticamente';
+  String get sortAlphabetically => 'Ordenar alfabéticamente';
 
   @override
-  String get sortByDate => 'Ordenar por Fecha de Modificación';
+  String get sortByDate => 'Ordenar por fecha de modificación';
 
   @override
-  String get customSort => 'Orden Personalizado';
+  String get customSort => 'Orden personalizado';
 
   @override
-  String get myNotes => 'Mis Notas';
+  String get myNotes => 'Mis notas';
 
   @override
   String get imageFromGallery => 'Imagen de la galería';
@@ -65,19 +65,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get title => 'Título';
 
   @override
-  String get useDynamicColors => 'Usar Colores Dinámicos';
+  String get useDynamicColors => 'Usar colores dinámicos';
 
   @override
-  String get themeMode => 'Modo Oscuro';
+  String get themeMode => 'Modo oscuro';
 
   @override
   String get system => 'Sistema';
 
   @override
-  String get light => 'Apagado';
+  String get light => 'Desactivado';
 
   @override
-  String get dark => 'Encendido';
+  String get dark => 'Activado';
 
   @override
   String get apariencia => 'Apariencia';
@@ -89,19 +89,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get informacion => 'Información';
 
   @override
-  String get sobre => 'Sobre la aplicación';
+  String get sobre => 'Acerca de la aplicación';
 
   @override
-  String get desarrolador => 'Desarrollado por';
+  String get desarrolador => 'Desarrollada por';
 
   @override
-  String get enlaces => 'Enlaces utiles';
+  String get enlaces => 'Enlaces útiles';
 
   @override
   String get repositorio => 'Ver repositorio';
 
   @override
-  String get espanol => '🇪🇦 Español';
+  String get espanol => '🇪🇸 Español';
 
   @override
   String get ingles => '🇺🇸 Inglés';
@@ -129,10 +129,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get descripcion =>
-      'Una aplicación de notas simple y fácil de usar, con soporte para texto enriquecido, imágenes.';
+      'Una aplicación de notas sencilla y fácil de usar, con soporte para texto enriquecido e imágenes.';
 
   @override
-  String get mit_license => 'MIT License';
+  String get mit_license => 'Licencia MIT';
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).

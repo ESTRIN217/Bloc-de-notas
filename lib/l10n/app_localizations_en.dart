@@ -12,7 +12,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get helloWorld => 'Hello World!';
 
   @override
-  String get flutterNotes => 'NOTEBOOK';
+  String get flutterNotes => 'NOTEPAD';
 
   @override
   String get search => 'Search...';

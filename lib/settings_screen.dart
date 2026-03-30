@@ -119,18 +119,18 @@ class SettingsScreen extends StatelessWidget {
                       // Mostramos el idioma actual basado en el locale del provider
                       title: Text(
                         themeProvider.locale.languageCode == 'es'
-                            ? '🇪🇦 Español'
-                            : themeProvider.locale.languageCode == "VE"
-                            ? '🇻🇪 Español (Venezuela)'
+                            ? AppLocalizations.of(context)!.espanol
+                            : themeProvider.locale.countryCode == "VE"
+                            ? AppLocalizations.of(context)!.venezolano
                             : themeProvider.locale.languageCode == 'en'
-                            ? '🇺🇸 English'
-                            : themeProvider.locale.languageCode == 'pt' && themeProvider.locale.countryCode == 'BR'
-                            ? '🇧🇷 Português (Brasil)'
-                            : '🇵🇹 Português (Portugal)',
+                            ? AppLocalizations.of(context)!.ingles
+                            : themeProvider.locale.languageCode == 'pt'
+                            ? AppLocalizations.of(context)!.portugues
+                            : themeProvider.locale.countryCode == 'BR'
+                            ? AppLocalizations.of(context)!.brasileno
+                            : '🌐 ${themeProvider.locale.languageCode.toUpperCase()}',
                       ),
-                      subtitle: Text(
-                        AppLocalizations.of(context)!.idioma,
-                      ), // [cite: 23]
+                      subtitle: Text(AppLocalizations.of(context)!.idioma),
                       onTap: () {
                         _showLanguageDialog(context, themeProvider);
                       },
@@ -175,52 +175,58 @@ class SettingsScreen extends StatelessWidget {
   void _showLanguageDialog(BuildContext context, ThemeProvider themeProvider) {
     showModalBottomSheet(
       context: context,
+      // Esto permite que el modal crezca si es necesario
+      isScrollControlled: true,
       builder: (context) {
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Text('🇻🇪'),
-                title: Text('Español (Venezuela)'),
-                onTap: () {
-                  themeProvider.setLocale(const Locale('es', 'VE'));
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: const Text('🇪🇸'),
-                title: const Text('Español'),
-                onTap: () {
-                  themeProvider.setLocale(const Locale('es'));
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: const Text('🇺🇸'),
-                title: const Text('English'),
-                onTap: () {
-                  themeProvider.setLocale(const Locale('en'));
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: const Text('🇧🇷'),
-                title: const Text('Português (Brasil)'),
-                onTap: () {
-                  themeProvider.setLocale(const Locale('pt', 'BR'));
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: const Text('🇵🇹'),
-                title: const Text('Português (Portugal)'),
-                onTap: () {
-                  themeProvider.setLocale(const Locale('pt'));
-                  Navigator.pop(context);
-                },
-              )
-            ],
+          child: SingleChildScrollView(
+            // Permite scroll si no caben los 5
+            child: Column(
+              // Importante: que el Column solo ocupe el espacio de sus hijos
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Text('🇻🇪'),
+                  title: const Text('Español (Venezuela)'),
+                  onTap: () {
+                    themeProvider.setLocale(const Locale('es', 'VE'));
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Text('🇪🇸'),
+                  title: const Text('Español'),
+                  onTap: () {
+                    themeProvider.setLocale(const Locale('es'));
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Text('🇺🇸'),
+                  title: const Text('English'),
+                  onTap: () {
+                    themeProvider.setLocale(const Locale('en'));
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Text('🇧🇷'),
+                  title: const Text('Português (Brasil)'),
+                  onTap: () {
+                    themeProvider.setLocale(const Locale('pt', 'BR'));
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Text('🇵🇹'),
+                  title: const Text('Português (Portugal)'),
+                  onTap: () {
+                    themeProvider.setLocale(const Locale('pt'));
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },

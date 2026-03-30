@@ -281,6 +281,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View repository'**
   String get repositorio;
+
+  /// No description provided for @espanol.
+  ///
+  /// In en, this message translates to:
+  /// **' 🇪🇸 Spanish'**
+  String get espanol;
+
+  /// No description provided for @ingles.
+  ///
+  /// In en, this message translates to:
+  /// **' 🇺🇸 English'**
+  String get ingles;
+
+  /// No description provided for @venezolano.
+  ///
+  /// In en, this message translates to:
+  /// **' 🇻🇪 Spanish (Venezuela)'**
+  String get venezolano;
+
+  /// No description provided for @portugues.
+  ///
+  /// In en, this message translates to:
+  /// **' 🇵🇹 Portuguese'**
+  String get portugues;
+
+  /// No description provided for @brasileno.
+  ///
+  /// In en, this message translates to:
+  /// **' 🇧🇷 Portuguese (Brazil)'**
+  String get brasileno;
+
+  /// No description provided for @texto_plano.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain text (.txt)'**
+  String get texto_plano;
+
+  /// No description provided for @markdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Markdown (.md)'**
+  String get markdown;
+
+  /// No description provided for @archivo_pdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive PDF (.pdf)'**
+  String get archivo_pdf;
+
+  /// No description provided for @exportar_notas_como.
+  ///
+  /// In en, this message translates to:
+  /// **'Export notes as:'**
+  String get exportar_notas_como;
+
+  /// No description provided for @descripcion.
+  ///
+  /// In en, this message translates to:
+  /// **'A simple note-taking app built with Flutter, designed to be fast, intuitive, and easy to use. It allows you to create, edit, and organize your notes efficiently.'**
+  String get descripcion;
+
+  /// No description provided for @mit_license.
+  ///
+  /// In en, this message translates to:
+  /// **'MIT License'**
+  String get mit_license;
 }
 
 class _AppLocalizationsDelegate

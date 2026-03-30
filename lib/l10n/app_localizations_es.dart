@@ -99,6 +99,40 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get repositorio => 'Ver repositorio';
+
+  @override
+  String get espanol => '🇪🇦 Español';
+
+  @override
+  String get ingles => '🇺🇸 Inglés';
+
+  @override
+  String get venezolano => '🇻🇪 Español (Venezuela)';
+
+  @override
+  String get portugues => '🇵🇹 Portugués';
+
+  @override
+  String get brasileno => '🇧🇷 Portugués (Brasil)';
+
+  @override
+  String get texto_plano => 'Texto plano (.txt)';
+
+  @override
+  String get markdown => 'Markdown (.md)';
+
+  @override
+  String get archivo_pdf => 'Archivo PDF (.pdf)';
+
+  @override
+  String get exportar_notas_como => 'Exportar notas como:';
+
+  @override
+  String get descripcion =>
+      'Una aplicación de notas simple y fácil de usar, con soporte para texto enriquecido, imágenes.';
+
+  @override
+  String get mit_license => 'MIT License';
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
@@ -196,4 +230,38 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
 
   @override
   String get repositorio => 'Ver repositorio';
+
+  @override
+  String get espanol => '🇪🇸 Español';
+
+  @override
+  String get ingles => '🇺🇸 Inglés';
+
+  @override
+  String get venezolano => '🇻🇪 Español (Venezuela)';
+
+  @override
+  String get portugues => '🇵🇹 Portugués';
+
+  @override
+  String get brasileno => '🇧🇷 Portugués (Brasil)';
+
+  @override
+  String get texto_plano => 'Texto plano (.txt)';
+
+  @override
+  String get markdown => 'Markdown (.md)';
+
+  @override
+  String get archivo_pdf => 'Archivo PDF (.pdf)';
+
+  @override
+  String get exportar_notas_como => 'Exportar notas como:';
+
+  @override
+  String get descripcion =>
+      'Una aplicación de notas simple y fácil de usar, con soporte para texto enriquecido, imágenes.';
+
+  @override
+  String get mit_license => 'Licencia MIT';
 }

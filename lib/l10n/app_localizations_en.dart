@@ -99,4 +99,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get repositorio => 'View repository';
+
+  @override
+  String get espanol => ' 🇪🇸 Spanish';
+
+  @override
+  String get ingles => ' 🇺🇸 English';
+
+  @override
+  String get venezolano => ' 🇻🇪 Spanish (Venezuela)';
+
+  @override
+  String get portugues => ' 🇵🇹 Portuguese';
+
+  @override
+  String get brasileno => ' 🇧🇷 Portuguese (Brazil)';
+
+  @override
+  String get texto_plano => 'Plain text (.txt)';
+
+  @override
+  String get markdown => 'Markdown (.md)';
+
+  @override
+  String get archivo_pdf => 'Archive PDF (.pdf)';
+
+  @override
+  String get exportar_notas_como => 'Export notes as:';
+
+  @override
+  String get descripcion =>
+      'A simple note-taking app built with Flutter, designed to be fast, intuitive, and easy to use. It allows you to create, edit, and organize your notes efficiently.';
+
+  @override
+  String get mit_license => 'MIT License';
 }

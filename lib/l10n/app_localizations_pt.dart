@@ -99,6 +99,40 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get repositorio => 'Ver repositório';
+
+  @override
+  String get espanol => ' 🇪🇸 Espanhol';
+
+  @override
+  String get ingles => ' 🇺🇸 Inglês';
+
+  @override
+  String get venezolano => ' 🇻🇪 Espanhol (Venezuela)';
+
+  @override
+  String get portugues => ' 🇵🇹 Português';
+
+  @override
+  String get brasileno => ' 🇧🇷 Português (Brasil)';
+
+  @override
+  String get texto_plano => 'Texto plano (.txt)';
+
+  @override
+  String get markdown => 'Markdown (.md)';
+
+  @override
+  String get archivo_pdf => 'Arquivo PDF (.pdf)';
+
+  @override
+  String get exportar_notas_como => 'Exportar notas como:';
+
+  @override
+  String get descripcion =>
+      'Uma aplicação de notas simples e fácil de usar, com suporte para texto enriquecido, imagens.';
+
+  @override
+  String get mit_license => 'Licença MIT';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -196,4 +230,38 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get repositorio => 'Ver repositório';
+
+  @override
+  String get espanol => ' 🇪🇸 Espanhol';
+
+  @override
+  String get ingles => ' 🇺🇸 Inglês';
+
+  @override
+  String get venezolano => ' 🇻🇪 Espanhol (Venezuela)';
+
+  @override
+  String get portugues => ' 🇵🇹 Português';
+
+  @override
+  String get brasileno => ' 🇧🇷 Português (Brasil)';
+
+  @override
+  String get texto_plano => 'Texto plano (.txt)';
+
+  @override
+  String get markdown => 'Markdown (.md)';
+
+  @override
+  String get archivo_pdf => 'Arquivo PDF (.pdf)';
+
+  @override
+  String get exportar_notas_como => 'Exportar notas como:';
+
+  @override
+  String get descripcion =>
+      'Um aplicativo de notas simples e fácil de usar, com suporte para texto enriquecido, imagens.';
+
+  @override
+  String get mit_license => 'Licença MIT';
 }

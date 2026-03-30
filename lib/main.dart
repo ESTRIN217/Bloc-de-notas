@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
@@ -81,7 +82,13 @@ class MyApp extends StatelessWidget {
                 GlobalCupertinoLocalizations.delegate,
                 FlutterQuillLocalizations.delegate,
               ],
-              supportedLocales: const [Locale('en'), Locale('es'), Locale('pt'), Locale('pt', 'BR')],
+              supportedLocales: const [
+                Locale('en'),
+                Locale('es'),
+                Locale('es', 'VE'),
+                Locale('pt'),
+                Locale('pt', 'BR'),
+              ],
               home: const MyHomePage(),
             );
           },
@@ -318,11 +325,124 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _shareSelectedItems() {
+  void _showShareMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+             Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(AppLocalizations.of(context)!.exportar_notas_como,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.text_snippet),
+              title:  Text(AppLocalizations.of(context)!.texto_plano),
+              onTap: () {
+                Navigator.pop(context);
+                _shareAsText();
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.settings_ethernet_rounded,
+              ), // Icono representativo de MD
+              title:  Text(AppLocalizations.of(context)!.markdown),
+              onTap: () {
+                Navigator.pop(context);
+                _shareAsMarkdown();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
+              title:  Text(AppLocalizations.of(context)!.archivo_pdf),
+              onTap: () {
+                Navigator.pop(context);
+                _shareAsPdf();
+              },
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- Lógica de procesamiento ---
+
+  void _shareAsText() {
     final content = _selectedItems
-        .map((item) => "${item.title}\\n${item.document.toPlainText()}")
+        .map((item) => "${item.title}\n${item.document.toPlainText()}")
         .join('\n\n---\n\n');
-    SharePlus.instance.share(ShareParams(text: content, subject: 'Mis notas'));
+    SharePlus.instance.share(
+      ShareParams(text: content),
+    );
+    _exitSelectionMode();
+  }
+
+  void _shareAsMarkdown() {
+  final content = _selectedItems
+      .map((item) => "# ${item.title}\n\n${item.document.toPlainText()}")
+      .join('\n\n---\n\n');
+
+  // CORRECCIÓN: Crea una instancia de ShareParams con el contenido
+  SharePlus.instance.share(
+    ShareParams(text: content),
+  );
+  
+  _exitSelectionMode();
+}
+
+
+  Future<void> _shareAsPdf() async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.MultiPage(
+        build: (pw.Context context) => [
+          pw.Header(level: 0, child: pw.Text("Mis Notas Exportadas")),
+          ..._selectedItems.map((item) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.SizedBox(height: 15),
+                pw.Text(
+                  item.title,
+                  style: pw.TextStyle(
+                    fontWeight: pw.FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                pw.Divider(),
+                pw.Text(item.document.toPlainText()),
+                pw.SizedBox(height: 10),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+
+    // Guardado y envío
+    final output = await getTemporaryDirectory();
+    final file = File(
+      "${output.path}/notas_${DateTime.now().millisecondsSinceEpoch}.pdf",
+    );
+    await file.writeAsBytes(await pdf.save());
+
+    // La nueva forma estándar
+    await SharePlus.instance.share(
+      ShareParams(
+        text: 'Te comparto mis notas',
+        files: [XFile(file.path)], // El parámetro se llama 'files', no 'xFiles'
+      ),
+    );
     _exitSelectionMode();
   }
 
@@ -405,7 +525,7 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
-            onPressed: _shareSelectedItems,
+            onPressed: () => _showShareMenu(context),
             tooltip: AppLocalizations.of(context)!.share,
           ),
           IconButton(

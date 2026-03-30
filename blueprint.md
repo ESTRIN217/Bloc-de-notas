@@ -28,7 +28,7 @@ Este documento describe el diseño y las características de una aplicación mod
   - **Personalización del fondo:** Cambia el color de fondo de una nota o establece una imagen de fondo desde la galería.
   - **Formato de texto:** Formato básico de texto, como tamaño de fuente, negrita y cursiva.
   - **Listas de verificación:** Crea listas de verificación interactivas dentro de las notas.
-    
+  
 *Nota: Estas funciones formaban parte originalmente de un editor personalizado y han sido reemplazadas por la implementación de `flutter_quill` en la versión 3.0.*
 
 ### 2.3. Versión 1.0.0 (Características principales)
@@ -47,13 +47,13 @@ Este documento describe el diseño y las características de una aplicación mod
 
 ### 2.4 Versión 4.0.0
 
-- **Traducciones:**
+- **Internacionalizacion:**
   - **Venezolano**
   - **Brasileño**
   - **Portugues**
 
 - **Actualizador:**
-  - **Verifica la version y la descarga**
+  - **Verifica la version y la descarga(no disponible para la version web)**
   
 - **Mejoras en el editor:**
   - **Soporte de imagen en nota**

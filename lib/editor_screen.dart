@@ -3,7 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:image_picker/image_picker.dart';
+import 'package:markdown_quill/markdown_quill.dart';
 import 'package:myapp/l10n/app_localizations.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'list_item.dart';
@@ -98,11 +101,126 @@ class _EditorScreenState extends State<EditorScreen> {
     Navigator.pop(context, updatedItem);
   }
 
-  void _shareItem() {
+  void _showShareMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+             Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                AppLocalizations.of(context)!.exportar_notas_como,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.text_snippet),
+              title: Text(AppLocalizations.of(context)!.texto_plano),
+              onTap: () {
+                Navigator.pop(context);
+                _shareAsText();
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.settings_ethernet_rounded,
+              ), // Icono representativo de MD
+              title: Text(AppLocalizations.of(context)!.markdown),
+              onTap: () {
+                Navigator.pop(context);
+                _shareAsMarkdown();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
+              title: Text(AppLocalizations.of(context)!.archivo_pdf),
+              onTap: () {
+                Navigator.pop(context);
+                _shareAsPdf();
+              },
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- Lógica de procesamiento ---
+void _shareAsText() {
     final title = _titleController.text;
     final summary = _contentController.document.toPlainText();
     SharePlus.instance.share(
       ShareParams(text: '$title\n\n$summary', subject: title),
+    );
+  }
+
+    
+
+void _shareAsMarkdown() {
+  final title = _titleController.text;
+  final delta = _contentController.document.toDelta();
+  
+  // CORRECCIÓN: Usar el convertidor del paquete externo
+  final markdownContent = DeltaToMarkdown().convert(delta);
+  
+  SharePlus.instance.share(
+    ShareParams(
+      text: '$title\n\n$markdownContent',
+      subject: title,
+    ),
+  );
+}
+
+
+
+  Future<void> _shareAsPdf() async {
+    final pdf = pw.Document();
+    final title = _titleController.text;
+    final content = _contentController.document.toPlainText();
+
+    pdf.addPage(
+      pw.MultiPage(
+        build: (pw.Context context) => [
+          pw.Header(level: 0, child: pw.Text("Mis Notas Exportadas")),
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.SizedBox(height: 15),
+                pw.Text(
+                  title,
+                  style: pw.TextStyle(
+                    fontWeight: pw.FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                pw.Divider(),
+                pw.Text(content),
+                pw.SizedBox(height: 10),
+              ],
+            ),
+        ],
+    ));
+  
+
+    // Guardado y envío
+    final output = await getTemporaryDirectory();
+    final file = File(
+      "${output.path}/notas_${DateTime.now().millisecondsSinceEpoch}.pdf",
+    );
+    await file.writeAsBytes(await pdf.save());
+
+    // La nueva forma estándar
+    await SharePlus.instance.share(
+      ShareParams(
+        text: 'Te comparto mis notas',
+        files: [XFile(file.path)], // El parámetro se llama 'files', no 'xFiles'
+      ),
     );
   }
 
@@ -138,10 +256,7 @@ class _EditorScreenState extends State<EditorScreen> {
             ListTile(
               leading: const Icon(Icons.share),
               title: Text(AppLocalizations.of(context)!.share),
-              onTap: () {
-                Navigator.pop(ctx);
-                _shareItem();
-              },
+              onTap: () => _showShareMenu(context),
             ),
             ListTile(
               leading: const Icon(Icons.delete),

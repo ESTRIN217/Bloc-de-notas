@@ -30,5 +30,16 @@
   "desarrolador": "Desenvolvido por",
   "enlaces": "Links úteis",
   "repositorio": "Ver repositório",
-  "@repositorio": {}
+  "@repositorio": {},
+  "espanol": " 🇪🇸 Espanhol",
+  "ingles": " 🇺🇸 Inglês",
+  "venezolano": " 🇻🇪 Espanhol (Venezuela)",
+  "portugues": " 🇵🇹 Português",
+  "brasileno": " 🇧🇷 Português (Brasil)",
+  "texto_plano": "Texto plano (.txt)",
+  "markdown": "Markdown (.md)",
+  "archivo_pdf": "Arquivo PDF (.pdf)",
+  "exportar_notas_como": "Exportar notas como:",
+  "descripcion": "Um aplicativo de notas simples e fácil de usar, com suporte para texto enriquecido, imagens.",
+  "mit_license": "Licença MIT"
 }

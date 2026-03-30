@@ -97,8 +97,8 @@ class AboutScreen extends StatelessWidget {
               const LinearProgressIndicator(year2023: false),
 
               const SizedBox(height: 20),
-              const Text(
-                'Una aplicación de notas simple y elegante para capturar tus ideas.',
+               Text(
+                AppLocalizations.of(context)!.descripcion,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16),
               ),
@@ -168,7 +168,7 @@ class AboutScreen extends StatelessWidget {
                       leading: const Icon(
                         Icons.description_outlined,
                       ), // Ícono para la licencia
-                      title: const Text('MIT LICENCIA'),
+                      title: Text(AppLocalizations.of(context)!.mit_license),
                       onTap: _launchLicense,
                     ),
                   ],

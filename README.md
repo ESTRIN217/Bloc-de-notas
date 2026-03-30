@@ -1,11 +1,10 @@
-# Blog de notas
+# Bloc de notas
 
 Una aplicación de notas simple e intuitiva creada con Flutter. Esta aplicación permite a los usuarios crear, editar y organizar notas con una interfaz moderna y fácil de usar, con funciones avanzadas de personalización y localización.
 
 [![Latest release](https://img.shields.io/github/v/release/ESTRIN217/Blog-de-notas?style=for-the-badge&labelColor=0d1117)](https://github.com/ESTRIN217/Blog-de-notas/releases)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-![texto](https://github.com/ESTRIN217/Blog-de-notas/blob/master/assets/Screenshot_20260328-165034.png)
 
 ## Características
 

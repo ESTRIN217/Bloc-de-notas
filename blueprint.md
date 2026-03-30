@@ -54,7 +54,9 @@ Este documento describe el diseño y las características de una aplicación mod
 
 - **Actualizador:**
   - **Verifica la version y la descarga(no disponible para la version web)**
-  
+
+- **Registro de cambios**
+  - **Muestra los cambios hechos en la app**
 - **Mejoras en el editor:**
   - **Soporte de imagen en nota**
   - **Soporte de audio en nota**

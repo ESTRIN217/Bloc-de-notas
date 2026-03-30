@@ -17,7 +17,7 @@ import 'editor_screen.dart';
 import 'settings_screen.dart';
 import 'theme_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:myapp/l10n/app_localizations.dart';
+import 'package:l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 void main() {
@@ -165,12 +165,61 @@ class _MyHomePageState extends State<MyHomePage> {
   void _createWelcomeNote() {
     final welcomeNote = ListItem(
       id: 'welcome_note',
-      title: '¡Bienvenido a Blog de Notas!',
+      title: '¡Bienvenido a Bloc de notas!',
       summary: jsonEncode([
+          
+  { "insert": "\n", "attributes": { "header": 1, "align": "center" } },
+  { "insert": "Tu nuevo espacio para organizar ideas, código y tareas.\n\n" },
+  { "insert": "Funciones destacadas:", "attributes": { "bold": true } },
+  { "insert": "\n" },
+  { "insert": "Soporte para código" },
+  { "insert": "\n", "attributes": { "list": "bullet" } },
+  { "insert": "Exportación a PDF y Markdown" },
+  { "insert": "\n", "attributes": { "list": "bullet" } },
+  { "insert": "\n" },
+  { "insert": "Prueba a escribir algo aquí abajo..." },
+  { "insert": "\n", "attributes": { "blockquote": true } },
         {
           'insert':
               'Esta es una nota de ejemplo para ayudarte a explorar las funciones.\n',
         },
+  { "insert": "\n", "attributes": { "header": 1, "align": "center" } },
+  { "insert": "Esta nota muestra el poder de " },
+  { "insert": "flutter_quill", "attributes": { "bold": true, "color": "#2196F3" } },
+  { "insert": " en mi app de Flutter.\n\n" },
+  { "insert": "Estilos de Texto:", "attributes": { "bold": true, "underline": true } },
+  { "insert": "\n" },
+  { "insert": "Texto en negrita", "attributes": { "bold": true } },
+  { "insert": ", " },
+  { "insert": "cursiva", "attributes": { "italic": true } },
+  { "insert": ", " },
+  { "insert": "tachado", "attributes": { "strike": true } },
+  { "insert": " y con " },
+  { "insert": "color de fondo", "attributes": { "background": "#FFEB3B" } },
+  { "insert": ".\n\n" },
+  { "insert": "Listas y Organización" },
+  { "insert": "\n", "attributes": { "header": 2 } },
+  { "insert": "Tarea pendiente 1" },
+  { "insert": "\n", "attributes": { "list": "unchecked" } },
+  { "insert": "Tarea completada" },
+  { "insert": "\n", "attributes": { "list": "checked" } },
+  { "insert": "Elemento de lista con viñeta" },
+  { "insert": "\n", "attributes": { "list": "bullet" } },
+  { "insert": "Elemento numerado" },
+  { "insert": "\n", "attributes": { "list": "ordered" } },
+  { "insert": "\n" },
+  { "insert": "Bloques Especiales", "attributes": { "bold": true } },
+  { "insert": "\n" },
+  { "insert": "Este es un bloque de cita para resaltar pensamientos importantes." },
+  { "insert": "\n", "attributes": { "blockquote": true } },
+  { "insert": "\n" },
+  { "insert": "void main() {\n  print('Hola desde flutter_quill');\n}" },
+  { "insert": "\n", "attributes": { "code-block": true } },
+  { "insert": "\n" },
+  { "insert": "Enlace útil: " },
+  { "insert": "Repositorio del proyecto", "attributes": { "link": "https://pub.dev/packages/flutter_quill" } },
+  { "insert": "\n" }
+
       ]),
       lastModified: DateTime.now(),
       backgroundColor: Colors.amber[200]!.toARGB32(),

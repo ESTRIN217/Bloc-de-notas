@@ -1,4 +1,4 @@
-name: myapp
+name: bloc_de_notas
 description: "A Blog de notas Flutter project."
 publish_to: 'none'
 version: 3.0.0+1
@@ -30,6 +30,7 @@ dependencies:
   package_info_plus: ^9.0.0
   pdf: ^3.12.0
   markdown_quill: ^4.3.0
+  rename_app: 1.6.5
 
 dev_dependencies:
   flutter_test:

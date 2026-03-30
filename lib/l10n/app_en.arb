@@ -2,7 +2,7 @@
   "@@locale": "en",
   "helloWorld": "Hello World!",
   "@helloWorld": {},
-  "flutterNotes": "NOTEBOOK",
+  "flutterNotes": "NOTEPAD",
   "@flutterNotes": {},
   "search": "Search...",
   "@search": {},

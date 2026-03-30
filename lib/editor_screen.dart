@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:image_picker/image_picker.dart';
 import 'package:markdown_quill/markdown_quill.dart';
-import 'package:myapp/l10n/app_localizations.dart';
+import 'package:l10n/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';

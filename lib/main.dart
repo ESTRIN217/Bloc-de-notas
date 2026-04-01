@@ -482,7 +482,7 @@ Future<void> _shareAsPdf() async {
     );
     
     // CORRECCIÓN: Usamos createWidgets() (o getWidgets() si tu versión exacta lo requiere)
-    final List<pw.Widget> richTextWidgets = await converter.createWidgets();
+    final pw.Widget? richTextWidgets = await converter.generateWidget();
 
     // 2. Armar la estructura de la nota
     pdfContent.add(pw.SizedBox(height: 15));
@@ -495,7 +495,7 @@ Future<void> _shareAsPdf() async {
     pdfContent.add(pw.Divider());
     
     // 3. Agregar los widgets ricos convertidos usando spread operator (...)
-    pdfContent.addAll(richTextWidgets);
+    pdfContent.addAll(richTextWidgets as Iterable<pw.Widget>);
     pdfContent.add(pw.SizedBox(height: 20)); // Un poquito más de espacio entre notas
   }
 
@@ -535,7 +535,7 @@ Future<void> _shareAsHtml() async {
       
       // 2. Configuramos el convertidor
       final converter = QuillDeltaToHtmlConverter(
-        deltaOps,
+        deltaOps.cast<Map<String, dynamic>>(),
         ConverterOptions(
           converterOptions: OpConverterOptions(inlineStylesFlag: true),
         ),

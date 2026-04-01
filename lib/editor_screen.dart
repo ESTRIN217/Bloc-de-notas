@@ -204,8 +204,7 @@ class _EditorScreenState extends State<EditorScreen> {
       fallbacks: [],
     );
 
-    // CORRECCIÓN: Usamos createWidgets() (o getWidgets() si tu versión lo requiere así)
-    final List<pw.Widget> richTextWidgets = await converter.createWidgets();
+    final pw.Widget? richTextWidgets = await converter.generateWidget();
 
     pdf.addPage(
       pw.MultiPage(
@@ -224,7 +223,7 @@ class _EditorScreenState extends State<EditorScreen> {
               ),
               pw.Divider(),
               // El spread operator (...) ahora funcionará perfecto
-              ...richTextWidgets, 
+              ...?richTextWidgets as Iterable<pw.Widget>?, 
               pw.SizedBox(height: 10),
             ],
           ),
@@ -248,23 +247,6 @@ class _EditorScreenState extends State<EditorScreen> {
       ),
     );
 }
-
-
-    final output = await getTemporaryDirectory();
-    final fileName = title.replaceAll(RegExp(r'[^\w\s]+'), '_'); 
-    final file = File(
-      "${output.path}/${fileName}_${DateTime.now().millisecondsSinceEpoch}.pdf",
-    );
-    
-    await file.writeAsBytes(await pdf.save());
-
-    await SharePlus.instance.share(
-      ShareParams(
-        text: 'Te comparto mi nota: $title',
-        files: [XFile(file.path)],
-      ),
-    );
-  }
 
   Future<void> shareAsHtml(quill.QuillController controller, String noteTitle) async {
     try {

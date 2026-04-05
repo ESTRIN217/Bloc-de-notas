@@ -371,6 +371,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Current version'**
   String get version_actual;
+
+  /// No description provided for @ajuste_de_actulizacion.
+  ///
+  /// In en, this message translates to:
+  /// **'Update settings'**
+  String get ajuste_de_actulizacion;
+
+  /// No description provided for @buscar_actualizaciones_automaticamente.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically check for updates'**
+  String get buscar_actualizaciones_automaticamente;
+
+  /// No description provided for @habilitar_notificaciones_de_actualizacion.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable update notifications'**
+  String get habilitar_notificaciones_de_actualizacion;
+
+  /// No description provided for @buscar_actualizaciones.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get buscar_actualizaciones;
 }
 
 class _AppLocalizationsDelegate

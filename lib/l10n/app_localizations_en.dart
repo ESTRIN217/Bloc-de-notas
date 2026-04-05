@@ -145,4 +145,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get version_actual => 'Current version';
+
+  @override
+  String get ajuste_de_actulizacion => 'Update settings';
+
+  @override
+  String get buscar_actualizaciones_automaticamente =>
+      'Automatically check for updates';
+
+  @override
+  String get habilitar_notificaciones_de_actualizacion =>
+      'Enable update notifications';
+
+  @override
+  String get buscar_actualizaciones => 'Check for updates';
 }

@@ -145,6 +145,20 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get version_actual => 'Versão atual';
+
+  @override
+  String get ajuste_de_actulizacion => '';
+
+  @override
+  String get buscar_actualizaciones_automaticamente =>
+      'Automatically check for updates';
+
+  @override
+  String get habilitar_notificaciones_de_actualizacion =>
+      'Enable update notifications';
+
+  @override
+  String get buscar_actualizaciones => 'Check for updates';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -288,4 +302,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get version_actual => 'Versão atual';
+
+  @override
+  String get ajuste_de_actulizacion => '';
 }

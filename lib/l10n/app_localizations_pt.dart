@@ -136,6 +136,15 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get mit_license => 'Licença MIT';
+
+  @override
+  String get actualizador => '';
+
+  @override
+  String get registro_de_cambio => 'Registro de mudanças';
+
+  @override
+  String get version_actual => 'Versão atual';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -270,4 +279,13 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get mit_license => 'Licença MIT';
+
+  @override
+  String get actualizador => '';
+
+  @override
+  String get registro_de_cambio => 'Registro de mudanças';
+
+  @override
+  String get version_actual => 'Versão atual';
 }

@@ -91,7 +91,7 @@
   "actualizador": "Updater",
   "@actualizador": {},
   "registro_de_cambio": "Changelog",
-  "registro_de_cambio": {},
+  "@registro_de_cambio": {},
   "version_actual": "Current version",
-  "version_actual": {}
+  "@version_actual": {}
 }

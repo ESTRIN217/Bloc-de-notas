@@ -353,6 +353,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'MIT License'**
   String get mit_license;
+
+  /// No description provided for @actualizador.
+  ///
+  /// In en, this message translates to:
+  /// **'Updater'**
+  String get actualizador;
+
+  /// No description provided for @registro_de_cambio.
+  ///
+  /// In en, this message translates to:
+  /// **'Changelog'**
+  String get registro_de_cambio;
+
+  /// No description provided for @version_actual.
+  ///
+  /// In en, this message translates to:
+  /// **'Current version'**
+  String get version_actual;
 }
 
 class _AppLocalizationsDelegate

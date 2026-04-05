@@ -136,4 +136,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mit_license => 'MIT License';
+
+  @override
+  String get actualizador => 'Updater';
+
+  @override
+  String get registro_de_cambio => 'Changelog';
+
+  @override
+  String get version_actual => 'Current version';
 }

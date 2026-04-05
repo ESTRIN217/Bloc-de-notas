@@ -25,7 +25,7 @@ class UpdaterScreen extends StatelessWidget {
               return ListView(
                 padding: const EdgeInsets.all(8),
                 children: [
-                  const Padding(
+                   Padding(
                     padding: EdgeInsets.only(
                       top: 16.0, left: 16.0, right: 16.0, bottom: 8.0,
                     ),

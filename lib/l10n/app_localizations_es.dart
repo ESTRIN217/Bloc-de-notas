@@ -136,6 +136,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get mit_license => 'Licencia MIT';
+
+  @override
+  String get actualizador => 'Actualizador';
+
+  @override
+  String get registro_de_cambio => 'Registro de cambios';
+
+  @override
+  String get version_actual => 'Version actual';
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
@@ -270,4 +279,13 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
 
   @override
   String get mit_license => 'Licencia MIT';
+
+  @override
+  String get actualizador => 'Actualizador';
+
+  @override
+  String get registro_de_cambio => 'Registro de cambios';
+
+  @override
+  String get version_actual => 'Version actual';
 }

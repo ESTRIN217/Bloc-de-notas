@@ -93,5 +93,12 @@
   "registro_de_cambio": "Changelog",
   "@registro_de_cambio": {},
   "version_actual": "Current version",
-  "@version_actual": {}
+  "@version_actual": {},
+  "ajuste_de_actulizacion": "Update settings",
+  "@ajuste_de_actulizacion": {},
+  "buscar_actualizaciones_automaticamente": "Automatically check for updates",
+  "@buscar_actualizaciones_automaticamente": {},
+  "habilitar_notificaciones_de_actualizacion": "Enable update notifications",
+  "@habilitar_notificaciones_de_actualizacion": {},
+  "buscar_actualizaciones": "Check for updates"
 }

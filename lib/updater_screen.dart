@@ -38,27 +38,29 @@ class UpdaterScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         ListTile(
-                          title: Text('Versión: ${updater.currentVersion}'),
+                          title: Text('Versión: ${updater.currentVersion}',
+                          style: TextStyle(fontWeight: FontWeight.bold),),
                         ),
                         const ListTile(
-                          title: Text('Universal'),
+                          title: Text('universal'),
                         ),
                       ],
                     ),
                   ),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(
                       top: 16.0, left: 16.0, right: 16.0, bottom: 8.0,
                     ),
                     child: Text(
-                      'Ajustes de actualización',
+                      AppLocalizations.of(context)!.ajuste_de_actulizacion,
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                   Card(
                     clipBehavior: Clip.hardEdge,
                     child: SwitchListTile(
-                      title: const Text('Buscar actualizaciones automáticamente'),
+                      title: Text(AppLocalizations.of(context)!.buscar_actualizaciones_automaticamente,
+                      style: TextStyle(fontWeight: FontWeight.bold),),
                       secondary: const Icon(Icons.update),
                       value: updater.autoUpdate, // Conectado al estado
                       onChanged: (bool value) {
@@ -77,7 +79,8 @@ class UpdaterScreen extends StatelessWidget {
                   Card(
                     clipBehavior: Clip.hardEdge,
                     child: SwitchListTile(
-                      title: const Text('Habilitar notificaciones de actualización'),
+                      title: Text(AppLocalizations.of(context)!.habilitar_notificaciones_de_actualizacion,
+                      style: TextStyle(fontWeight: FontWeight.bold),),
                       secondary: const Icon(Icons.notifications),
                       value: updater.notifications, // Conectado al estado
                       onChanged: (bool value) {
@@ -93,12 +96,12 @@ class UpdaterScreen extends StatelessWidget {
                       }),
                     ),
                   ),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(
                       top: 16.0, left: 16.0, right: 16.0, bottom: 8.0,
                     ),
                     child: Text(
-                      'Buscar actualizaciones',
+                      AppLocalizations.of(context)!.buscar_actualizaciones,
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -107,8 +110,9 @@ class UpdaterScreen extends StatelessWidget {
                     child: ListTile(
                       leading: updater.isChecking 
                           ? const CircularProgressIndicator() // Muestra un loader si está buscando
-                          : const Icon(Icons.info_outline_rounded),
-                      title: const Text('Buscar actualizaciones'),
+                          : const Icon(Icons.refresh),
+                      title: Text(AppLocalizations.of(context)!.buscar_actualizaciones,
+                      style: TextStyle(fontWeight: FontWeight.bold),),
                       onTap: updater.isChecking
                           ? null // Deshabilita el botón si ya está buscando
                           : () {

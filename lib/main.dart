@@ -379,6 +379,7 @@ borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
 ),
 isScrollControlled: true,
 builder: (context) => SafeArea(
+  child: SingleChildScrollView(
 child: Column(
 mainAxisSize: MainAxisSize.min,
 children: [
@@ -423,6 +424,7 @@ _shareAsHtml(); // Cambié el nombre para mantener el estándar
 ),
 const SizedBox(height: 10),
 ],
+),
 ),
 ),
 );

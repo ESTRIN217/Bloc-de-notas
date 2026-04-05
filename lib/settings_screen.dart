@@ -1,4 +1,3 @@
-import 'package:bloc_de_notas/updater_screen.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -152,22 +151,7 @@ class SettingsScreen extends StatelessWidget {
                   Card(
                     clipBehavior: Clip.hardEdge,
                     child: ListTile(
-                      leading: const Icon(Icons.info_outline_rounded),
-                      title: Text(AppLocalizations.of(context)!.sobre),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AboutScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  Card(
-                    clipBehavior: Clip.hardEdge,
-                    child: ListTile(
-                      leading: const Icon(Icons.info_outline_rounded),
+                      leading: const Icon(Icons.update),
                       title: Text(AppLocalizations.of(context)!.actualizador),
                       onTap: () {
                         Navigator.push(
@@ -184,6 +168,15 @@ class SettingsScreen extends StatelessWidget {
                     child: ListTile(
                       leading: const Icon(Icons.info_outline_rounded),
                       title: Text(AppLocalizations.of(context)!.registro_de_cambio),
+                      onTap: () {
+                      },
+                    ),
+                  ),
+                  Card(
+                    clipBehavior: Clip.hardEdge,
+                    child: ListTile(
+                      leading: const Icon(Icons.info_outline_rounded),
+                      title: Text(AppLocalizations.of(context)!.sobre),
                       onTap: () {
                         Navigator.push(
                           context,

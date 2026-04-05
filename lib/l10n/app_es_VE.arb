@@ -45,5 +45,9 @@
   "mit_license": "Licencia MIT",
   "actualizador": "Actualizador",
   "registro_de_cambio": "Registro de cambios",
-  "version_actual": "Version actual"
+  "version_actual": "Version actual",
+  "ajuste_de_actulizacion": "Ajustes de actualización",
+  "buscar_actualizaciones_automaticamente": "Buscar actualizaciones automáticamente",
+  "habilitar_notificaciones_de_actualizacion": "Habilitar notificaciones de actualización",
+  "buscar_actualizaciones": "Buscar actualizaciones"
 }

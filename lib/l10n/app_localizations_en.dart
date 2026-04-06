@@ -162,7 +162,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get json_crudo => 'Raw JSON';
-
-  @override
-  String get json_estructurado => 'Structured JSON';
 }

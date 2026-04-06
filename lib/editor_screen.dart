@@ -345,9 +345,13 @@ void _shareAsJson() {
   // 1. Limpiamos las imágenes del almacenamiento interno
   await _cleanupImages();
   
-  // 2. Cerramos y avisamos a la pantalla principal para borrar de la DB
+  // 2. VERIFICACIÓN CRÍTICA: ¿Sigue el widget en el árbol después del await?
+  if (!mounted) return; 
+
+  // 3. Ahora es seguro usar el context para el Navigator
   Navigator.pop(context, "DELETE");
 }
+
 
   Future<void> _toggleSpeak() async {
     if (_ttsState == TtsState.playing) {
@@ -461,24 +465,29 @@ void _shareAsJson() {
   }
 
   void _showTextTools() {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) {
-        return quill.QuillSimpleToolbar(
-          controller: _contentController,
-          configurations: quill.QuillSimpleToolbarConfigurations(
-            // Añadimos los botones de extensiones (incluye cámara y galería)
-            embedButtons: FlutterQuillEmbeds.toolbarButtons(
-              imageButtonOptions: QuillToolbarImageButtonOptions(onImageInsertedCallback: (imagePath) async {
-                await _onImagePickCallback(File(imagePath));
-              },
+  showModalBottomSheet(
+    context: context,
+    builder: (ctx) {
+      return quill.QuillSimpleToolbar(
+        controller: _contentController,
+        config: quill.QuillSimpleToolbarConfig( 
+          embedButtons: FlutterQuillEmbeds.toolbarButtons(
+            imageButtonOptions: QuillToolbarImageButtonOptions(
+              // El callback ahora vive dentro de imageButtonConfig
+              imageButtonConfig: QuillToolbarImageConfig(
+                onImageInsertedCallback: (imagePath) async {
+                  await _onImagePickCallback(File(imagePath));
+                },
               ),
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
+
+
 
   void _changeBackgroundColor(int? colorValue) {
     setState(() {
@@ -584,9 +593,8 @@ void _shareAsJson() {
                   child: // Busca tu QuillEditor.basic y actualízalo así:
 quill.QuillEditor.basic(
   controller: _contentController,
-  configurations: quill.QuillEditorConfigurations(
+  config: quill.QuillEditorConfig(
     autoFocus: false,
-    readOnly: false,
     placeholder: 'Escribe algo increíble...',
     expands: false,
     padding: EdgeInsets.zero,

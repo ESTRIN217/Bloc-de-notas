@@ -101,5 +101,9 @@
   "habilitar_notificaciones_de_actualizacion": "Enable update notifications",
   "@habilitar_notificaciones_de_actualizacion": {},
   "buscar_actualizaciones": "Check for updates",
-  "@buscar_actualizaciones": {}
+  "@buscar_actualizaciones": {},
+  "json_crudo": "Raw JSON",
+  "@json_crudo": {},
+  "json_estructurado": "Structured JSON",
+  "@json_estructurado": {}
 }

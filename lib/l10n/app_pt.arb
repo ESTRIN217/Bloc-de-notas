@@ -49,5 +49,7 @@
   "ajuste_de_actulizacion": "ajuste de atualização",
   "buscar_actualizaciones_automaticamente": "Buscar atualizaçoes automaticamente",
   "habilitar_notificaciones_de_actualizacion": "Habilitar notificaçoes de atualizaçoes",
-  "buscar_actualizaciones": "Buscar atualizaçoes"
+  "buscar_actualizaciones": "Buscar atualizaçoes",
+  "json_crudo": "JSON bruto",
+  "json_estructurado": "JSON estruturado"
 }

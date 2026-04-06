@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -16,7 +17,6 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Forzamos el color de fondo para que las tarjetas resalten sutilmente
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
       body: DynamicColorBuilder(
@@ -27,7 +27,6 @@ class SettingsScreen extends StatelessWidget {
           return Consumer<ThemeProvider>(
             builder: (context, themeProvider, child) {
               return ListView(
-                // Ajustamos el padding general
                 padding: const EdgeInsets.only(bottom: 24, top: 8),
                 children: [
                   if (isDynamicColorSupported) ...[
@@ -36,7 +35,6 @@ class SettingsScreen extends StatelessWidget {
                       AppLocalizations.of(context)!.apariencia,
                     ),
 
-                    // Aquí agrupamos el Switch y los temas en un solo bloque
                     _buildSettingsGroup(
                       context,
                       children: [
@@ -44,7 +42,8 @@ class SettingsScreen extends StatelessWidget {
                           title: Text(
                             AppLocalizations.of(context)!.useDynamicColors,
                           ),
-                          secondary: const Icon(Icons.palette),
+                          // Aplicamos el fondo al icono de la paleta
+                          secondary: _buildIconContainer(context, Icons.palette),
                           value: themeProvider.useDynamicColors,
                           onChanged: (value) {
                             themeProvider.setUseDynamicColors(value);
@@ -58,10 +57,9 @@ class SettingsScreen extends StatelessWidget {
                             return const Icon(Icons.close);
                           }),
                         ),
-                        // Opcional: un divisor sutil si quieres separar los elementos internos
-                        // const Divider(height: 1, indent: 56, endIndent: 16),
                         ListTile(
-                          leading: const Icon(Icons.dark_mode),
+                          // Aplicamos el fondo al icono del modo oscuro
+                          leading: _buildIconContainer(context, Icons.dark_mode),
                           title: Text(AppLocalizations.of(context)!.themeMode),
                         ),
                         Padding(
@@ -106,7 +104,8 @@ class SettingsScreen extends StatelessWidget {
                     context,
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.language),
+                        // Aplicamos el fondo al icono de idioma
+                        leading: _buildIconContainer(context, Icons.language),
                         title: Text(
                           themeProvider.locale.languageCode == 'es'
                               ? AppLocalizations.of(context)!.espanol
@@ -132,12 +131,12 @@ class SettingsScreen extends StatelessWidget {
                     context,
                     AppLocalizations.of(context)!.informacion,
                   ),
-                  // Agrupamos los 3 botones de información juntos
                   _buildSettingsGroup(
                     context,
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.update),
+                        // Aplicamos el fondo al icono de actualizar
+                        leading: _buildIconContainer(context, Icons.update),
                         title: Text(AppLocalizations.of(context)!.actualizador),
                         onTap: () {
                           Navigator.push(
@@ -149,7 +148,8 @@ class SettingsScreen extends StatelessWidget {
                         },
                       ),
                       ListTile(
-                        leading: const FaIcon(FontAwesomeIcons.github),
+                        // Aplicamos el fondo al icono de GitHub (FontAwesome también funciona con IconData)
+                        leading: _buildIconContainer(context, FontAwesomeIcons.github),
                         title: Text(
                           AppLocalizations.of(context)!.registro_de_cambio,
                         ),
@@ -158,7 +158,8 @@ class SettingsScreen extends StatelessWidget {
                         },
                       ),
                       ListTile(
-                        leading: const Icon(Icons.info_outline_rounded),
+                        // Aplicamos el fondo al icono de información
+                        leading: _buildIconContainer(context, Icons.info_outline_rounded),
                         title: Text(AppLocalizations.of(context)!.sobre),
                         onTap: () {
                           Navigator.push(
@@ -180,8 +181,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // --- FUNCIONES DE AYUDA PARA MANTENER EL CÓDIGO LIMPIO ---
-  /// Crea el título pequeño que va arriba de cada tarjeta
+  // --- FUNCIONES DE AYUDA ---
+  
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(
@@ -193,33 +194,40 @@ class SettingsScreen extends StatelessWidget {
       child: Text(
         title,
         style: TextStyle(
-          fontSize: 13, // Letra un poco más pequeña
+          fontSize: 13, 
           fontWeight: FontWeight.bold,
-          color: Theme.of(
-            context,
-          ).colorScheme.primary, // Usa el color principal
+          color: Theme.of(context).colorScheme.primary, 
         ),
       ),
     );
   }
 
-  /// Crea el contenedor plano que agrupa a los ListTiles
   Widget _buildSettingsGroup(
     BuildContext context, {
     required List<Widget> children,
   }) {
     return Card(
-      elevation: 0, // Cero sombras
+      elevation: 0, 
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-      // Un color de fondo muy sutil basado en tu tema dinámico
       color: Theme.of(
         context,
       ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24), // Bordes bien redondeados
+        borderRadius: BorderRadius.circular(24), 
       ),
       child: Column(children: children),
+    );
+  }
+  
+  Widget _buildIconContainer(BuildContext context, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
     );
   }
 
@@ -299,7 +307,6 @@ class ChangelogSheet extends StatelessWidget {
 
   /// Obtiene la lista de releases desde la API de GitHub
   Future<List<dynamic>> _fetchReleases() async {
-    // Endpoint oficial de la API de GitHub para releases
     final url = Uri.parse(
       'https://api.github.com/repos/ESTRIN217/Bloc-de-notas/releases',
     );
@@ -308,7 +315,6 @@ class ChangelogSheet extends StatelessWidget {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        // Convertimos el cuerpo de la respuesta (String) a una Lista de objetos
         return json.decode(response.body);
       } else {
         throw Exception('Error al cargar releases: ${response.statusCode}');
@@ -364,10 +370,7 @@ class ChangelogSheet extends StatelessWidget {
               final String version = release['tag_name'] ?? 'v?';
               final String title = release['name'] ?? 'Sin título';
               final String body = release['body'] ?? '';
-              final String date = release['published_at'].toString().substring(
-                0,
-                10,
-              );
+              final String date = release['published_at'].toString().substring(0, 10);
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -397,9 +400,28 @@ class ChangelogSheet extends StatelessWidget {
                       title,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
-                    const SizedBox(height: 8),
-                    // Cuerpo del release
-                    Text(body, style: Theme.of(context).textTheme.bodyMedium),
+                    const SizedBox(height: 12),
+                    
+                    // --- Renderizador de Markdown ---
+                    MarkdownBody(
+                      data: body,
+                      selectable: true, // Permite al usuario seleccionar y copiar texto
+                      styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                        // Ajusta el espacio entre párrafos si es necesario
+                        pPadding: const EdgeInsets.only(bottom: 8), 
+                      ),
+                      // Hace que los enlaces en el markdown funcionen
+                      onTapLink: (text, href, title) async {
+                        if (href != null) {
+                          final uri = Uri.parse(href);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        }
+                      },
+                    ),
+                    // ---------------------------------
+                    
                     const Divider(height: 32),
                   ],
                 ),
@@ -410,7 +432,7 @@ class ChangelogSheet extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _launchGitHub,
-        icon: const Icon(Icons.code), // Representación de GitHub
+        icon: const FaIcon(FontAwesomeIcons.github),
         label: const Text('Ver en GitHub'),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

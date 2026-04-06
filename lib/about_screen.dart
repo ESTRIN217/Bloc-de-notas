@@ -230,6 +230,7 @@ class AboutScreen extends StatelessWidget {
         color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
         borderRadius: BorderRadius.circular(24),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
           ListTile(

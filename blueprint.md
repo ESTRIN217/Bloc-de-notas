@@ -63,7 +63,7 @@ Este documento describe el diseño y las características de una aplicación mod
   - **Soporte de dibujo en nota**
 
 - **Mas formatos para compartir:**
-  - **PDF, Markdown, HTML, CSV, and JSON**
+  - **PDF, Markdown, HTML, and JSON**
 
 ## 3. Calidad del código y control de versiones
 

@@ -422,6 +422,24 @@ Navigator.pop(context);
 _shareAsHtml(); // Cambié el nombre para mantener el estándar
 },
 ),
+ListTile(
+  leading: const Icon(Icons.code_rounded, color: Colors.blue),
+  title: Text(AppLocalizations.of(context)!.json_crudo), // Asegúrate de tener este string en l10n
+  subtitle: const Text("Texto + JSON"), // Opcional, para aclarar el formato
+  onTap: () {
+    Navigator.pop(context);
+    _shareAsJson(); 
+  },
+),
+ListTile(
+  leading: const Icon(Icons.data_object_rounded, color: Colors.teal),
+  title: Text(AppLocalizations.of(context)!.json_estructurado), 
+  subtitle: const Text("Estructura de datos pura"),
+  onTap: () {
+    Navigator.pop(context);
+    _shareAsStrictJson();
+  },
+),
 const SizedBox(height: 10),
 ],
 ),
@@ -599,6 +617,42 @@ if (kDebugMode) {
 print('Error al generar el archivo HTML: $e');
 }
 }
+}
+
+void _shareAsStrictJson() {
+  // Creamos una lista de mapas (objetos)
+  final List<Map<String, dynamic>> rawData = _selectedItems.map((item) {
+    return {
+      "title": item.title,
+      // toDelta().toJson() ya devuelve una lista dinámica que jsonEncode entiende
+      "content": item.document.toDelta().toJson(), 
+    };
+  }).toList();
+
+  // Convertimos toda la lista a un solo String de JSON formateado
+  final content = jsonEncode(rawData);
+
+  SharePlus.instance.share(
+    ShareParams(text: content),
+  );
+  
+  _exitSelectionMode();
+}
+
+void _shareAsJson() {
+  final content = _selectedItems
+      .map((item) {
+        // Extraemos el Delta del documento y lo convertimos a un String JSON
+        final rawJson = jsonEncode(item.document.toDelta().toJson());
+        return "${item.title}\n$rawJson";
+      })
+      .join('\n\n---\n\n');
+
+  SharePlus.instance.share(
+    ShareParams(text: content),
+  );
+  
+  _exitSelectionMode();
 }
 
 void _showSortOptions() {

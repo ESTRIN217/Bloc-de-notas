@@ -409,15 +409,19 @@ class _MyHomePageState extends State<MyHomePage> {
       _selectedItems.clear();
     });
   }
+void _deleteSelectedItems() async {
+  // 1. Primero limpiamos los archivos físicos
+  await _cleanupImagesForSelectedItems();
 
-  void _deleteSelectedItems() {
-    setState(() {
-      _items.removeWhere((item) => _selectedItems.contains(item));
-      _filterItems();
-      _exitSelectionMode();
-      _saveItems();
-    });
-  }
+  // 2. Luego actualizamos la UI y la base de datos
+  setState(() {
+    _items.removeWhere((item) => _selectedItems.contains(item));
+    _filterItems();
+    _exitSelectionMode();
+    _saveItems(); // Asumo que esto guarda la lista actualizada en SharedPreferences o DB
+  });
+}
+  
 
   void _showShareMenu(BuildContext context) {
     showModalBottomSheet(
@@ -477,25 +481,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 leading: const Icon(Icons.code_rounded, color: Colors.blue),
                 title: Text(
                   AppLocalizations.of(context)!.json_crudo,
-                ), // Asegúrate de tener este string en l10n
-                subtitle: const Text(
-                  "Texto + JSON",
-                ), // Opcional, para aclarar el formato
+                ),
+                subtitle: const Text("Formato crudo para respaldo"), // Opcional, para aclarar el formato
                 onTap: () {
                   Navigator.pop(context);
                   _shareAsJson();
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.data_object_rounded,
-                  color: Colors.teal,
-                ),
-                title: Text(AppLocalizations.of(context)!.json_estructurado),
-                subtitle: const Text("Estructura de datos pura"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _shareAsStrictJson();
                 },
               ),
               const SizedBox(height: 10),
@@ -670,24 +660,6 @@ class _MyHomePageState extends State<MyHomePage> {
         print('Error al generar el archivo HTML: $e');
       }
     }
-  }
-
-  void _shareAsStrictJson() {
-    // Creamos una lista de mapas (objetos)
-    final List<Map<String, dynamic>> rawData = _selectedItems.map((item) {
-      return {
-        "title": item.title,
-        // toDelta().toJson() ya devuelve una lista dinámica que jsonEncode entiende
-        "content": item.document.toDelta().toJson(),
-      };
-    }).toList();
-
-    // Convertimos toda la lista a un solo String de JSON formateado
-    final content = jsonEncode(rawData);
-
-    SharePlus.instance.share(ShareParams(text: content));
-
-    _exitSelectionMode();
   }
 
   void _shareAsJson() {
@@ -1095,4 +1067,32 @@ class _MyHomePageState extends State<MyHomePage> {
           _buildItem(_filteredItems[index], isListView: false),
     );
   }
+  Future<void> _cleanupImagesForSelectedItems() async {
+  for (final item in _selectedItems) {
+    try {
+      // 1. Decodificamos el summary que guardaste como JSON
+      final List<dynamic> delta = jsonDecode(item.summary);
+
+      for (final op in delta) {
+        if (op is Map && op.containsKey('insert') && op['insert'] is Map) {
+          final insert = op['insert'] as Map;
+          
+          // 2. Buscamos si hay una clave 'image'
+          if (insert.containsKey('image')) {
+            final String path = insert['image'];
+            final file = File(path);
+
+            // 3. Verificamos que sea de nuestra carpeta interna antes de borrar
+            if (await file.exists() && path.contains('/app_flutter/images/')) {
+              await file.delete();
+              if (kDebugMode) print('Imagen eliminada desde main: $path');
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) print('Error al limpiar imágenes de la nota ${item.id}: $e');
+    }
+  }
+}
 }

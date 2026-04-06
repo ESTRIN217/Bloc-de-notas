@@ -13,6 +13,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'list_item.dart';
+import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 
 enum TtsState { playing, stopped }
 
@@ -155,6 +156,17 @@ class _EditorScreenState extends State<EditorScreen> {
                 shareAsHtml(_contentController, _titleController.text);
               },
             ),
+            ListTile(
+  leading: const Icon(Icons.code_rounded, color: Colors.blue),
+  title: Text(
+                  AppLocalizations.of(context)!.json_crudo,
+                ),
+  subtitle: const Text("Formato crudo para respaldo"),
+  onTap: () {
+    Navigator.pop(context); // Cerramos el menú/modal
+    _shareAsJson();        // Ejecutamos la función
+  },
+),
             const SizedBox(height: 10),
           ],
         ),
@@ -311,10 +323,31 @@ class _EditorScreenState extends State<EditorScreen> {
     }
   }
 
-  void _deleteItem() {
-    if (!mounted) return;
-    Navigator.pop(context, "DELETE");
-  }
+void _shareAsJson() {
+  // 1. Obtenemos el título del controlador
+  final title = _titleController.text;
+  
+  // 2. Convertimos el contenido de Flutter Quill a JSON (Delta)
+  final rawJson = jsonEncode(_contentController.document.toDelta().toJson());
+  
+  // 3. Compartimos con el formato híbrido: Título + Separador + JSON
+  SharePlus.instance.share(
+    ShareParams(
+      text: '$title\n\n$rawJson', 
+      subject: title, // Esto ayuda en apps como Gmail para poner el asunto
+    ),
+  );
+}
+
+  void _deleteItem() async {
+  if (!mounted) return;
+  
+  // 1. Limpiamos las imágenes del almacenamiento interno
+  await _cleanupImages();
+  
+  // 2. Cerramos y avisamos a la pantalla principal para borrar de la DB
+  Navigator.pop(context, "DELETE");
+}
 
   Future<void> _toggleSpeak() async {
     if (_ttsState == TtsState.playing) {
@@ -431,7 +464,18 @@ class _EditorScreenState extends State<EditorScreen> {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
-        return quill.QuillSimpleToolbar(controller: _contentController);
+        return quill.QuillSimpleToolbar(
+          controller: _contentController,
+          configurations: quill.QuillSimpleToolbarConfigurations(
+            // Añadimos los botones de extensiones (incluye cámara y galería)
+            embedButtons: FlutterQuillEmbeds.toolbarButtons(
+              imageButtonOptions: QuillToolbarImageButtonOptions(onImageInsertedCallback: (imagePath) async {
+                await _onImagePickCallback(File(imagePath));
+              },
+              ),
+            ),
+          ),
+        );
       },
     );
   }
@@ -537,9 +581,18 @@ class _EditorScreenState extends State<EditorScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: quill.QuillEditor.basic(
-                    controller: _contentController,
-                  ),
+                  child: // Busca tu QuillEditor.basic y actualízalo así:
+quill.QuillEditor.basic(
+  controller: _contentController,
+  configurations: quill.QuillEditorConfigurations(
+    autoFocus: false,
+    readOnly: false,
+    placeholder: 'Escribe algo increíble...',
+    expands: false,
+    padding: EdgeInsets.zero,
+    embedBuilders: FlutterQuillEmbeds.editorBuilders(),
+  ),
+),
                 ),
               ),
             ],
@@ -571,4 +624,62 @@ class _EditorScreenState extends State<EditorScreen> {
       ),
     );
   }
+  Future<void> _onImagePickCallback(File file) async {
+    try {
+      // 1. Obtenemos el directorio permanente de la aplicación
+      final appDir = await getApplicationDocumentsDirectory();
+      
+      // 2. Creamos una subcarpeta para organizar las imágenes (opcional pero recomendado)
+      final imagesDir = Directory('${appDir.path}/images');
+      if (!await imagesDir.exists()) {
+        await imagesDir.create(recursive: true);
+      }
+
+      // 3. Generamos un nombre único basado en el tiempo para evitar duplicados
+      final String fileName = 'img_${DateTime.now().millisecondsSinceEpoch}${file.path.substring(file.path.lastIndexOf('.'))}';
+      final String permanentPath = '${imagesDir.path}/$fileName';
+
+      // 4. Copiamos el archivo de la caché al almacenamiento permanente
+      final File savedImage = await file.copy(permanentPath);
+
+      // 5. Insertamos la ruta PERMANENTE en el editor
+      final index = _contentController.selection.baseOffset;
+      final length = _contentController.selection.extentOffset - index;
+      
+      _contentController.replaceText(
+        index, 
+        length, 
+        quill.BlockEmbed.image(savedImage.path), 
+        null
+      );
+      
+      if (kDebugMode) {
+        print('Imagen guardada permanentemente en: ${savedImage.path}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error al guardar la imagen: $e');
+      }
+      // Aquí podrías mostrar un SnackBar informando el error al usuario
+    }
+  }
+  Future<void> _cleanupImages() async {
+  final delta = _contentController.document.toDelta().toJson();
+  
+  for (final op in delta) {
+    if (op.containsKey('insert') && op['insert'] is Map) {
+      final insert = op['insert'] as Map;
+      if (insert.containsKey('image')) {
+        final String path = insert['image'];
+        final file = File(path);
+        
+        // Solo borramos si el archivo está dentro de nuestra carpeta de la app
+        if (await file.exists() && path.contains('/app_flutter/images/')) {
+          await file.delete();
+          if (kDebugMode) print('Imagen eliminada: $path');
+        }
+      }
+    }
+  }
+}
 }

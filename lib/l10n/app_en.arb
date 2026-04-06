@@ -104,6 +104,4 @@
   "@buscar_actualizaciones": {},
   "json_crudo": "Raw JSON",
   "@json_crudo": {},
-  "json_estructurado": "Structured JSON",
-  "@json_estructurado": {}
 }

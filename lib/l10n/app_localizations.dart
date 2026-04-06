@@ -395,6 +395,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check for updates'**
   String get buscar_actualizaciones;
+
+  /// No description provided for @json_crudo.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw JSON'**
+  String get json_crudo;
+
+  /// No description provided for @json_estructurado.
+  ///
+  /// In en, this message translates to:
+  /// **'Structured JSON'**
+  String get json_estructurado;
 }
 
 class _AppLocalizationsDelegate

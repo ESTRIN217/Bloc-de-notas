@@ -109,7 +109,7 @@ class UpdaterScreen extends StatelessWidget {
   Widget _buildGroup(BuildContext context, {required Widget child}) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(28),
       ),
       clipBehavior: Clip.antiAlias,
@@ -121,7 +121,7 @@ class UpdaterScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),

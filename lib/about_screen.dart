@@ -62,7 +62,7 @@ class AboutScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(28),
       ),
       child: Row(
@@ -109,7 +109,7 @@ class AboutScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
@@ -181,7 +181,7 @@ class AboutScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.4),
+          color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(20),
         ),
         child: FaIcon(icon, color: Theme.of(context).colorScheme.onPrimaryContainer),
@@ -227,7 +227,7 @@ class AboutScreen extends StatelessWidget {
   Widget _buildLinkGroup(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(24),
       ),
       clipBehavior: Clip.antiAlias,

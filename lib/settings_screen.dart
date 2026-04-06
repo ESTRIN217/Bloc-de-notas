@@ -1,5 +1,6 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:provider/provider.dart';
 import 'theme_provider.dart';
 import 'about_screen.dart';
@@ -9,7 +10,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -149,7 +149,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       ListTile(
                         // Aplicamos el fondo al icono de GitHub (FontAwesome también funciona con IconData)
-                        leading: _buildIconContainer(context, FontAwesomeIcons.github),
+                        leading: _buildFaIconContainer(context, FontAwesomeIcons.github),
                         title: Text(
                           AppLocalizations.of(context)!.registro_de_cambio,
                         ),
@@ -211,7 +211,7 @@ class SettingsScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       color: Theme.of(
         context,
-      ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+      ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24), 
@@ -224,10 +224,21 @@ class SettingsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
+    );
+  }
+
+  Widget _buildFaIconContainer(BuildContext context, FaIconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: FaIcon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
     );
   }
 

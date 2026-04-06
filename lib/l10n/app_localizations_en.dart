@@ -159,4 +159,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get buscar_actualizaciones => 'Check for updates';
+
+  @override
+  String get json_crudo => 'Raw JSON';
+
+  @override
+  String get json_estructurado => 'Structured JSON';
 }

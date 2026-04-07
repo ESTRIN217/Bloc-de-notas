@@ -906,7 +906,38 @@ void _deleteSelectedItems() async {
     final isDark = _isColorDark(item.backgroundColor);
     final textColor = isDark ? Colors.white : Colors.black;
 
-    final plainTextSummary = item.document.toPlainText();
+    // 1. Creamos un controlador temporal solo para renderizar el documento actual
+    final previewController = quill.QuillController(
+      document: item.document,
+      selection: const TextSelection.collapsed(offset: 0),
+    );
+
+    // 2. Configuramos el editor en modo lectura
+    final richTextPreview = IgnorePointer(
+      // IgnorePointer asegura que el toque pase al InkWell de la tarjeta
+      child: quill.QuillEditor.basic(
+        config: quill.QuillEditorConfig(
+          controller: previewController,
+          readOnly: true, // ¡Muy importante!
+          showCursor: false,
+          padding: EdgeInsets.zero,
+          scrollable: false, // Evita que interfiera con el scroll de la lista
+          // Ajustamos el color base para que coincida con el fondo de tu tarjeta
+          customStyles: quill.DefaultStyles(
+            paragraph: quill.DefaultTextBlockStyle(
+              TextStyle(
+                color: textColor.withAlpha((255 * 0.8).round()),
+                fontSize: 14,
+              ),
+              const quill.VerticalSpacing(0, 0),
+              const quill.VerticalSpacing(0, 0),
+              null,
+            ),
+          ),
+          embedBuilders: kIsWeb ? [] : FlutterQuillEmbeds.editorBuilders(),
+        ),
+      ),
+    );
 
     final contentColumn = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -927,22 +958,17 @@ void _deleteSelectedItems() async {
           const SizedBox(height: 8),
         if (item.document.length > 1)
           isListView
-              ? Text(
-                  plainTextSummary,
-                  style: TextStyle(
-                    color: textColor.withAlpha((255 * 0.8).round()),
+              ? ClipRect( // Corta el texto que sobrepase el alto máximo
+                  child: ConstrainedBox(
+                    // Limitamos la altura en la vista de lista (aprox. 9-10 líneas)
+                    constraints: const BoxConstraints(maxHeight: 180), 
+                    child: richTextPreview,
                   ),
-                  maxLines: 10,
-                  overflow: TextOverflow.ellipsis,
                 )
               : Expanded(
-                  child: Text(
-                    plainTextSummary,
-                    style: TextStyle(
-                      color: textColor.withAlpha((255 * 0.8).round()),
-                    ),
-                    maxLines: 6,
-                    overflow: TextOverflow.ellipsis,
+                  // En GridView, el Expanded tomará el espacio restante
+                  child: ClipRect(
+                    child: richTextPreview,
                   ),
                 ),
       ],

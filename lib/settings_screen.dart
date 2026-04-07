@@ -134,19 +134,23 @@ class SettingsScreen extends StatelessWidget {
                   _buildSettingsGroup(
                     context,
                     children: [
-                      ListTile(
-                        // Aplicamos el fondo al icono de actualizar
-                        leading: _buildIconContainer(context, Icons.update),
-                        title: Text(AppLocalizations.of(context)!.actualizador),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const UpdaterScreen(),
-                            ),
-                          );
-                        },
-                      ),
+[
+  // Solo se mostrará si NO es Web
+  if (!kIsWeb) 
+    ListTile(
+      leading: _buildIconContainer(context, Icons.update),
+      title: Text(AppLocalizations.of(context)!.actualizador),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const UpdaterScreen(),
+          ),
+        );
+      },
+    ),
+    
+]
                       ListTile(
                         // Aplicamos el fondo al icono de GitHub (FontAwesome también funciona con IconData)
                         leading: _buildFaIconContainer(context, FontAwesomeIcons.github),

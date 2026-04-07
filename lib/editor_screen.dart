@@ -463,31 +463,23 @@ void _shareAsJson() {
       },
     );
   }
-
-  void _showTextTools() {
-  showModalBottomSheet(
-    context: context,
-    builder: (ctx) {
-      return quill.QuillSimpleToolbar(
-        controller: _contentController,
-        config: quill.QuillSimpleToolbarConfig( 
-          embedButtons: FlutterQuillEmbeds.toolbarButtons(
-            imageButtonOptions: QuillToolbarImageButtonOptions(
-              // El callback ahora vive dentro de imageButtonConfig
-              imageButtonConfig: QuillToolbarImageConfig(
-                onImageInsertedCallback: (imagePath) async {
-                  await _onImagePickCallback(File(imagePath));
-                },
-              ),
+void _showTextTools() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return quill.QuillSimpleToolbar(
+          controller: _contentController,
+          config: quill.QuillSimpleToolbarConfig(
+            // Añadimos los botones de extensiones predeterminados (incluye cámara, galería y video)
+            embedButtons: FlutterQuillEmbeds.toolbarButtons(
+              // Ya no es necesario redefinir imageButtonOptions a menos que 
+              // quieras cambiar iconos o deshabilitar algo específico.
             ),
           ),
-        ),
-      );
-    },
-  );
-}
-
-
+        );
+      },
+    );
+  }
 
   void _changeBackgroundColor(int? colorValue) {
     setState(() {
@@ -632,59 +624,22 @@ quill.QuillEditor.basic(
       ),
     );
   }
-  Future<void> _onImagePickCallback(File file) async {
-    try {
-      // 1. Obtenemos el directorio permanente de la aplicación
-      final appDir = await getApplicationDocumentsDirectory();
-      
-      // 2. Creamos una subcarpeta para organizar las imágenes (opcional pero recomendado)
-      final imagesDir = Directory('${appDir.path}/images');
-      if (!await imagesDir.exists()) {
-        await imagesDir.create(recursive: true);
-      }
-
-      // 3. Generamos un nombre único basado en el tiempo para evitar duplicados
-      final String fileName = 'img_${DateTime.now().millisecondsSinceEpoch}${file.path.substring(file.path.lastIndexOf('.'))}';
-      final String permanentPath = '${imagesDir.path}/$fileName';
-
-      // 4. Copiamos el archivo de la caché al almacenamiento permanente
-      final File savedImage = await file.copy(permanentPath);
-
-      // 5. Insertamos la ruta PERMANENTE en el editor
-      final index = _contentController.selection.baseOffset;
-      final length = _contentController.selection.extentOffset - index;
-      
-      _contentController.replaceText(
-        index, 
-        length, 
-        quill.BlockEmbed.image(savedImage.path), 
-        null
-      );
-      
-      if (kDebugMode) {
-        print('Imagen guardada permanentemente en: ${savedImage.path}');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error al guardar la imagen: $e');
-      }
-      // Aquí podrías mostrar un SnackBar informando el error al usuario
-    }
   }
   Future<void> _cleanupImages() async {
-  final delta = _contentController.document.toDelta().toJson();
-  
-  for (final op in delta) {
-    if (op.containsKey('insert') && op['insert'] is Map) {
-      final insert = op['insert'] as Map;
-      if (insert.containsKey('image')) {
-        final String path = insert['image'];
-        final file = File(path);
-        
-        // Solo borramos si el archivo está dentro de nuestra carpeta de la app
-        if (await file.exists() && path.contains('/app_flutter/images/')) {
-          await file.delete();
-          if (kDebugMode) print('Imagen eliminada: $path');
+    final delta = _contentController.document.toDelta().toJson();
+    
+    for (final op in delta) {
+      if (op.containsKey('insert') && op['insert'] is Map) {
+        final insert = op['insert'] as Map;
+        if (insert.containsKey('image')) {
+          final String path = insert['image'];
+          final file = File(path);
+          
+          // Ajustado: ya no verificamos la subcarpeta específica
+          if (await file.exists()) {
+            await file.delete();
+            if (kDebugMode) print('Imagen eliminada de la caché: $path');
+          }
         }
       }
     }

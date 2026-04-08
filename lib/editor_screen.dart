@@ -614,19 +614,26 @@ quill.QuillEditor.basic(
           child: Row(
             children: [
               IconButton(
-                icon: Icon(Icons.palette_outlined, color: textColor),
+                icon: Icon(Icons.palette_outlined, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 onPressed: _showBackgroundSheet,
               ),
               IconButton(
-                icon: Icon(Icons.tune, color: textColor),
+                icon: Icon(Icons.tune, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 onPressed: _showTextTools,
               ),
               IconButton(
                 icon: Icon(
                   _ttsState == TtsState.playing ? Icons.stop : Icons.volume_up,
-                  color: textColor,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 onPressed: _toggleSpeak,
+              ),
+              IconButton.filled(
+                icon: Icon(
+                  Icons.fiber_manual_record,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                onPressed: _showAudioMenu,
               ),
             ],
           ),

@@ -168,10 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
       } else {
         // CORRECCIÓN: Asignamos ambas notas a la lista al mismo tiempo
         setState(() {
-          _items = [
-            _createWelcomeNote(),
-            _createExerciteNote(),
-          ];
+          _items = [_createWelcomeNote(), _createExerciteNote()];
           _filteredItems = _items;
           _isLoading = false;
         });
@@ -179,13 +176,10 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     } catch (e) {
       debugPrint("Error loading items: $e");
-      
+
       // Manejo de error: también cargamos ambas notas
       setState(() {
-        _items = [
-          _createWelcomeNote(),
-          _createExerciteNote(),
-        ];
+        _items = [_createWelcomeNote(), _createExerciteNote()];
         _filteredItems = _items;
         _isLoading = false;
       });
@@ -273,7 +267,17 @@ class _MyHomePageState extends State<MyHomePage> {
         },
 
         {"insert": "\n"},
-        {"insert":"\nvoid main() {"},{"insert":"\n","attributes":{"code-block":true}},{"insert":"  print('Hola desde Bloc de notas');"},{"insert":"\n","attributes":{"code-block":true}},{"insert":"}"}
+        {"insert": "\nvoid main() {"},
+        {
+          "insert": "\n",
+          "attributes": {"code-block": true},
+        },
+        {"insert": "  print('Hola desde Bloc de notas');"},
+        {
+          "insert": "\n",
+          "attributes": {"code-block": true},
+        },
+        {"insert": "}"},
 
         {"insert": "\nEnlace útil: "},
         {
@@ -1228,9 +1232,9 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           embedBuilders: [
-                        ...FlutterQuillEmbeds.editorBuilders(),
-                        AudioEmbedBuilder(),
-                      ],
+            ...FlutterQuillEmbeds.editorBuilders(),
+            AudioEmbedBuilder(),
+          ],
         ),
       ),
     );
@@ -1407,10 +1411,12 @@ class _MyHomePageState extends State<MyHomePage> {
               // 3. Verificamos que sea de nuestra carpeta de caché antes de borrar
               // Ajustado para coincidir con la ruta temporal del image_picker
               if (await file.exists() &&
-                  path.contains('com.estrin217.bloc_de_notas/cache') ||
+                      path.contains('com.estrin217.bloc_de_notas/cache') ||
                   path.contains('com.estrin217.bloc_de_notas/app_flutter')) {
                 await file.delete();
-                if (kDebugMode) print('Imagen de caché eliminada desde main: $path');
+                if (kDebugMode) {
+                  print('Imagen de caché eliminada desde main: $path');
+                }
               }
             }
           }

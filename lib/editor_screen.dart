@@ -569,7 +569,12 @@ class _EditorScreenState extends State<EditorScreen> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             title: null,
-            actions:,
+            actions: [
+              IconButton(
+                icon: Icon(Icons.more_vert, color: textColor),
+                onPressed: _showEditorMenu,
+              ),
+            ],
           ),
           body: Column(
             children: [
@@ -606,7 +611,10 @@ class _EditorScreenState extends State<EditorScreen> {
                       placeholder: 'Escribe algo increíble...',
                       expands: false,
                       padding: EdgeInsets.zero,
-                      embedBuilders:,
+                      embedBuilders: [
+                        ...FlutterQuillEmbeds.editorBuilders(),
+                        AudioEmbedBuilder(),
+                      ],
                     ),
                   ),
                 ),
@@ -634,7 +642,9 @@ class _EditorScreenState extends State<EditorScreen> {
                 ),
                 IconButton(
                   icon: Icon(
-                    _ttsState == TtsState.playing ? Icons.stop : Icons.volume_up,
+                    _ttsState == TtsState.playing
+                        ? Icons.stop
+                        : Icons.volume_up,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   onPressed: _toggleSpeak,
@@ -665,10 +675,12 @@ class _EditorScreenState extends State<EditorScreen> {
           final file = File(path);
 
           // Verificamos que el archivo exista Y que esté dentro de tu carpeta de caché
-          if (await file.exists() && 
+          if (await file.exists() &&
               path.contains('com.estrin217.bloc_de_notas/cache')) {
             await file.delete();
-            if (kDebugMode) print('Imagen eliminada de la caché (Editor): $path');
+            if (kDebugMode) {
+              print('Imagen eliminada de la caché (Editor): $path');
+            }
           }
         }
       }

@@ -528,11 +528,10 @@ class _EditorScreenState extends State<EditorScreen> {
     final isDark = _isColorDark(_backgroundColorValue);
     final textColor = isDark ? Colors.white : Colors.black;
     final hintColor = isDark ? Colors.white70 : Colors.black54;
-    final appBarColor = _backgroundColorValue != null
-        ? Color(_backgroundColorValue!)
-        : null;
 
-    BoxDecoration? backgroundDecoration;
+    // 1. Configuramos la decoración del fondo.
+    // Si no hay color ni imagen seleccionada, usamos el color base de tu tema actual.
+    BoxDecoration backgroundDecoration;
     if (_backgroundImagePath != null) {
       backgroundDecoration = BoxDecoration(
         image: DecorationImage(
@@ -544,6 +543,10 @@ class _EditorScreenState extends State<EditorScreen> {
       backgroundDecoration = BoxDecoration(
         color: Color(_backgroundColorValue!),
       );
+    } else {
+      backgroundDecoration = BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+      );
     }
 
     return PopScope<Object?>(
@@ -552,25 +555,23 @@ class _EditorScreenState extends State<EditorScreen> {
         if (didPop) return;
         _saveAndExit();
       },
-      child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: textColor),
-            onPressed: _saveAndExit,
-          ),
-          backgroundColor: appBarColor,
-          elevation: _backgroundColorValue != null ? 0 : null,
-          title: null,
-          actions: [
-            IconButton(
-              icon: Icon(Icons.more_vert, color: textColor),
-              onPressed: _showEditorMenu,
+      // 2. Envolvemos toda la estructura en el Container que tiene tu fondo
+      child: Container(
+        decoration: backgroundDecoration,
+        child: Scaffold(
+          // 3. Hacemos que el Scaffold y el AppBar sean invisibles para que se vea el fondo de atrás
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: textColor),
+              onPressed: _saveAndExit,
             ),
-          ],
-        ),
-        body: Container(
-          decoration: backgroundDecoration,
-          child: Column(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: null,
+            actions:,
+          ),
+          body: Column(
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -598,59 +599,55 @@ class _EditorScreenState extends State<EditorScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child:
-                  quill.QuillEditor.basic(
+                  child: quill.QuillEditor.basic(
                     controller: _contentController,
                     config: quill.QuillEditorConfig(
                       autoFocus: false,
                       placeholder: 'Escribe algo increíble...',
                       expands: false,
                       padding: EdgeInsets.zero,
-                      embedBuilders: [
-                        ...FlutterQuillEmbeds.editorBuilders(),
-                        AudioEmbedBuilder(),
-                      ],
+                      embedBuilders:,
                     ),
                   ),
                 ),
               ),
             ],
           ),
-        ),
-        bottomNavigationBar: BottomAppBar(
-          elevation: 0,
-          color: Colors.transparent,
-          child: Row(
-            children: [
-              IconButton(
-                icon: Icon(
-                  Icons.palette_outlined,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+          bottomNavigationBar: BottomAppBar(
+            elevation: 0,
+            color: Colors.transparent,
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.palette_outlined,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: _showBackgroundSheet,
                 ),
-                onPressed: _showBackgroundSheet,
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.tune,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                IconButton(
+                  icon: Icon(
+                    Icons.tune,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: _showTextTools,
                 ),
-                onPressed: _showTextTools,
-              ),
-              IconButton(
-                icon: Icon(
-                  _ttsState == TtsState.playing ? Icons.stop : Icons.volume_up,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                IconButton(
+                  icon: Icon(
+                    _ttsState == TtsState.playing ? Icons.stop : Icons.volume_up,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: _toggleSpeak,
                 ),
-                onPressed: _toggleSpeak,
-              ),
-              IconButton.filled(
-                icon: Icon(
-                  Icons.fiber_manual_record,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                IconButton.filled(
+                  icon: Icon(
+                    Icons.fiber_manual_record,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: _showAudioMenu,
                 ),
-                onPressed: _showAudioMenu,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

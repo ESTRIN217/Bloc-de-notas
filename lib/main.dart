@@ -273,11 +273,7 @@ class _MyHomePageState extends State<MyHomePage> {
         },
 
         {"insert": "\n"},
-        {"insert": "void main() {\n  print('Hola desde Bloc de notas');\n}"},
-        {
-          "insert": "\n",
-          "attributes": {"code-block": true},
-        },
+        {"insert":"\nvoid main() {"},{"insert":"\n","attributes":{"code-block":true}},{"insert":"  print('Hola desde Bloc de notas');"},{"insert":"\n","attributes":{"code-block":true}},{"insert":"}"}
 
         {"insert": "\nEnlace útil: "},
         {

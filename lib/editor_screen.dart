@@ -1,10 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:bloc_de_notas/audioembedbuilder.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_to_pdf/flutter_quill_to_pdf.dart';
-import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart' hide ListItem;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart'
+    hide ListItem;
 import 'package:image_picker/image_picker.dart';
 import 'package:markdown_quill/markdown_quill.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
@@ -14,6 +18,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'list_item.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
+import 'package:record/record.dart';
 
 enum TtsState { playing, stopped }
 
@@ -30,11 +35,6 @@ class _EditorScreenState extends State<EditorScreen> {
   final AudioRecorder _audioRecorder = AudioRecorder();
   bool _isRecording = false;
 
-  @override
-  void dispose() {
-    _audioRecorder.dispose(); // ¡Importante liberar el recurso!
-    super.dispose();
-  }
   late TextEditingController _titleController;
   late quill.QuillController _contentController;
   late FlutterTts _flutterTts;
@@ -89,6 +89,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
   @override
   void dispose() {
+    _audioRecorder.dispose();
     _titleController.dispose();
     _contentController.dispose();
     _flutterTts.stop();
@@ -122,62 +123,63 @@ class _EditorScreenState extends State<EditorScreen> {
       isScrollControlled: true,
       builder: (context) => SafeArea(
         child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-             Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                AppLocalizations.of(context)!.exportar_notas_como,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.text_snippet),
-              title: Text(AppLocalizations.of(context)!.texto_plano),
-              onTap: () {
-                Navigator.pop(context);
-                _shareAsText();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings_ethernet_rounded), 
-              title: Text(AppLocalizations.of(context)!.markdown),
-              onTap: () {
-                Navigator.pop(context);
-                _shareAsMarkdown();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
-              title: Text(AppLocalizations.of(context)!.archivo_pdf),
-              onTap: () {
-                Navigator.pop(context);
-                _shareAsPdf();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.html, color: Colors.orange),
-              title: Text(AppLocalizations.of(context)!.html), 
-              onTap: () {
-                Navigator.pop(context);
-                shareAsHtml(_contentController, _titleController.text);
-              },
-            ),
-            ListTile(
-  leading: const Icon(Icons.code_rounded, color: Colors.blue),
-  title: Text(
-                  AppLocalizations.of(context)!.json_crudo,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  AppLocalizations.of(context)!.exportar_notas_como,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
-  subtitle: const Text("Formato crudo para respaldo"),
-  onTap: () {
-    Navigator.pop(context); // Cerramos el menú/modal
-    _shareAsJson();        // Ejecutamos la función
-  },
-),
-            const SizedBox(height: 10),
-          ],
-        ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.text_snippet),
+                title: Text(AppLocalizations.of(context)!.texto_plano),
+                onTap: () {
+                  Navigator.pop(context);
+                  _shareAsText();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.settings_ethernet_rounded),
+                title: Text(AppLocalizations.of(context)!.markdown),
+                onTap: () {
+                  Navigator.pop(context);
+                  _shareAsMarkdown();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
+                title: Text(AppLocalizations.of(context)!.archivo_pdf),
+                onTap: () {
+                  Navigator.pop(context);
+                  _shareAsPdf();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.html, color: Colors.orange),
+                title: Text(AppLocalizations.of(context)!.html),
+                onTap: () {
+                  Navigator.pop(context);
+                  shareAsHtml(_contentController, _titleController.text);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.code_rounded, color: Colors.blue),
+                title: Text(AppLocalizations.of(context)!.json_crudo),
+                subtitle: const Text("Formato crudo para respaldo"),
+                onTap: () {
+                  Navigator.pop(context); // Cerramos el menú/modal
+                  _shareAsJson(); // Ejecutamos la función
+                },
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
         ),
       ),
     );
@@ -196,28 +198,25 @@ class _EditorScreenState extends State<EditorScreen> {
   void _shareAsMarkdown() {
     final title = _titleController.text;
     final delta = _contentController.document.toDelta();
-    
+
     final markdownContent = DeltaToMarkdown().convert(delta);
-    
+
     SharePlus.instance.share(
-      ShareParams(
-        text: '$title\n\n$markdownContent',
-        subject: title,
-      ),
+      ShareParams(text: '$title\n\n$markdownContent', subject: title),
     );
   }
 
   Future<void> _shareAsPdf() async {
     final pdf = pw.Document();
     final title = _titleController.text;
-    
+
     final delta = _contentController.document.toDelta();
-    
+
     final converter = PDFConverter(
       document: delta,
       // Usa PDFPageFormat proporcionado por el paquete
       pageFormat: PDFPageFormat(
-        width: 595,  // Ancho en puntos (A4)
+        width: 595, // Ancho en puntos (A4)
         height: 841, // Alto en puntos
         marginTop: 20,
         marginBottom: 20,
@@ -232,7 +231,10 @@ class _EditorScreenState extends State<EditorScreen> {
     pdf.addPage(
       pw.MultiPage(
         build: (pw.Context context) => [
-          pw.Header(level: 0, child: pw.Text("Exportación desde Bloc de notas")),
+          pw.Header(
+            level: 0,
+            child: pw.Text("Exportación desde Bloc de notas"),
+          ),
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
@@ -245,9 +247,9 @@ class _EditorScreenState extends State<EditorScreen> {
                 ),
               ),
               pw.Divider(),
-              
+
               ?richTextWidget,
-              
+
               pw.SizedBox(height: 10),
             ],
           ),
@@ -256,11 +258,11 @@ class _EditorScreenState extends State<EditorScreen> {
     );
 
     final output = await getTemporaryDirectory();
-    final fileName = title.replaceAll(RegExp(r'[^\w\s]+'), '_'); 
+    final fileName = title.replaceAll(RegExp(r'[^\w\s]+'), '_');
     final file = File(
       "${output.path}/${fileName}_${DateTime.now().millisecondsSinceEpoch}.pdf",
     );
-    
+
     await file.writeAsBytes(await pdf.save());
 
     await SharePlus.instance.share(
@@ -269,9 +271,12 @@ class _EditorScreenState extends State<EditorScreen> {
         files: [XFile(file.path)],
       ),
     );
-}
+  }
 
-  Future<void> shareAsHtml(quill.QuillController controller, String noteTitle) async {
+  Future<void> shareAsHtml(
+    quill.QuillController controller,
+    String noteTitle,
+  ) async {
     try {
       final deltaOps = controller.document.toDelta().toJson();
 
@@ -284,7 +289,8 @@ class _EditorScreenState extends State<EditorScreen> {
 
       final String htmlContent = converter.convert();
 
-      final String fullHtml = '''
+      final String fullHtml =
+          '''
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -305,12 +311,15 @@ class _EditorScreenState extends State<EditorScreen> {
 ''';
 
       final directory = await getTemporaryDirectory();
-      
-      String fileName = noteTitle.replaceAll(RegExp(r'[^\w\s]+'), '').trim().replaceAll(' ', '_');
+
+      String fileName = noteTitle
+          .replaceAll(RegExp(r'[^\w\s]+'), '')
+          .trim()
+          .replaceAll(' ', '_');
       if (fileName.isEmpty) {
         fileName = 'Nota_Sin_Titulo';
       }
-      
+
       final File file = File('${directory.path}/$fileName.html');
 
       await file.writeAsString(fullHtml);
@@ -321,9 +330,8 @@ class _EditorScreenState extends State<EditorScreen> {
           subject: 'Archivo HTML: $noteTitle',
           text: 'Te comparto esta nota exportada desde Bloc de notas.',
           files: [XFile(file.path)],
-        )
+        ),
       );
-
     } catch (e) {
       if (kDebugMode) {
         print('Error al exportar desde el editor: $e');
@@ -331,35 +339,34 @@ class _EditorScreenState extends State<EditorScreen> {
     }
   }
 
-void _shareAsJson() {
-  // 1. Obtenemos el título del controlador
-  final title = _titleController.text;
-  
-  // 2. Convertimos el contenido de Flutter Quill a JSON (Delta)
-  final rawJson = jsonEncode(_contentController.document.toDelta().toJson());
-  
-  // 3. Compartimos con el formato híbrido: Título + Separador + JSON
-  SharePlus.instance.share(
-    ShareParams(
-      text: '$title\n\n$rawJson', 
-      subject: title, // Esto ayuda en apps como Gmail para poner el asunto
-    ),
-  );
-}
+  void _shareAsJson() {
+    // 1. Obtenemos el título del controlador
+    final title = _titleController.text;
+
+    // 2. Convertimos el contenido de Flutter Quill a JSON (Delta)
+    final rawJson = jsonEncode(_contentController.document.toDelta().toJson());
+
+    // 3. Compartimos con el formato híbrido: Título + Separador + JSON
+    SharePlus.instance.share(
+      ShareParams(
+        text: '$title\n\n$rawJson',
+        subject: title, // Esto ayuda en apps como Gmail para poner el asunto
+      ),
+    );
+  }
 
   void _deleteItem() async {
-  if (!mounted) return;
-  
-  // 1. Limpiamos las imágenes del almacenamiento interno
-  await _cleanupImages();
-  
-  // 2. VERIFICACIÓN CRÍTICA: ¿Sigue el widget en el árbol después del await?
-  if (!mounted) return; 
+    if (!mounted) return;
 
-  // 3. Ahora es seguro usar el context para el Navigator
-  Navigator.pop(context, "DELETE");
-}
+    // 1. Limpiamos las imágenes del almacenamiento interno
+    await _cleanupImages();
 
+    // 2. VERIFICACIÓN CRÍTICA: ¿Sigue el widget en el árbol después del await?
+    if (!mounted) return;
+
+    // 3. Ahora es seguro usar el context para el Navigator
+    Navigator.pop(context, "DELETE");
+  }
 
   Future<void> _toggleSpeak() async {
     if (_ttsState == TtsState.playing) {
@@ -471,7 +478,8 @@ void _shareAsJson() {
       },
     );
   }
-void _showTextTools() {
+
+  void _showTextTools() {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
@@ -480,7 +488,7 @@ void _showTextTools() {
           config: quill.QuillSimpleToolbarConfig(
             // Añadimos los botones de extensiones predeterminados (incluye cámara, galería y video)
             embedButtons: FlutterQuillEmbeds.toolbarButtons(
-              // Ya no es necesario redefinir imageButtonOptions a menos que 
+              // Ya no es necesario redefinir imageButtonOptions a menos que
               // quieras cambiar iconos o deshabilitar algo específico.
             ),
           ),
@@ -591,18 +599,19 @@ void _showTextTools() {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: // Busca tu QuillEditor.basic y actualízalo así:
-quill.QuillEditor.basic(
-  controller: _contentController,
-  config: quill.QuillEditorConfig(
-    autoFocus: false,
-    placeholder: 'Escribe algo increíble...',
-    expands: false,
-    padding: EdgeInsets.zero,
-    embedBuilders: [ FlutterQuillEmbeds.editorBuilders(),
-    AudioEmbedBuilder(),
-    ],
-  ),
-),
+                  quill.QuillEditor.basic(
+                    controller: _contentController,
+                    config: quill.QuillEditorConfig(
+                      autoFocus: false,
+                      placeholder: 'Escribe algo increíble...',
+                      expands: false,
+                      padding: EdgeInsets.zero,
+                      embedBuilders: [
+                        ...FlutterQuillEmbeds.editorBuilders(),
+                        AudioEmbedBuilder(),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -614,11 +623,17 @@ quill.QuillEditor.basic(
           child: Row(
             children: [
               IconButton(
-                icon: Icon(Icons.palette_outlined, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                icon: Icon(
+                  Icons.palette_outlined,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
                 onPressed: _showBackgroundSheet,
               ),
               IconButton(
-                icon: Icon(Icons.tune, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                icon: Icon(
+                  Icons.tune,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
                 onPressed: _showTextTools,
               ),
               IconButton(
@@ -641,17 +656,17 @@ quill.QuillEditor.basic(
       ),
     );
   }
-  
+
   Future<void> _cleanupImages() async {
     final delta = _contentController.document.toDelta().toJson();
-    
+
     for (final op in delta) {
       if (op.containsKey('insert') && op['insert'] is Map) {
         final insert = op['insert'] as Map;
         if (insert.containsKey('image')) {
           final String path = insert['image'];
           final file = File(path);
-          
+
           // Ajustado: ya no verificamos la subcarpeta específica
           if (await file.exists()) {
             await file.delete();
@@ -661,6 +676,7 @@ quill.QuillEditor.basic(
       }
     }
   }
+
   // --- MÉTODO 1: SELECCIONAR AUDIO EXISTENTE ---
   Future<void> _pickAudioFile() async {
     try {
@@ -671,12 +687,14 @@ quill.QuillEditor.basic(
 
       if (result != null && result.files.single.path != null) {
         final originalPath = result.files.single.path!;
-        
+
         // (Opcional pero recomendado) Copiar el archivo a la carpeta de tu app
         // para que si el usuario lo borra de "Descargas", la nota no se rompa.
         final dir = await getApplicationDocumentsDirectory();
         final fileName = result.files.single.name;
-        final savedFile = await File(originalPath).copy('${dir.path}/$fileName');
+        final savedFile = await File(
+          originalPath,
+        ).copy('${dir.path}/$fileName');
 
         _insertarAudioAlEditor(savedFile.path);
       }
@@ -691,36 +709,45 @@ quill.QuillEditor.basic(
       if (_isRecording) {
         // DETENER GRABACIÓN
         final path = await _audioRecorder.stop();
+
+        // GUARDIA: Verificar si el widget sigue en el árbol antes de actualizar UI
+        if (!mounted) return;
         setState(() => _isRecording = false);
-        
+
         if (path != null) {
           _insertarAudioAlEditor(path);
         }
       } else {
         // INICIAR GRABACIÓN
-        // 1. Pedir permisos
-        if (await Permission.microphone.request().isGranted) {
-          // 2. Preparar la ruta donde se guardará (en los documentos de la app)
+        final status = await Permission.microphone.request();
+
+        if (status.isGranted) {
           final dir = await getApplicationDocumentsDirectory();
-          final path = '${dir.path}/nota_voz_${DateTime.now().millisecondsSinceEpoch}.m4a';
-          
-          // 3. Iniciar
+          final path =
+              '${dir.path}/nota_voz_${DateTime.now().millisecondsSinceEpoch}.m4a';
+
           await _audioRecorder.start(
-            const RecordConfig(encoder: AudioEncoder.aacLc), // Formato ligero y compatible
+            const RecordConfig(encoder: AudioEncoder.aacLc),
             path: path,
           );
-          
+
+          if (!mounted) return; // Guardia tras el await de inicio
           setState(() => _isRecording = true);
         } else {
-          // El usuario denegó el permiso
+          // GUARDIA: Antes de usar el context para el SnackBar
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Se requiere permiso de micrófono para grabar')),
+            const SnackBar(
+              content: Text('Se requiere permiso de micrófono para grabar'),
+            ),
           );
         }
       }
     } catch (e) {
       debugPrint('Error en la grabación: $e');
-      setState(() => _isRecording = false);
+      if (mounted) {
+        setState(() => _isRecording = false);
+      }
     }
   }
 
@@ -736,23 +763,8 @@ quill.QuillEditor.basic(
       quill.ChangeSource.local,
     );
   }
-  void _insertarAudioAlEditor(String filePath) {
-  // Obtenemos la posición actual del cursor
-  final index = _contentController.selection.baseOffset;
-  
-  // Insertamos el Embed personalizado
-  _contentController.document.insert(
-    index,
-    BlockEmbed.custom(CustomBlockEmbed('audio', filePath)),
-  );
-  
-  // Movemos el cursor un espacio adelante para seguir escribiendo
-  _contentController.updateSelection(
-    TextSelection.collapsed(offset: index + 1),
-    ChangeSource.local,
-  );
-}
-void _showAudioMenu() {
+
+  void _showAudioMenu() {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -772,22 +784,33 @@ void _showAudioMenu() {
                     ListTile(
                       leading: Icon(
                         _isRecording ? Icons.stop_circle : Icons.mic,
-                        color: _isRecording ? Colors.red : Theme.of(context).colorScheme.primary,
+                        color: _isRecording
+                            ? Colors.red
+                            : Theme.of(context).colorScheme.primary,
                         size: 32,
                       ),
                       title: Text(
-                        _isRecording ? 'Detener grabación' : 'Grabar nota de voz',
+                        _isRecording
+                            ? 'Detener grabación'
+                            : 'Grabar nota de voz',
                         style: TextStyle(
                           color: _isRecording ? Colors.red : null,
                           fontWeight: _isRecording ? FontWeight.bold : null,
                         ),
                       ),
                       onTap: () async {
-                        // Llamamos al método y actualizamos el modal y la pantalla base
+                        // 1. Ejecutamos la grabación (contiene awaits internos)
                         await _toggleRecording();
-                        setModalState(() {}); 
-                        if (!_isRecording && mounted) {
-                          Navigator.pop(context); // Cierra el menú al terminar de grabar
+
+                        // 2. Verificamos si el contexto del modal/botón sigue vivo
+                        if (!context.mounted) return;
+
+                        // 3. Actualizamos el estado del modal de forma segura
+                        setModalState(() {});
+
+                        // 4. Si terminó de grabar, cerramos el modal usando el context validado
+                        if (!_isRecording) {
+                          Navigator.pop(context);
                         }
                       },
                     ),
@@ -801,12 +824,12 @@ void _showAudioMenu() {
                           _pickAudioFile();
                         },
                       ),
-                    ]
+                    ],
                   ],
                 ),
               ),
             );
-          }
+          },
         );
       },
     );

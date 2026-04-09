@@ -166,10 +166,12 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       } else {
         _createWelcomeNote();
+        _createExerciteNote();
       }
     } catch (e) {
       debugPrint("Error loading items: $e");
       _createWelcomeNote();
+      _createExerciteNote();
     }
   }
 
@@ -278,11 +280,282 @@ class _MyHomePageState extends State<MyHomePage> {
       _saveItems();
     });
   }
+
   void _createExerciteNote() {
     final exerciteNote = ListItem(
       id: 'exercite_note',
       title: '¡Rutina de ejercicios!', // Este es el título en la lista
-      summary: jsonEncode([{"insert":"Prioridad Fuerza","attributes":{"bold":true}},{"insert":"\nBloque 1: Fuerza y Potencia (Lo más difícil primero)"},{"insert":"\n","attributes":{"header":3}},{"insert":"Dominadas (Barras):","attributes":{"bold":true}},{"insert":" 10 repeticiones (o 2 series de 5-7 si quieres subir el volumen). "},{"insert":"Es el ejercicio que más energía consume.","attributes":{"italic":true}},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"Flexiones en Pica (Pike Push-ups):","attributes":{"bold":true}},{"insert":" "},{"insert":"10 repeticiones","attributes":{"bold":true}},{"insert":". Si puedes, pon los pies en la silla para que pesen más."},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"Flexiones de Diamante:","attributes":{"bold":true}},{"insert":" 20 repeticiones. "},{"insert":"Aíslan el tríceps cuando aún tienes fuerza.","attributes":{"italic":true}},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"Bloque 2: Resistencia de Empuje (Pecho y Hombros)"},{"insert":"\n","attributes":{"header":3}},{"insert":"Flexiones Inclinadas (Pies en silla):","attributes":{"bold":true}},{"insert":" 20 repeticiones."},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"Flexiones de Puños:","attributes":{"bold":true}},{"insert":" 20 repeticiones."},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"Flexiones Normales:","attributes":{"bold":true}},{"insert":" 20 repeticiones."},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"Deltoides Frontales (Hold o dinámicas):","attributes":{"bold":true}},{"insert":" "},{"insert":"15 repeticiones","attributes":{"bold":true}},{"insert":"."},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"Bloque 3: Tren Inferior (Pierna)"},{"insert":"\n","attributes":{"header":3}},{"insert":"Sentadillas (Squats):","attributes":{"bold":true}},{"insert":" "},{"insert":"30 repeticiones","attributes":{"bold":true}},{"insert":". Busca profundidad."},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"Zancadas Frontales:","attributes":{"bold":true}},{"insert":" "},{"insert":"40 repeticiones","attributes":{"bold":true}},{"insert":" (20 por pierna)."},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"Butt Bridge (Puente de glúteo):","attributes":{"bold":true}},{"insert":" "},{"insert":"30 repeticiones","attributes":{"bold":true}},{"insert":". Aprieta 2 segundos arriba."},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"Bloque 4: Core y Cardio Final"},{"insert":"\n","attributes":{"header":3}},{"insert":"Elevaciones de Pierna:","attributes":{"bold":true}},{"insert":" "},{"insert":"25 repeticiones","attributes":{"bold":true}},{"insert":". No dejes que los pies toquen el suelo."},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"Escaladores (Mountain Climbers):","attributes":{"bold":true}},{"insert":" "},{"insert":"50 repeticiones","attributes":{"bold":true}},{"insert":". Hazlas rápidas para quemar."},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"Planchas:","attributes":{"bold":true}},{"insert":" 3 series de 1 minuto (Descansa solo 30 segundos entre series)."},{"insert":"\n","attributes":{"list":"ordered"}},{"insert":"\n¿Cómo progresar con esta lista?"},{"insert":"\n","attributes":{"header":3}},{"insert":"Descansos:","attributes":{"bold":true}},{"insert":" Si buscas "},{"insert":"condición física (quema de grasa y resistencia)","attributes":{"bold":true}},{"insert":", intenta descansar solo 45-60 segundos entre ejercicios."},{"insert":"\n","attributes":{"list":"bullet"}},{"insert":"Aumento de dificultad:","attributes":{"bold":true}},{"insert":" Cuando sientas que las 20 flexiones normales son fáciles, hazlas más lentas (3 segundos para bajar, 1 segundo para subir). Eso se llama \"tiempo bajo tensión\" y es brutal para el músculo."},{"insert":"\n","attributes":{"list":"bullet"}},{"insert":"Frecuencia:","attributes":{"bold":true}},{"insert":" Puedes hacer esto 3 o 4 veces por semana, dejando un día de descanso en medio para que el músculo se recupere y crezca."},{"insert":"\n","attributes":{"list":"bullet"}},{"insert":"Hidratación","attributes":{"bold":true}},{"insert":": Al subir las repeticiones en pierna y los escaladores, vas a sudar mucho más. Bebe agua a sorbos pequeños durante los descansos."},{"insert":"\n","attributes":{"list":"bullet"}},{"insert":"Escucha a tus muñecas","attributes":{"bold":true}},{"insert":": Como usas la variante de puños y diamante, si sientes mucha presión, puedes rotar un poco la posición de las manos. La variante de puños es excelente para mantener la muñeca neutra (recta), así que úsala a tu favor si sientes molestias."},{"insert":"\n","attributes":{"list":"bullet"}},{"insert":"Consistencia","attributes":{"bold":true}},{"insert":": Intenta mantener este orden por al menos 4 semanas antes de volver a subir las repeticiones. El cuerpo necesita tiempo para adaptarse mecánicamente a los nuevos ángulos."},{"insert":"\n","attributes":{"list":"bullet"}}]),
+      summary: jsonEncode([
+        {
+          "insert": "Prioridad Fuerza",
+          "attributes": {"bold": true},
+        },
+        {"insert": "\nBloque 1: Fuerza y Potencia (Lo más difícil primero)"},
+        {
+          "insert": "\n",
+          "attributes": {"header": 3},
+        },
+        {
+          "insert": "Dominadas (Barras):",
+          "attributes": {"bold": true},
+        },
+        {
+          "insert":
+              " 10 repeticiones (o 2 series de 5-7 si quieres subir el volumen). ",
+        },
+        {
+          "insert": "Es el ejercicio que más energía consume.",
+          "attributes": {"italic": true},
+        },
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {
+          "insert": "Flexiones en Pica (Pike Push-ups):",
+          "attributes": {"bold": true},
+        },
+        {"insert": " "},
+        {
+          "insert": "10 repeticiones",
+          "attributes": {"bold": true},
+        },
+        {"insert": ". Si puedes, pon los pies en la silla para que pesen más."},
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {
+          "insert": "Flexiones de Diamante:",
+          "attributes": {"bold": true},
+        },
+        {"insert": " 20 repeticiones. "},
+        {
+          "insert": "Aíslan el tríceps cuando aún tienes fuerza.",
+          "attributes": {"italic": true},
+        },
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {"insert": "Bloque 2: Resistencia de Empuje (Pecho y Hombros)"},
+        {
+          "insert": "\n",
+          "attributes": {"header": 3},
+        },
+        {
+          "insert": "Flexiones Inclinadas (Pies en silla):",
+          "attributes": {"bold": true},
+        },
+        {"insert": " 20 repeticiones."},
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {
+          "insert": "Flexiones de Puños:",
+          "attributes": {"bold": true},
+        },
+        {"insert": " 20 repeticiones."},
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {
+          "insert": "Flexiones Normales:",
+          "attributes": {"bold": true},
+        },
+        {"insert": " 20 repeticiones."},
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {
+          "insert": "Deltoides Frontales (Hold o dinámicas):",
+          "attributes": {"bold": true},
+        },
+        {"insert": " "},
+        {
+          "insert": "15 repeticiones",
+          "attributes": {"bold": true},
+        },
+        {"insert": "."},
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {"insert": "Bloque 3: Tren Inferior (Pierna)"},
+        {
+          "insert": "\n",
+          "attributes": {"header": 3},
+        },
+        {
+          "insert": "Sentadillas (Squats):",
+          "attributes": {"bold": true},
+        },
+        {"insert": " "},
+        {
+          "insert": "30 repeticiones",
+          "attributes": {"bold": true},
+        },
+        {"insert": ". Busca profundidad."},
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {
+          "insert": "Zancadas Frontales:",
+          "attributes": {"bold": true},
+        },
+        {"insert": " "},
+        {
+          "insert": "40 repeticiones",
+          "attributes": {"bold": true},
+        },
+        {"insert": " (20 por pierna)."},
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {
+          "insert": "Butt Bridge (Puente de glúteo):",
+          "attributes": {"bold": true},
+        },
+        {"insert": " "},
+        {
+          "insert": "30 repeticiones",
+          "attributes": {"bold": true},
+        },
+        {"insert": ". Aprieta 2 segundos arriba."},
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {"insert": "Bloque 4: Core y Cardio Final"},
+        {
+          "insert": "\n",
+          "attributes": {"header": 3},
+        },
+        {
+          "insert": "Elevaciones de Pierna:",
+          "attributes": {"bold": true},
+        },
+        {"insert": " "},
+        {
+          "insert": "25 repeticiones",
+          "attributes": {"bold": true},
+        },
+        {"insert": ". No dejes que los pies toquen el suelo."},
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {
+          "insert": "Escaladores (Mountain Climbers):",
+          "attributes": {"bold": true},
+        },
+        {"insert": " "},
+        {
+          "insert": "50 repeticiones",
+          "attributes": {"bold": true},
+        },
+        {"insert": ". Hazlas rápidas para quemar."},
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {
+          "insert": "Planchas:",
+          "attributes": {"bold": true},
+        },
+        {
+          "insert":
+              " 3 series de 1 minuto (Descansa solo 30 segundos entre series).",
+        },
+        {
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
+        },
+        {"insert": "\n¿Cómo progresar con esta lista?"},
+        {
+          "insert": "\n",
+          "attributes": {"header": 3},
+        },
+        {
+          "insert": "Descansos:",
+          "attributes": {"bold": true},
+        },
+        {"insert": " Si buscas "},
+        {
+          "insert": "condición física (quema de grasa y resistencia)",
+          "attributes": {"bold": true},
+        },
+        {"insert": ", intenta descansar solo 45-60 segundos entre ejercicios."},
+        {
+          "insert": "\n",
+          "attributes": {"list": "bullet"},
+        },
+        {
+          "insert": "Aumento de dificultad:",
+          "attributes": {"bold": true},
+        },
+        {
+          "insert":
+              " Cuando sientas que las 20 flexiones normales son fáciles, hazlas más lentas (3 segundos para bajar, 1 segundo para subir). Eso se llama \"tiempo bajo tensión\" y es brutal para el músculo.",
+        },
+        {
+          "insert": "\n",
+          "attributes": {"list": "bullet"},
+        },
+        {
+          "insert": "Frecuencia:",
+          "attributes": {"bold": true},
+        },
+        {
+          "insert":
+              " Puedes hacer esto 3 o 4 veces por semana, dejando un día de descanso en medio para que el músculo se recupere y crezca.",
+        },
+        {
+          "insert": "\n",
+          "attributes": {"list": "bullet"},
+        },
+        {
+          "insert": "Hidratación",
+          "attributes": {"bold": true},
+        },
+        {
+          "insert":
+              ": Al subir las repeticiones en pierna y los escaladores, vas a sudar mucho más. Bebe agua a sorbos pequeños durante los descansos.",
+        },
+        {
+          "insert": "\n",
+          "attributes": {"list": "bullet"},
+        },
+        {
+          "insert": "Escucha a tus muñecas",
+          "attributes": {"bold": true},
+        },
+        {
+          "insert":
+              ": Como usas la variante de puños y diamante, si sientes mucha presión, puedes rotar un poco la posición de las manos. La variante de puños es excelente para mantener la muñeca neutra (recta), así que úsala a tu favor si sientes molestias.",
+        },
+        {
+          "insert": "\n",
+          "attributes": {"list": "bullet"},
+        },
+        {
+          "insert": "Consistencia",
+          "attributes": {"bold": true},
+        },
+        {
+          "insert":
+              ": Intenta mantener este orden por al menos 4 semanas antes de volver a subir las repeticiones. El cuerpo necesita tiempo para adaptarse mecánicamente a los nuevos ángulos.",
+        },
+        {
+          "insert": "\n",
+          "attributes": {"list": "bullet"},
+        },
+      ]),
       lastModified: DateTime.now(),
     );
 
@@ -293,7 +566,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _saveItems();
     });
   }
-
 
   Future<void> _saveItems() async {
     try {
@@ -427,19 +699,19 @@ class _MyHomePageState extends State<MyHomePage> {
       _selectedItems.clear();
     });
   }
-void _deleteSelectedItems() async {
-  // 1. Primero limpiamos los archivos físicos
-  await _cleanupImagesForSelectedItems();
 
-  // 2. Luego actualizamos la UI y la base de datos
-  setState(() {
-    _items.removeWhere((item) => _selectedItems.contains(item));
-    _filterItems();
-    _exitSelectionMode();
-    _saveItems(); // Asumo que esto guarda la lista actualizada en SharedPreferences o DB
-  });
-}
-  
+  void _deleteSelectedItems() async {
+    // 1. Primero limpiamos los archivos físicos
+    await _cleanupImagesForSelectedItems();
+
+    // 2. Luego actualizamos la UI y la base de datos
+    setState(() {
+      _items.removeWhere((item) => _selectedItems.contains(item));
+      _filterItems();
+      _exitSelectionMode();
+      _saveItems(); // Asumo que esto guarda la lista actualizada en SharedPreferences o DB
+    });
+  }
 
   void _showShareMenu(BuildContext context) {
     showModalBottomSheet(
@@ -497,10 +769,10 @@ void _deleteSelectedItems() async {
               ),
               ListTile(
                 leading: const Icon(Icons.code_rounded, color: Colors.blue),
-                title: Text(
-                  AppLocalizations.of(context)!.json_crudo,
-                ),
-                subtitle: const Text("Formato crudo para respaldo"), // Opcional, para aclarar el formato
+                title: Text(AppLocalizations.of(context)!.json_crudo),
+                subtitle: const Text(
+                  "Formato crudo para respaldo",
+                ), // Opcional, para aclarar el formato
                 onTap: () {
                   Navigator.pop(context);
                   _shareAsJson();
@@ -977,18 +1249,17 @@ void _deleteSelectedItems() async {
           const SizedBox(height: 8),
         if (item.document.length > 1)
           isListView
-              ? ClipRect( // Corta el texto que sobrepase el alto máximo
+              ? ClipRect(
+                  // Corta el texto que sobrepase el alto máximo
                   child: ConstrainedBox(
                     // Limitamos la altura en la vista de lista (aprox. 9-10 líneas)
-                    constraints: const BoxConstraints(maxHeight: 180), 
+                    constraints: const BoxConstraints(maxHeight: 180),
                     child: richTextPreview,
                   ),
                 )
               : Expanded(
                   // En GridView, el Expanded tomará el espacio restante
-                  child: ClipRect(
-                    child: richTextPreview,
-                  ),
+                  child: ClipRect(child: richTextPreview),
                 ),
       ],
     );
@@ -1112,32 +1383,36 @@ void _deleteSelectedItems() async {
           _buildItem(_filteredItems[index], isListView: false),
     );
   }
+
   Future<void> _cleanupImagesForSelectedItems() async {
-  for (final item in _selectedItems) {
-    try {
-      // 1. Decodificamos el summary que guardaste como JSON
-      final List<dynamic> delta = jsonDecode(item.summary);
+    for (final item in _selectedItems) {
+      try {
+        // 1. Decodificamos el summary que guardaste como JSON
+        final List<dynamic> delta = jsonDecode(item.summary);
 
-      for (final op in delta) {
-        if (op is Map && op.containsKey('insert') && op['insert'] is Map) {
-          final insert = op['insert'] as Map;
-          
-          // 2. Buscamos si hay una clave 'image'
-          if (insert.containsKey('image')) {
-            final String path = insert['image'];
-            final file = File(path);
+        for (final op in delta) {
+          if (op is Map && op.containsKey('insert') && op['insert'] is Map) {
+            final insert = op['insert'] as Map;
 
-            // 3. Verificamos que sea de nuestra carpeta interna antes de borrar
-            if (await file.exists() && path.contains('/app_flutter/images/')) {
-              await file.delete();
-              if (kDebugMode) print('Imagen eliminada desde main: $path');
+            // 2. Buscamos si hay una clave 'image'
+            if (insert.containsKey('image')) {
+              final String path = insert['image'];
+              final file = File(path);
+
+              // 3. Verificamos que sea de nuestra carpeta interna antes de borrar
+              if (await file.exists() &&
+                  path.contains('/app_flutter/images/')) {
+                await file.delete();
+                if (kDebugMode) print('Imagen eliminada desde main: $path');
+              }
             }
           }
         }
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error al limpiar imágenes de la nota ${item.id}: $e');
+        }
       }
-    } catch (e) {
-      if (kDebugMode) print('Error al limpiar imágenes de la nota ${item.id}: $e');
     }
   }
-}
 }

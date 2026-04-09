@@ -18,7 +18,7 @@ class ThemeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Locale _locale = const Locale(null); // Idioma por defecto
+  Locale _locale = WidgetsBinding.instance.platformDispatcher.locale; // Idioma por defecto
   Locale get locale => _locale;
 
   // Constructor: Al crear el Provider, cargamos las preferencias guardadas
@@ -38,9 +38,9 @@ class ThemeProvider with ChangeNotifier {
   }
 
   // Actualiza el idioma y lo guarda en memoria
-  Future<void> setLocale(Locale newLocale) async {
+  Future<void> setLocale(Locale? newLocale) async {
     if (_locale != newLocale) {
-      _locale = newLocale;
+      _locale = newLocale!;
       notifyListeners(); // Actualiza la UI de inmediato
       
       // Guardamos la preferencia en segundo plano

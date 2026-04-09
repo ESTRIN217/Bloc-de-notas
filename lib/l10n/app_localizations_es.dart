@@ -162,6 +162,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get json_crudo => 'JSON sin formato';
+
+  @override
+  String get system_default => 'Predeterminado (Sistema)';
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
@@ -322,4 +325,7 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
 
   @override
   String get json_crudo => 'JSON sin formato';
+
+  @override
+  String get system_default => 'Predeterminado (Sistema)';
 }

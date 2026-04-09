@@ -401,6 +401,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Raw JSON'**
   String get json_crudo;
+
+  /// No description provided for @system_default.
+  ///
+  /// In en, this message translates to:
+  /// **'Default (System)'**
+  String get system_default;
 }
 
 class _AppLocalizationsDelegate

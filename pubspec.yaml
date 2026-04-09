@@ -37,10 +37,10 @@ dependencies:
   flutter_markdown_plus: ^1.0.7
   quill_native_bridge: ^11.1.0
   video_player: ^2.11.1
-  audioplayers: ^5.2.1
-  file_picker: ^8.0.0       # Para seleccionar archivos
-  record: ^5.0.0            # Para grabar audio de forma nativa
-  permission_handler: ^11.3.0
+  audioplayers: ^6.6.0
+  file_picker: ^11.0.2       # Para seleccionar archivos
+  record: ^6.2.0            # Para grabar audio de forma nativa
+  permission_handler: ^12.0.1
 
 dev_dependencies:
   flutter_test:

@@ -680,7 +680,7 @@ class _EditorScreenState extends State<EditorScreen> {
   // --- MÉTODO 1: SELECCIONAR AUDIO EXISTENTE ---
   Future<void> _pickAudioFile() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePicker.pickFiles(
         type: FileType.audio,
         allowMultiple: false,
       );

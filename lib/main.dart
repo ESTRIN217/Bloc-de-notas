@@ -1058,19 +1058,21 @@ class _MyHomePageState extends State<MyHomePage> {
   PreferredSizeWidget _buildAppBar() {
     if (_isSelectionMode) {
       return AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.close, color:Theme.of(context).colorScheme.onSurface),
           onPressed: _exitSelectionMode,
         ),
         title: Text('${_selectedItems.length} seleccionados'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share),
+            icon: const Icon(Icons.share, color:Theme.of(context).colorScheme.onSurface),
             onPressed: () => _showShareMenu(context),
             tooltip: AppLocalizations.of(context)!.share,
           ),
           IconButton(
-            icon: const Icon(Icons.delete),
+            icon: const Icon(Icons.delete, color:Theme.of(context).colorScheme.onSurface),
             onPressed: _deleteSelectedItems,
             tooltip: AppLocalizations.of(context)!.delete,
           ),
@@ -1079,9 +1081,11 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
       leading: Builder(
         builder: (context) => IconButton(
-          icon: const Icon(Icons.menu),
+          icon: const Icon(Icons.menu, color:Theme.of(context).colorScheme.onSurface),
           onPressed: () => Scaffold.of(context).openDrawer(),
         ),
       ),
@@ -1095,7 +1099,7 @@ class _MyHomePageState extends State<MyHomePage> {
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: Theme.of(context).colorScheme.surface,
+          fillColor: Theme.of(context).colorScheme.onSurface,
           contentPadding: const EdgeInsets.symmetric(
             vertical: 0,
             horizontal: 20,
@@ -1104,23 +1108,24 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       actions: [
         IconButton(
-          icon: Icon(_isListView ? Icons.grid_view : Icons.view_list),
+          icon: Icon(_isListView ? Icons.grid_view : Icons.view_list, color:Theme.of(context).colorScheme.onSurface),
           onPressed: _toggleView,
           tooltip: AppLocalizations.of(context)!.toggleView,
         ),
         IconButton(
-          icon: const Icon(Icons.import_export),
+          icon: const Icon(Icons.import_export, color:Theme.of(context).colorScheme.onSurface),
           onPressed: _showSortOptions,
           tooltip: AppLocalizations.of(context)!.sort,
         ),
       ],
-      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true, // El contenido empieza desde arriba de la pantalla
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: _buildAppBar(),
       drawer: Drawer(
         child: ListView(
@@ -1295,62 +1300,47 @@ class _MyHomePageState extends State<MyHomePage> {
     );
 
     return Card.outlined(
-      elevation: 0,
-      clipBehavior: Clip.antiAlias,
-      color: isSelected
-          ? Theme.of(
-              context,
-            ).colorScheme.primaryContainer.withAlpha((255 * 0.6).round())
-          : (item.backgroundColor != null
-                ? Color(item.backgroundColor!)
-                : null),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () =>
-            _isSelectionMode ? _toggleSelection(item) : _navigateToEditor(item),
-        onLongPress: () {
-          if (!_isSelectionMode) {
-            _startSelectionMode(item);
-          }
-        },
-        child: Container(
-          decoration: item.backgroundImagePath != null && !kIsWeb
-              ? BoxDecoration(
-                  image: DecorationImage(
-                    image: FileImage(File(item.backgroundImagePath!)),
-                    fit: BoxFit.cover,
-                  ),
-                )
-              : null,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: contentColumn,
-                ),
+  clipBehavior: Clip.antiAlias,
+  color: isSelected
+      ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.6)
+      : (item.backgroundColor != null ? Color(item.backgroundColor!) : null),
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  child: InkWell(
+    onTap: () => _isSelectionMode ? _toggleSelection(item) : _navigateToEditor(item),
+    onLongPress: () => !_isSelectionMode ? _startSelectionMode(item) : null,
+    child: Ink( // Usar Ink para que la decoración no tape el efecto visual
+      decoration: item.backgroundImagePath != null && !kIsWeb
+          ? BoxDecoration(
+              image: DecorationImage(
+                image: FileImage(File(item.backgroundImagePath!)),
+                fit: BoxFit.cover,
+                // ColorFilter opcional para asegurar legibilidad del texto
+                colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.1), BlendMode.darken),
               ),
-              if (canReorder && !_isSelectionMode && isListView)
-                ReorderableDragStartListener(
-                  index: _filteredItems.indexOf(item),
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      right: 12.0,
-                      top: 12.0,
-                      left: 4.0,
-                    ),
-                    child: Icon(
-                      Icons.drag_handle,
-                      color: dynamicIconColor,
-                    ),
-                  ),
-                ),
-            ],
+            )
+          : null,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: contentColumn,
+            ),
           ),
-        ),
+          if (canReorder && !_isSelectionMode && isListView)
+            ReorderableDragStartListener(
+              index: _filteredItems.indexOf(item),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
+                child: Icon(Icons.drag_handle, color: dynamicIconColor),
+              ),
+            ),
+        ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildListView() {

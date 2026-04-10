@@ -223,7 +223,7 @@ class SettingsScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       color: Theme.of(
         context,
-      ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+      ).colorScheme.surfaceContainerHighest,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Column(children: children),

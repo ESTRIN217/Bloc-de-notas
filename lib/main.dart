@@ -154,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _isListView = savedView;
         });
       }
-      
+
       // 2. Cargamos las notas
       String? contents;
       if (kIsWeb) {
@@ -637,7 +637,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _isListView = !_isListView;
     });
-    
+
     // Guardamos la preferencia
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_list_view', _isListView);
@@ -1061,18 +1061,27 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color:Theme.of(context).colorScheme.onSurface),
+          icon: Icon(
+            Icons.close,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onPressed: _exitSelectionMode,
         ),
         title: Text('${_selectedItems.length} seleccionados'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share, color:Theme.of(context).colorScheme.onSurface),
+            icon: Icon(
+              Icons.share,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
             onPressed: () => _showShareMenu(context),
             tooltip: AppLocalizations.of(context)!.share,
           ),
           IconButton(
-            icon: const Icon(Icons.delete, color:Theme.of(context).colorScheme.onSurface),
+            icon: Icon(
+              Icons.delete,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
             onPressed: _deleteSelectedItems,
             tooltip: AppLocalizations.of(context)!.delete,
           ),
@@ -1085,7 +1094,10 @@ class _MyHomePageState extends State<MyHomePage> {
       elevation: 0,
       leading: Builder(
         builder: (context) => IconButton(
-          icon: const Icon(Icons.menu, color:Theme.of(context).colorScheme.onSurface),
+          icon: Icon(
+            Icons.menu,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onPressed: () => Scaffold.of(context).openDrawer(),
         ),
       ),
@@ -1108,12 +1120,18 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       actions: [
         IconButton(
-          icon: Icon(_isListView ? Icons.grid_view : Icons.view_list, color:Theme.of(context).colorScheme.onSurface),
+          icon: Icon(
+            _isListView ? Icons.grid_view : Icons.view_list,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onPressed: _toggleView,
           tooltip: AppLocalizations.of(context)!.toggleView,
         ),
         IconButton(
-          icon: const Icon(Icons.import_export, color:Theme.of(context).colorScheme.onSurface),
+          icon: Icon(
+            Icons.import_export,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onPressed: _showSortOptions,
           tooltip: AppLocalizations.of(context)!.sort,
         ),
@@ -1124,7 +1142,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true, // El contenido empieza desde arriba de la pantalla
+      extendBodyBehindAppBar:
+          true, // El contenido empieza desde arriba de la pantalla
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: _buildAppBar(),
       drawer: Drawer(
@@ -1218,14 +1237,13 @@ class _MyHomePageState extends State<MyHomePage> {
     final isSelected = _selectedItems.contains(item);
     final bool canReorder =
         _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
-        
-      // Determinamos si el fondo actual es oscuro
-  final isDarkBackground = _isColorDark(item.backgroundColor);
-  
-  // Si el fondo es oscuro -> texto blanco. Si es claro -> texto negro.
-  final dynamicTextColor = isDarkBackground ? Colors.white : Colors.black87;
-  final dynamicIconColor = isDarkBackground ? Colors.white : Colors.black87;
 
+    // Determinamos si el fondo actual es oscuro
+    final isDarkBackground = _isColorDark(item.backgroundColor);
+
+    // Si el fondo es oscuro -> texto blanco. Si es claro -> texto negro.
+    final dynamicTextColor = isDarkBackground ? Colors.white : Colors.black87;
+    final dynamicIconColor = isDarkBackground ? Colors.white : Colors.black87;
 
     // 1. Creamos un controlador temporal solo para renderizar el documento actual
     final previewController = quill.QuillController(
@@ -1246,10 +1264,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // Ajustamos el color base para que coincida con el fondo de tu tarjeta
           customStyles: quill.DefaultStyles(
             paragraph: quill.DefaultTextBlockStyle(
-              TextStyle(
-                color: dynamicTextColor,
-                fontSize: 14,
-              ),
+              TextStyle(color: dynamicTextColor, fontSize: 14),
               const quill.HorizontalSpacing(0, 0),
               const quill.VerticalSpacing(0, 0),
               const quill.VerticalSpacing(0, 0),
@@ -1300,47 +1315,56 @@ class _MyHomePageState extends State<MyHomePage> {
     );
 
     return Card.outlined(
-  clipBehavior: Clip.antiAlias,
-  color: isSelected
-      ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.6)
-      : (item.backgroundColor != null ? Color(item.backgroundColor!) : null),
-  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-  child: InkWell(
-    onTap: () => _isSelectionMode ? _toggleSelection(item) : _navigateToEditor(item),
-    onLongPress: () => !_isSelectionMode ? _startSelectionMode(item) : null,
-    child: Ink( // Usar Ink para que la decoración no tape el efecto visual
-      decoration: item.backgroundImagePath != null && !kIsWeb
-          ? BoxDecoration(
-              image: DecorationImage(
-                image: FileImage(File(item.backgroundImagePath!)),
-                fit: BoxFit.cover,
-                // ColorFilter opcional para asegurar legibilidad del texto
-                colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.1), BlendMode.darken),
+      clipBehavior: Clip.antiAlias,
+      color: isSelected
+          ? Theme.of(
+              context,
+            ).colorScheme.primaryContainer.withValues(alpha: 0.6)
+          : (item.backgroundColor != null
+                ? Color(item.backgroundColor!)
+                : null),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () =>
+            _isSelectionMode ? _toggleSelection(item) : _navigateToEditor(item),
+        onLongPress: () => !_isSelectionMode ? _startSelectionMode(item) : null,
+        child: Ink(
+          // Usar Ink para que la decoración no tape el efecto visual
+          decoration: item.backgroundImagePath != null && !kIsWeb
+              ? BoxDecoration(
+                  image: DecorationImage(
+                    image: FileImage(File(item.backgroundImagePath!)),
+                    fit: BoxFit.cover,
+                    // ColorFilter opcional para asegurar legibilidad del texto
+                    colorFilter: ColorFilter.mode(
+                      Colors.black.withValues(alpha: 0.1),
+                      BlendMode.darken,
+                    ),
+                  ),
+                )
+              : null,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: contentColumn,
+                ),
               ),
-            )
-          : null,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: contentColumn,
-            ),
+              if (canReorder && !_isSelectionMode && isListView)
+                ReorderableDragStartListener(
+                  index: _filteredItems.indexOf(item),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
+                    child: Icon(Icons.drag_handle, color: dynamicIconColor),
+                  ),
+                ),
+            ],
           ),
-          if (canReorder && !_isSelectionMode && isListView)
-            ReorderableDragStartListener(
-              index: _filteredItems.indexOf(item),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
-                child: Icon(Icons.drag_handle, color: dynamicIconColor),
-              ),
-            ),
-        ],
+        ),
       ),
-    ),
-  ),
-);
+    );
   }
 
   Widget _buildListView() {

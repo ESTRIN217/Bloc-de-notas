@@ -1219,7 +1219,6 @@ class _MyHomePageState extends State<MyHomePage> {
   
   // Si el fondo es oscuro -> texto blanco. Si es claro -> texto negro.
   final dynamicTextColor = isDarkBackground ? Colors.white : Colors.black87;
-  final dynamicHintColor = isDarkBackground ? Colors.white70 : Colors.black54;
   final dynamicIconColor = isDarkBackground ? Colors.white : Colors.black87;
 
 

@@ -19,6 +19,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'list_item.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:record/record.dart';
+import 'drawing_embed.dart';
 
 enum TtsState { playing, stopped }
 
@@ -614,6 +615,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       embedBuilders: [
                         ...FlutterQuillEmbeds.editorBuilders(),
                         AudioEmbedBuilder(),
+                        DrawingEmbedBuilder(),
                       ],
                     ),
                   ),
@@ -655,6 +657,13 @@ class _EditorScreenState extends State<EditorScreen> {
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   onPressed: _showAudioMenu,
+                ),
+                IconButton.filled(
+                  icon: Icon(
+                    Icons.gesture,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: _insertarLienzo,
                 ),
               ],
             ),
@@ -844,4 +853,17 @@ class _EditorScreenState extends State<EditorScreen> {
       },
     );
   }
+  void _insertarLienzo() {
+  final index = _contentController.selection.baseOffset;
+  // Insertamos el bloque personalizado "drawing"
+  _contentController.document.insert(
+    index,
+    quill.BlockEmbed.custom(const DrawingBlockEmbed('nuevo_dibujo')),
+  );
+  // Movemos el cursor justo debajo del dibujo
+  _contentController.updateSelection(
+    TextSelection.collapsed(offset: index + 1),
+    quill.ChangeSource.local,
+  );
+}
 }

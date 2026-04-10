@@ -22,6 +22,7 @@ class AudioPlayerWidget extends StatefulWidget {
 }
 
 class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
+  bool _isDragging = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
   Duration _duration = Duration.zero;
@@ -34,9 +35,6 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   }
 
   Future<void> _setupAudioPlayer() async {
-    // Configurar la fuente del audio desde el archivo local
-    await _audioPlayer.setSourceDeviceFile(widget.audioPath);
-
     // Escuchar cambios de duración
     _audioPlayer.onDurationChanged.listen((d) {
       if (mounted) setState(() => _duration = d);
@@ -47,12 +45,29 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       if (mounted) setState(() => _position = p);
     });
 
-    // Escuchar el estado de reproducción (play/pause/stop)
+    // Escuchar el estado de reproducción (play/pause/stop/completed)
     _audioPlayer.onPlayerStateChanged.listen((state) {
       if (mounted) {
         setState(() => _isPlaying = state == PlayerState.playing);
+        
+        // Si el audio termina, devolvemos el slider al principio
+        if (state == PlayerState.completed) {
+           setState(() => _position = Duration.zero);
+        }
       }
     });
+
+    // Usamos DeviceFileSource explicitamente
+    final source = DeviceFileSource(widget.audioPath);
+    
+    // Asignamos la fuente sin reproducir
+    await _audioPlayer.setSource(source);
+    
+    // Obtenemos la duración inicial (si está disponible inmediatamente)
+    final initialDuration = await _audioPlayer.getDuration();
+    if (initialDuration != null && mounted) {
+      setState(() => _duration = initialDuration);
+    }
   }
 
   @override
@@ -157,13 +172,24 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                     overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
                   ),
                   child: Slider(
-                    min: 0,
-                    max: _duration.inSeconds.toDouble() > 0 ? _duration.inSeconds.toDouble() : 1,
-                    value: _position.inSeconds.toDouble().clamp(0, _duration.inSeconds.toDouble()),
-                    onChanged: (value) {
-                      _audioPlayer.seek(Duration(seconds: value.toInt()));
-                    },
-                  ),
+  min: 0,
+  max: _duration.inMilliseconds.toDouble() > 0 ? _duration.inMilliseconds.toDouble() : 1,
+  value: _position.inMilliseconds.toDouble().clamp(0.0, _duration.inMilliseconds.toDouble() > 0 ? _duration.inMilliseconds.toDouble() : 1),
+  onChangeStart: (value) {
+    setState(() => _isDragging = true);
+  },
+  onChanged: (value) {
+    // Solo actualizamos la UI mientras arrastramos, no le pedimos al reproductor que salte aún
+    setState(() {
+      _position = Duration(milliseconds: value.toInt());
+    });
+  },
+  onChangeEnd: (value) async {
+    // Al soltar el dedo, hacemos el seek real en el audio
+    await _audioPlayer.seek(Duration(milliseconds: value.toInt()));
+    setState(() => _isDragging = false);
+  },
+),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),

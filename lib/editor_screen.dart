@@ -518,17 +518,25 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   bool _isColorDark(int? colorValue) {
-    if (colorValue == null) {
-      return Theme.of(context).brightness == Brightness.dark;
-    }
-    return Color(colorValue).computeLuminance() < 0.5;
+  if (colorValue == null) {
+    // Si no hay color, nos basamos en el brillo del tema actual del sistema
+    return Theme.of(context).brightness == Brightness.dark;
   }
+  final color = Color(colorValue);
+  // computeLuminance() devuelve un valor entre 0.0 (negro) y 1.0 (blanco)
+  // Si es menor a 0.5, el color es oscuro.
+  return color.computeLuminance() < 0.5;
+}
 
   @override
   Widget build(BuildContext context) {
-    final isDark = _isColorDark(_backgroundColorValue);
-    final textColor = isDark ? Colors.white : Colors.black;
-    final hintColor = isDark ? Colors.white70 : Colors.black54;
+  // Determinamos si el fondo actual es oscuro
+  final isDarkBackground = _isColorDark(_backgroundColorValue);
+  
+  // Si el fondo es oscuro -> texto blanco. Si es claro -> texto negro.
+  final dynamicTextColor = isDarkBackground ? Colors.white : Colors.black87;
+  final dynamicHintColor = isDarkBackground ? Colors.white70 : Colors.black54;
+  final dynamicIconColor = isDarkBackground ? Colors.white : Colors.black87;
 
     // 1. Configuramos la decoración del fondo.
     // Si no hay color ni imagen seleccionada, usamos el color base de tu tema actual.
@@ -564,7 +572,7 @@ class _EditorScreenState extends State<EditorScreen> {
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: textColor),
+              icon: Icon(Icons.arrow_back, color: dynamicIconColor),
               onPressed: _saveAndExit,
             ),
             backgroundColor: Colors.transparent,
@@ -572,7 +580,7 @@ class _EditorScreenState extends State<EditorScreen> {
             title: null,
             actions: [
               IconButton(
-                icon: Icon(Icons.more_vert, color: textColor),
+                icon: Icon(Icons.more_vert, color: dynamicIconColor),
                 onPressed: _showEditorMenu,
               ),
             ],
@@ -589,7 +597,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: textColor,
+                    color: dynamicTextColor,
                   ),
                   decoration: InputDecoration(
                     border: InputBorder.none,
@@ -597,7 +605,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     hintStyle: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: hintColor,
+                      color: dynamicHintColor,
                     ),
                   ),
                 ),
@@ -609,6 +617,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     controller: _contentController,
                     config: quill.QuillEditorConfig(
                       autoFocus: false,
+                      textStyle: TextStyle(color: dynamicTextColor),
                       placeholder: 'Escribe algo increíble...',
                       expands: false,
                       padding: EdgeInsets.zero,
@@ -631,14 +640,14 @@ class _EditorScreenState extends State<EditorScreen> {
                 IconButton.outlined(
                   icon: Icon(
                     Icons.palette_outlined,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: dynamicIconColor,
                   ),
                   onPressed: _showBackgroundSheet,
                 ),
                 IconButton.outlined(
                   icon: Icon(
                     Icons.tune,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: dynamicIconColor,
                   ),
                   onPressed: _showTextTools,
                 ),
@@ -647,21 +656,21 @@ class _EditorScreenState extends State<EditorScreen> {
                     _ttsState == TtsState.playing
                         ? Icons.stop
                         : Icons.volume_up,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: dynamicIconColor,
                   ),
                   onPressed: _toggleSpeak,
                 ),
                 IconButton.outlined(
                   icon: Icon(
                     Icons.fiber_manual_record,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: dynamicIconColor,
                   ),
                   onPressed: _showAudioMenu,
                 ),
                 IconButton.outlined(
                   icon: Icon(
                     Icons.gesture,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: dynamicIconColor,
                   ),
                   onPressed: _insertarLienzo,
                 ),

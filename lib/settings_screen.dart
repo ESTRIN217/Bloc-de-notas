@@ -218,7 +218,7 @@ class SettingsScreen extends StatelessWidget {
     BuildContext context, {
     required List<Widget> children,
   }) {
-    return Card(
+    return Card.filled(
       elevation: 0,
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       color: Theme.of(

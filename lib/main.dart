@@ -1213,9 +1213,15 @@ class _MyHomePageState extends State<MyHomePage> {
     final isSelected = _selectedItems.contains(item);
     final bool canReorder =
         _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
+        
+      // Determinamos si el fondo actual es oscuro
+  final isDarkBackground = _isColorDark(item.backgroundColor);
+  
+  // Si el fondo es oscuro -> texto blanco. Si es claro -> texto negro.
+  final dynamicTextColor = isDarkBackground ? Colors.white : Colors.black87;
+  final dynamicHintColor = isDarkBackground ? Colors.white70 : Colors.black54;
+  final dynamicIconColor = isDarkBackground ? Colors.white : Colors.black87;
 
-    final isDark = _isColorDark(item.backgroundColor);
-    final textColor = isDark ? Colors.white : Colors.black;
 
     // 1. Creamos un controlador temporal solo para renderizar el documento actual
     final previewController = quill.QuillController(
@@ -1237,7 +1243,7 @@ class _MyHomePageState extends State<MyHomePage> {
           customStyles: quill.DefaultStyles(
             paragraph: quill.DefaultTextBlockStyle(
               TextStyle(
-                color: textColor.withAlpha((255 * 0.8).round()),
+                color: dynamicTextColor,
                 fontSize: 14,
               ),
               const quill.HorizontalSpacing(0, 0),
@@ -1265,7 +1271,7 @@ class _MyHomePageState extends State<MyHomePage> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: textColor,
+              color: dynamicTextColor,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -1289,8 +1295,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
     );
 
-    return Card(
-      elevation: 2,
+    return Card.outlined(
+      elevation: 0,
       clipBehavior: Clip.antiAlias,
       color: isSelected
           ? Theme.of(
@@ -1337,7 +1343,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     child: Icon(
                       Icons.drag_handle,
-                      color: textColor.withAlpha((255 * 0.6).round()),
+                      color: dynamicIconColor,
                     ),
                   ),
                 ),

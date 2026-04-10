@@ -24,7 +24,7 @@ class DrawnLine {
   // Convierte el trazo a JSON
   Map<String, dynamic> toJson() => {
         'path': path.map((o) => {'x': o.dx, 'y': o.dy}).toList(),
-        'color': color.value,
+        'color': color.toARGB32(),
         'width': width,
         'isEraser': isEraser,
       };
@@ -53,12 +53,13 @@ class DrawingEmbedBuilder extends quill.EmbedBuilder {
   @override
   Widget build(
     BuildContext context,
-    quill.QuillController controller,
-    quill.Embed node,
-    bool readOnly,
-    bool inline,
-    TextStyle textStyle,
+    quill.EmbedContext embedContext,
+    
   ) {
+    final controller = embedContext.controller;
+    final node = embedContext.node;
+    final readOnly = embedContext.readOnly;
+
     return _DrawingWidget(
       controller: controller,
       node: node,
@@ -74,7 +75,7 @@ class _DrawingWidget extends StatefulWidget {
   final bool readOnly;
 
   const _DrawingWidget({
-    super.key,
+    
     required this.controller,
     required this.node,
     required this.readOnly,
@@ -160,7 +161,7 @@ class _DrawingWidgetState extends State<_DrawingWidget> {
       return Container(
         height: _height,
         width: double.infinity,
-        color: Theme.of(context).colorScheme.surfaceVariant.withAlpha(100),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(100),
         child: CustomPaint(
           painter: _DrawingPainter(lines: lines),
         ),
@@ -181,7 +182,7 @@ class _DrawingWidgetState extends State<_DrawingWidget> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceVariant,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             ),
             child: Row(
@@ -229,7 +230,7 @@ class _DrawingWidgetState extends State<_DrawingWidget> {
                           color: color,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: _currentColor == color.value && !_isEraser
+                            color: _currentColor == color && !_isEraser
                                 ? Colors.white
                                 : Colors.transparent,
                             width: 2,

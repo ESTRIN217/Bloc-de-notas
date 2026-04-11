@@ -47,23 +47,28 @@ Este documento describe el diseño y las características de una aplicación mod
 
 ### 2.4 Versión 4.0.0
 
-- **Internacionalizacion:**
-  - **Venezolano**
-  - **Brasileño**
-  - **Portugues**
-
-- **Actualizador:**
-  - **Verifica la version y la descarga(no disponible para la version web)**
-
-- **Registro de cambios**
-  - **Muestra los cambios hechos en la app**
-- **Mejoras en el editor:**
-  - **Soporte de imagen en nota**
-  - **Soporte de audio en nota**
-  - **Soporte de dibujo en nota**
-
-- **Mas formatos para compartir:**
-  - **PDF, Markdown, HTML, and JSON**
+- **Mejoras de la interfaz gráfica:**
+    - **Configuración:** Rediseño completo implementando las directrices de Material Design 3\.
+    - **Acerca de:** Interfaz de información actualizada al estándar de Material Design 3\.
+    - **Pantalla principal:** Las tarjetas ahora renderizan y muestran vistas previas dinámicas del texto enriquecido\.
+    - **Editor:** Experiencia visual optimizada con fondo extendido y botones de la barra de herramientas con estilo contorneado \(_outlined_\)\.
+- **Internacionalización \(i18n\):**
+    - **Español \(Venezuela\):** Localización regional añadida\.
+    - **Portugués \(Brasil\):** Localización regional añadida\.
+    - **Portugués:** Traducción estándar añadida\.
+- **Sistema de actualizaciones:**
+    - **Verificación automática:** Nueva funcionalidad para comprobar y descargar la última versión directamente \(exclusivo para versiones móviles; no aplicable en la web\)\.
+    - **Pantalla dedicada:** Interfaz de actualización integrada para gestionar las descargas\.
+- **Historial de versiones \(Changelog\):**
+    - **Visor in\-app:** Integración para consultar los cambios recientes dentro de la aplicación\.
+    - **Carga dinámica:** Nuevo cuadro de diálogo inferior \(_bottom sheet_\) que obtiene los datos del registro de versiones directamente desde GitHub\.
+- **Mejoras del editor multimedia:**
+    - **Soporte de imágenes:** Inserción directa en las notas \(integrado vía flutter\_quill\_extensions\)\.
+    - **Soporte de vídeo:** Reproducción e inserción en el cuerpo de la nota \(integrado vía flutter\_quill\_extensions\)\.
+    - **Soporte de audio:** Capacidad para incluir notas de voz mediante bloques personalizados \(quill\.CustomBlockEmbed\)\.
+    - **Soporte de dibujo:** Nuevo lienzo integrado en el editor con persistencia de datos directa en el archivo JSON principal \(quill\.CustomBlockEmbed\)\.
+- **Nuevos formatos de exportación:**
+    - **Opciones de uso compartido:** Capacidad ampliada para exportar notas en formato PDF, Markdown, HTML y JSON en crudo \(soportado mediante extensiones oficiales de renderizado\)\.
 
 ## 3. Calidad del código y control de versiones
 
@@ -73,4 +78,4 @@ Este documento describe el diseño y las características de una aplicación mod
 
 ### 3.2. Control de versiones
 
-- **Versión actual:** `3.0.0+1`
+- **Versión actual:** `4.0.0+1`

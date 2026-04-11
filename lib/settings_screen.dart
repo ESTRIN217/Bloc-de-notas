@@ -218,16 +218,20 @@ class SettingsScreen extends StatelessWidget {
     BuildContext context, {
     required List<Widget> children,
   }) {
-    return Card.filled(
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-      color: Theme.of(
-        context,
-      ).colorScheme.surfaceContainerHighest,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: Column(children: children),
-    );
+    return Card.outlined(
+  elevation: 0,
+  margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+  color: Theme.of(context).colorScheme.surface,
+  clipBehavior: Clip.antiAlias,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(24),
+    side: BorderSide(
+      color: Theme.of(context).colorScheme.outlineVariant,
+      width: 1.0,
+    ),
+  ),
+  child: Column(children: children),
+);
   }
 
   Widget _buildIconContainer(BuildContext context, IconData icon) {

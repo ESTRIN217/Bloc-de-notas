@@ -1,10 +1,7 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 import 'package:audioplayers/audioplayers.dart';
-
 
 class AudioEmbedBuilder extends EmbedBuilder {
   @override
@@ -82,20 +79,20 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     _audioPlayer.onPlayerStateChanged.listen((state) {
       if (mounted) {
         setState(() => _isPlaying = state == PlayerState.playing);
-        
+
         // Si el audio termina, devolvemos el slider al principio
         if (state == PlayerState.completed) {
-           setState(() => _position = Duration.zero);
+          setState(() => _position = Duration.zero);
         }
       }
     });
 
     // Usamos DeviceFileSource explicitamente
     final source = DeviceFileSource(widget.audioPath);
-    
+
     // Asignamos la fuente sin reproducir
     await _audioPlayer.setSource(source);
-    
+
     // Obtenemos la duración inicial (si está disponible inmediatamente)
     final initialDuration = await _audioPlayer.getDuration();
     if (initialDuration != null && mounted) {
@@ -115,7 +112,9 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('¿Eliminar audio?'),
-        content: const Text('Esto eliminará el archivo del dispositivo permanentemente.'),
+        content: const Text(
+          'Esto eliminará el archivo del dispositivo permanentemente.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -148,7 +147,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     // 4. Eliminar el Embed del documento de Quill
     // Obtenemos la posición exacta del bloque de audio en el documento
     final offset = widget.node.documentOffset;
-    
+
     // Eliminamos 1 caracter (el bloque embed cuenta como 1 de longitud)
     widget.controller.replaceText(
       offset,
@@ -173,15 +172,15 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant,
-        ),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
           // Botón Play/Pause
           IconButton(
-            icon: Icon(_isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill),
+            icon: Icon(
+              _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
+            ),
             iconSize: 36,
             color: Theme.of(context).colorScheme.primary,
             onPressed: () {
@@ -192,7 +191,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
               }
             },
           ),
-          
+
           // Slider de progreso y tiempo
           Expanded(
             child: Column(
@@ -201,28 +200,41 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 4,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 6,
+                    ),
+                    overlayShape: const RoundSliderOverlayShape(
+                      overlayRadius: 14,
+                    ),
                   ),
                   child: Slider(
-  min: 0,
-  max: _duration.inMilliseconds.toDouble() > 0 ? _duration.inMilliseconds.toDouble() : 1,
-  value: _position.inMilliseconds.toDouble().clamp(0.0, _duration.inMilliseconds.toDouble() > 0 ? _duration.inMilliseconds.toDouble() : 1),
-  onChangeStart: (value) {
-    setState(() => _isDragging = true);
-  },
-  onChanged: (value) {
-    // Solo actualizamos la UI mientras arrastramos, no le pedimos al reproductor que salte aún
-    setState(() {
-      _position = Duration(milliseconds: value.toInt());
-    });
-  },
-  onChangeEnd: (value) async {
-    // Al soltar el dedo, hacemos el seek real en el audio
-    await _audioPlayer.seek(Duration(milliseconds: value.toInt()));
-    setState(() => _isDragging = false);
-  },
-),
+                    min: 0,
+                    max: _duration.inMilliseconds.toDouble() > 0
+                        ? _duration.inMilliseconds.toDouble()
+                        : 1,
+                    value: _position.inMilliseconds.toDouble().clamp(
+                      0.0,
+                      _duration.inMilliseconds.toDouble() > 0
+                          ? _duration.inMilliseconds.toDouble()
+                          : 1,
+                    ),
+                    onChangeStart: (value) {
+                      setState(() => _isDragging = true);
+                    },
+                    onChanged: (value) {
+                      // Solo actualizamos la UI mientras arrastramos, no le pedimos al reproductor que salte aún
+                      setState(() {
+                        _position = Duration(milliseconds: value.toInt());
+                      });
+                    },
+                    onChangeEnd: (value) async {
+                      // Al soltar el dedo, hacemos el seek real en el audio
+                      await _audioPlayer.seek(
+                        Duration(milliseconds: value.toInt()),
+                      );
+                      setState(() => _isDragging = false);
+                    },
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),

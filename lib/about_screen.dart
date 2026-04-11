@@ -9,7 +9,10 @@ class AboutScreen extends StatelessWidget {
 
   // Funciones de lanzamiento de URL existentes
   Future<void> _openUrl(String url) async {
-    if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
+    if (!await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+    )) {
       debugPrint('No se pudo abrir $url');
     }
   }
@@ -40,9 +43,9 @@ class AboutScreen extends StatelessWidget {
           // 3. Título de sección y Enlaces
           _buildSectionTitle(context, AppLocalizations.of(context)!.enlaces),
           _buildLinkGroup(context),
-          
+
           const SizedBox(height: 32),
-          
+
           // Nota de pie sutil
           Center(
             child: Text(
@@ -58,7 +61,7 @@ class AboutScreen extends StatelessWidget {
   /// Crea la tarjeta superior con el icono y versión
   Widget _buildHeaderCard(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -142,14 +145,14 @@ class AboutScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildSocialButton(
-                context, 
-                FontAwesomeIcons.github, 
-                () => _openUrl('https://github.com/ESTRIN217')
+                context,
+                FontAwesomeIcons.github,
+                () => _openUrl('https://github.com/ESTRIN217'),
               ),
               _buildSocialButton(
-                context, 
-                FontAwesomeIcons.globe, 
-                () => {} // Tu web si tienes
+                context,
+                FontAwesomeIcons.globe,
+                () => {}, // Tu web si tienes
               ),
             ],
           ),
@@ -161,9 +164,12 @@ class AboutScreen extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF8D5545), // Color café
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
-              onPressed: () => _openUrl('https://www.buymeacoffee.com/estrin217'),
+              onPressed: () =>
+                  _openUrl('https://www.buymeacoffee.com/estrin217'),
               icon: const Icon(Icons.coffee),
               label: const Text("Buy me a coffee!"),
             ),
@@ -174,17 +180,26 @@ class AboutScreen extends StatelessWidget {
   }
 
   /// Botón social circular estilizado
-  Widget _buildSocialButton(BuildContext context, FaIconData icon, VoidCallback onTap) {
+  Widget _buildSocialButton(
+    BuildContext context,
+    FaIconData icon,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4),
+          color: Theme.of(
+            context,
+          ).colorScheme.primaryContainer.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: FaIcon(icon, color: Theme.of(context).colorScheme.onPrimaryContainer),
+        child: FaIcon(
+          icon,
+          color: Theme.of(context).colorScheme.onPrimaryContainer,
+        ),
       ),
     );
   }
@@ -226,18 +241,17 @@ class AboutScreen extends StatelessWidget {
   /// Grupo de enlaces (Repositorio, Licencia)
   Widget _buildLinkGroup(BuildContext context) {
     return Card.outlined(
-  elevation: 0,
-  margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-  color: Theme.of(context).colorScheme.surface,
-  clipBehavior: Clip.antiAlias,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(24),
-    side: BorderSide(
-      color: Theme.of(context).colorScheme.outlineVariant,
-      width: 1.0,
-    ),
-  ),
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      color: Theme.of(context).colorScheme.surface,
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outlineVariant,
+          width: 1.0,
+        ),
+      ),
       child: Column(
         children: [
           ListTile(
@@ -251,7 +265,9 @@ class AboutScreen extends StatelessWidget {
             leading: const Icon(Icons.description_outlined),
             title: Text(AppLocalizations.of(context)!.mit_license),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _openUrl('https://github.com/ESTRIN217/Bloc-de-notas/blob/master/LICENSE'),
+            onTap: () => _openUrl(
+              'https://github.com/ESTRIN217/Bloc-de-notas/blob/master/LICENSE',
+            ),
           ),
         ],
       ),

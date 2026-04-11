@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'updater_provider.dart'; 
+import 'updater_provider.dart';
 import 'l10n/app_localizations.dart';
 
 class UpdaterScreen extends StatelessWidget {
@@ -22,14 +22,23 @@ class UpdaterScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         children: [
           // Sección: Versión Actual
-          _buildSectionTitle(context, AppLocalizations.of(context)!.version_actual),
+          _buildSectionTitle(
+            context,
+            AppLocalizations.of(context)!.version_actual,
+          ),
           _buildGroup(
             context,
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 8,
+              ),
               title: Text(
                 'Version: ${updater.currentVersion}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17,
+                ),
               ),
               subtitle: Text(
                 'universal - FOSS', // Texto descriptivo según la imagen
@@ -41,25 +50,34 @@ class UpdaterScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Sección: Ajustes de actualización
-          _buildSectionTitle(context, AppLocalizations.of(context)!.ajuste_de_actulizacion),
+          _buildSectionTitle(
+            context,
+            AppLocalizations.of(context)!.ajuste_de_actulizacion,
+          ),
           _buildGroup(
             context,
             child: Column(
               children: [
                 _buildSwitchTile(
                   context,
-                  title: AppLocalizations.of(context)!.buscar_actualizaciones_automaticamente,
+                  title: AppLocalizations.of(
+                    context,
+                  )!.buscar_actualizaciones_automaticamente,
                   icon: Icons.refresh_rounded,
                   value: updater.autoUpdate,
-                  onChanged: (val) => context.read<UpdaterProvider>().toggleAutoUpdate(val),
+                  onChanged: (val) =>
+                      context.read<UpdaterProvider>().toggleAutoUpdate(val),
                 ),
                 const Divider(height: 1, indent: 70, endIndent: 20),
                 _buildSwitchTile(
                   context,
-                  title: AppLocalizations.of(context)!.habilitar_notificaciones_de_actualizacion,
+                  title: AppLocalizations.of(
+                    context,
+                  )!.habilitar_notificaciones_de_actualizacion,
                   icon: Icons.notifications_none_rounded,
                   value: updater.notifications,
-                  onChanged: (val) => context.read<UpdaterProvider>().toggleNotifications(val),
+                  onChanged: (val) =>
+                      context.read<UpdaterProvider>().toggleNotifications(val),
                 ),
               ],
             ),
@@ -68,16 +86,23 @@ class UpdaterScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Sección: Buscar actualizaciones
-          _buildSectionTitle(context, AppLocalizations.of(context)!.buscar_actualizaciones),
+          _buildSectionTitle(
+            context,
+            AppLocalizations.of(context)!.buscar_actualizaciones,
+          ),
           _buildGroup(
             context,
             child: ListTile(
-              onTap: updater.isChecking 
-                  ? null 
-                  : () => context.read<UpdaterProvider>().checkForUpdates(context),
+              onTap: updater.isChecking
+                  ? null
+                  : () => context.read<UpdaterProvider>().checkForUpdates(
+                      context,
+                    ),
               leading: _buildIconContainer(
-                context, 
-                updater.isChecking ? Icons.hourglass_empty : Icons.refresh_rounded
+                context,
+                updater.isChecking
+                    ? Icons.hourglass_empty
+                    : Icons.refresh_rounded,
               ),
               title: Text(
                 AppLocalizations.of(context)!.buscar_actualizaciones,
@@ -108,18 +133,17 @@ class UpdaterScreen extends StatelessWidget {
 
   Widget _buildGroup(BuildContext context, {required Widget child}) {
     return Card.outlined(
-  elevation: 0,
-  margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-  color: Theme.of(context).colorScheme.surface,
-  clipBehavior: Clip.antiAlias,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(24),
-    side: BorderSide(
-      color: Theme.of(context).colorScheme.outlineVariant,
-      width: 1.0,
-    ),
-  ),
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      color: Theme.of(context).colorScheme.surface,
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outlineVariant,
+          width: 1.0,
+        ),
+      ),
       child: child,
     );
   }
@@ -128,14 +152,17 @@ class UpdaterScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
     );
   }
 
-  Widget _buildSwitchTile(BuildContext context, {
+  Widget _buildSwitchTile(
+    BuildContext context, {
     required String title,
     required IconData icon,
     required bool value,
@@ -143,11 +170,16 @@ class UpdaterScreen extends StatelessWidget {
   }) {
     return SwitchListTile(
       secondary: _buildIconContainer(context, icon),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+      ),
       value: value,
       onChanged: onChanged,
       thumbIcon: WidgetStateProperty.resolveWith<Icon?>((states) {
-        if (states.contains(WidgetState.selected)) return const Icon(Icons.check);
+        if (states.contains(WidgetState.selected)) {
+          return const Icon(Icons.check);
+        }
         return const Icon(Icons.close);
       }),
     );

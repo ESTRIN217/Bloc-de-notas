@@ -21,7 +21,7 @@ Una solución de toma de notas avanzada, multiplataforma y de alto rendimiento d
 - **Integración de Medios**: Soporte nativo para insertar y visualizar imágenes y vídeos directamente en el cuerpo de las notas\.
 - **Herramientas Creativas**: Módulo de dibujo integrado que permite realizar bocetos y guardarlos directamente en el esquema de datos JSON de la nota\.
 - **Notas de Audio:** Capacidad para adjuntar y gestionar grabaciones de audio mediante bloques personalizados\.
-- **Formatos de Exportación:**Soporte para compartir o exportar documentos en formatos industriales como PDF, Markdown, HTML y JSON\.
+- **Formatos de Exportación:** Soporte para compartir o exportar documentos en formatos industriales como PDF, Markdown, HTML y JSON\.
 
 ### Localización e Internacionalización \(i18n\)
 

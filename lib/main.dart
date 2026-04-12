@@ -1316,7 +1316,7 @@ child: quill.QuillEditor.basic(
     const quill.VerticalSpacing(0, 0),
     // Esto es para que la barra lateral no sea blanca si no quieres
     BoxDecoration(
-      border: Border(left: BorderSide(width: 4, color: dynamicTextColor.withOpacity(0.3))),
+      border: Border(left: BorderSide(width: 4, color: dynamicTextColor.withValues(alpha: 0.3))),
     ),
   ),
 

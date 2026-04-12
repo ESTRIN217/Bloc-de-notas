@@ -4,9 +4,10 @@ Una solución de toma de notas avanzada, multiplataforma y de alto rendimiento d
 
 [![Latest release](https://img.shields.io/github/v/release/ESTRIN217/Bloc-de-notas?style=for-the-badge&labelColor=0d1117)](https://github.com/ESTRIN217/Bloc-de-notas/releases)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-**Características Destacadas**
 
-## Interfaz y Experiencia de Usuario \(UI/UX\)
+## Características Destacadas
+
+### Interfaz y Experiencia de Usuario \(UI/UX\)
 
 - **Material Design 3:** Implementación completa de las últimas directrices de diseño de Google, incluyendo componentes refinados en las pantallas de configuración y "Acerca de"\.
 - **Color Dinámico \(Material You\)**: Adaptación inteligente del esquema cromático basado en el fondo de pantalla del dispositivo en Android compatible\.

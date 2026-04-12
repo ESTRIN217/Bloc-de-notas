@@ -613,61 +613,69 @@ class _EditorScreenState extends State<EditorScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+
                   // Envolvemos el editor en un Theme para forzar el color de todo el texto
+                  child: quill.QuillEditor.basic(
+                    controller: _contentController,
+                    config: quill.QuillEditorConfig(
+                      autoFocus: false,
+                      placeholder: 'Escribe algo increíble...',
+                      expands: false,
+                      padding: EdgeInsets.zero,
 
-child: quill.QuillEditor.basic(
-  controller: previewController,
-  config: quill.QuillEditorConfig(
-    autoFocus: false,
-      placeholder: 'Escribe algo increíble...',
-      expands: false,
-      padding: EdgeInsets.zero,
+                      customStyles: quill.DefaultStyles(
+                        // Estilo para texto normal
+                        paragraph: quill.DefaultTextBlockStyle(
+                          TextStyle(color: dynamicTextColor, fontSize: 16),
+                          const quill.HorizontalSpacing(0, 0),
+                          const quill.VerticalSpacing(0, 0),
+                          const quill.VerticalSpacing(0, 0),
+                          null,
+                        ),
+                        // Estilo para Títulos Grandes (H1)
+                        h1: quill.DefaultTextBlockStyle(
+                          TextStyle(
+                            color: dynamicTextColor,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          const quill.HorizontalSpacing(0, 0),
+                          const quill.VerticalSpacing(10, 0),
+                          const quill.VerticalSpacing(0, 0),
+                          null,
+                        ),
+                        // Estilo para Títulos Medianos (H2)
+                        h2: quill.DefaultTextBlockStyle(
+                          TextStyle(
+                            color: dynamicTextColor,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          const quill.HorizontalSpacing(0, 0),
+                          const quill.VerticalSpacing(8, 0),
+                          const quill.VerticalSpacing(0, 0),
+                          null,
+                        ),
+                        // Estilo para Listas (Bullets y Checkboxes)
+                        lists: quill.DefaultListBlockStyle(
+                          TextStyle(color: dynamicTextColor, fontSize: 16),
+                          const quill.HorizontalSpacing(0, 0),
+                          const quill.VerticalSpacing(0, 0),
+                          const quill.VerticalSpacing(0, 0),
+                          null,
+                          null, // Algunos versiones requieren un parámetro extra aquí para el checkbox
+                        ),
+                        // Estilo para el texto pequeño
+                        small: TextStyle(color: dynamicTextColor, fontSize: 12),
+                      ),
 
-    customStyles: quill.DefaultStyles(
-      // Estilo para texto normal
-      paragraph: quill.DefaultTextBlockStyle(
-        TextStyle(color: dynamicTextColor, fontSize: 16),
-        const quill.HorizontalSpacing(0, 0),
-        const quill.VerticalSpacing(0, 0),
-        const quill.VerticalSpacing(0, 0),
-        null,
-      ),
-      // Estilo para Títulos Grandes (H1)
-      h1: quill.DefaultTextBlockStyle(
-        TextStyle(color: dynamicTextColor, fontSize: 28, fontWeight: FontWeight.bold),
-        const quill.HorizontalSpacing(0, 0),
-        const quill.VerticalSpacing(10, 0),
-        const quill.VerticalSpacing(0, 0),
-        null,
-      ),
-      // Estilo para Títulos Medianos (H2)
-      h2: quill.DefaultTextBlockStyle(
-        TextStyle(color: dynamicTextColor, fontSize: 22, fontWeight: FontWeight.bold),
-        const quill.HorizontalSpacing(0, 0),
-        const quill.VerticalSpacing(8, 0),
-        const quill.VerticalSpacing(0, 0),
-        null,
-      ),
-      // Estilo para Listas (Bullets y Checkboxes)
-      lists: quill.DefaultListBlockStyle(
-        TextStyle(color: dynamicTextColor, fontSize: 16),
-        const quill.HorizontalSpacing(0, 0),
-        const quill.VerticalSpacing(0, 0),
-        const quill.VerticalSpacing(0, 0),
-        null,
-        null, // Algunos versiones requieren un parámetro extra aquí para el checkbox
-      ),
-      // Estilo para el texto pequeño
-      small: TextStyle(color: dynamicTextColor, fontSize: 12),
-    ),
-
-    embedBuilders: [
-      ...FlutterQuillEmbeds.editorBuilders(),
-      AudioEmbedBuilder(),
-      DrawingEmbedBuilder(),
-    ],
-  ),
-),
+                      embedBuilders: [
+                        ...FlutterQuillEmbeds.editorBuilders(),
+                        AudioEmbedBuilder(),
+                        DrawingEmbedBuilder(),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],

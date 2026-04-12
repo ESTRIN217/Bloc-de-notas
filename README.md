@@ -13,7 +13,7 @@ Una solución de toma de notas avanzada, multiplataforma y de alto rendimiento d
 - **Color Dinámico \(Material You\)**: Adaptación inteligente del esquema cromático basado en el fondo de pantalla del dispositivo en Android compatible\.
 - **Modos de Visualización:** Soporte nativo para temas claro, oscuro y sincronización automática con el sistema\.
 - **Gestión de Vistas:** Organización flexible mediante cuadrículas visuales o listas compactas\.
-- **Tipografía de Alta Calidad:**Integración con Google Fonts para una legibilidad superior\.
+- **Tipografía de Alta Calidad:** Integración con Google Fonts para una legibilidad superior\.
 
 ### Edición Multimedia Avanzada
 

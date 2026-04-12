@@ -1308,6 +1308,41 @@ child: quill.QuillEditor.basic(
       ),
       // Estilo para el texto pequeño
       small: TextStyle(color: dynamicTextColor, fontSize: 12),
+        // 1. Citas (Blockquotes) - La línea con la barra lateral
+  quote: quill.DefaultTextBlockStyle(
+    TextStyle(color: dynamicTextColor, fontSize: 16, fontStyle: FontStyle.italic),
+    const quill.HorizontalSpacing(16, 0), // Espacio para la barra
+    const quill.VerticalSpacing(8, 8),
+    const quill.VerticalSpacing(0, 0),
+    // Esto es para que la barra lateral no sea blanca si no quieres
+    BoxDecoration(
+      border: Border(left: BorderSide(width: 4, color: dynamicTextColor.withOpacity(0.3))),
+    ),
+  ),
+
+  // 2. Enlaces (Links)
+  link: TextStyle(
+    color: isDarkBackground ? Colors.blue[300] : Colors.blue[700], // Azul legible según fondo
+    decoration: TextDecoration.underline,
+  ),
+
+  // 4. Marcadores de listas (Los puntitos o números)
+  indent: quill.DefaultTextBlockStyle(
+    TextStyle(color: dynamicTextColor),
+    const quill.HorizontalSpacing(0, 0),
+    const quill.VerticalSpacing(0, 0),
+    const quill.VerticalSpacing(0, 0),
+    null,
+  ),
+
+  // 5. Estilo "Leading" (Para asegurar que el checkbox/bullet use el color)
+  leading: quill.DefaultTextBlockStyle(
+    TextStyle(color: dynamicTextColor),
+    const quill.HorizontalSpacing(0, 0),
+    const quill.VerticalSpacing(0, 0),
+    const quill.VerticalSpacing(0, 0),
+    null,
+  ),
     ),
 
     embedBuilders: [

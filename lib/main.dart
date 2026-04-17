@@ -454,6 +454,7 @@ class _MyHomePageState extends State<MyHomePage> {
           "insert": "\n",
           "attributes": {"list": "ordered"},
         },
+        {"insert":"Piernas dentro y fuera:","attributes":{"bold":true}},
         {"insert": "Bloque 4: Core y Cardio Final"},
         {
           "insert": "\n",

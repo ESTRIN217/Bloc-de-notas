@@ -20,6 +20,7 @@ import 'list_item.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:record/record.dart';
 import 'drawing_embed.dart';
+import 'package:intl/intl.dart';
 
 enum TtsState { playing, stopped }
 
@@ -391,8 +392,22 @@ class _EditorScreenState extends State<EditorScreen> {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
+        String fechaFormateada = DateFormat('dd/MM/yyyy HH:mm').format(widget.item.lastModified);
+
         return Wrap(
-          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center( // Center ayuda a que el texto quede centrado en el menú
+                child: Text(
+                  'Modificado el: $fechaFormateada',
+                  style: const TextStyle(
+                    color: Colors.grey, // Un color gris para que parezca información secundaria
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+            const Divider(height: 1), // Una línea separadora visual
             ListTile(
               leading: const Icon(Icons.share),
               title: Text(AppLocalizations.of(context)!.share),

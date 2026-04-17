@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter/foundation.dart';
 
 class UpdaterProvider with ChangeNotifier {
   bool _autoUpdate = false;
@@ -101,5 +102,53 @@ Future<void> checkForUpdates(BuildContext context) async {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
+  }
+  // Método para buscar actualizaciones silenciosamente al iniciar la app
+  Future<void> checkUpdateOnStartup(BuildContext context) async {
+    // 1. Si es web, cancelamos la ejecución inmediatamente
+    if (kIsWeb) return;
+
+    // 2. Si el usuario desactivó la búsqueda automática, cancelamos
+    if (!_autoUpdate) return;
+
+    _isChecking = true;
+    notifyListeners();
+
+    try {
+      final response = await http.get(Uri.parse('https://api.github.com/repos/ESTRIN217/Bloc-de-notas/releases/latest'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final latestVersion = data['tag_name'].toString().replaceAll('v', '');
+        final downloadUrl = data['html_url']; 
+
+        // 3. Verificamos si hay una nueva versión
+        if (context.mounted && latestVersion != _currentVersion) {
+          
+          // 4. Respetamos si el usuario quiere recibir la notificación (SnackBar)
+          if (_notifications) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Nueva versión $latestVersion disponible'),
+                duration: const Duration(seconds: 10),
+                action: SnackBarAction(
+                  label: 'DESCARGAR',
+                  onPressed: () => _launchUrl(downloadUrl), // Asumo que tienes este método
+                ),
+              ),
+            );
+          }
+        }
+        // Nota: Si YA tienes la última versión, NO mostramos nada para no ser molestos al inicio.
+      }
+    } catch (e) {
+      // Como es un proceso en segundo plano al inicio, fallar silenciosamente es la mejor opción.
+      if (kDebugMode) {
+        print('Error silencioso al buscar actualizaciones en el inicio: $e');
+      }
+    } finally {
+      _isChecking = false;
+      notifyListeners();
+    }
   }
 }

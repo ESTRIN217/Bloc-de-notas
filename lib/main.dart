@@ -116,6 +116,17 @@ class MyHomePage extends StatefulWidget {
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
+  @override
+  void initState() {
+    super.initState();
+    
+    // Usamos addPostFrameCallback para esperar a que la pantalla esté 
+    // completamente construida antes de mostrar un posible SnackBar.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Llamamos a nuestro nuevo método silencioso
+      context.read<UpdaterProvider>().checkUpdateOnStartup(context);
+    });
+  }
 }
 
 class _MyHomePageState extends State<MyHomePage> {

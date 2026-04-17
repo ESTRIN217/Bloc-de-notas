@@ -16,7 +16,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import 'package:flutter_reorderable_grid_view/widgets/widgets.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'list_item.dart';
@@ -1487,6 +1487,7 @@ child: quill.QuillEditor.basic(
   Widget _buildGridView() {
     final bool canReorder =
         _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
+
     const gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
       maxCrossAxisExtent: 200,
       crossAxisSpacing: 16,
@@ -1495,17 +1496,43 @@ child: quill.QuillEditor.basic(
     );
 
     if (canReorder) {
-      return ReorderableGridView.builder(
-        padding: const EdgeInsets.all(16.0),
-        gridDelegate: gridDelegate,
-        itemCount: _filteredItems.length,
-        itemBuilder: (context, index) => Container(
+      // 1. Generamos la lista de widgets hijos por adelantado.
+      // Es obligatorio que cada widget tenga su Key única (ValueKey).
+      final generatedChildren = List.generate(
+        _filteredItems.length,
+        (index) => Container(
           key: ValueKey(_filteredItems[index].id),
           child: _buildItem(_filteredItems[index], isListView: false),
         ),
-        onReorder: _onReorder,
+      );
+
+      // 2. Usamos el ReorderableBuilder del nuevo paquete
+      return ReorderableBuilder(
+        children: generatedChildren,
+        onReorder: (reorderedListFunction) {
+          setState(() {
+            // El paquete nos proporciona una función (reorderedListFunction) 
+            // que aplica el cambio de orden automáticamente a nuestra lista.
+            _items = reorderedListFunction(_items) as List<ListItem>;
+            
+            // Actualizamos nuestra lista filtrada y guardamos
+            _filteredItems = List.from(_items);
+            _saveItems();
+          });
+        },
+        builder: (children) {
+          // 3. Devolvemos un GridView estándar pasándole los hijos (children)
+          // que el ReorderableBuilder nos entrega ya gestionados.
+          return GridView(
+            padding: const EdgeInsets.all(16.0),
+            gridDelegate: gridDelegate,
+            children: children,
+          );
+        },
       );
     }
+
+    // El GridView para cuando no estamos en modo reordenar se mantiene igual
     return GridView.builder(
       padding: const EdgeInsets.all(16.0),
       gridDelegate: gridDelegate,

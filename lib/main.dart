@@ -276,19 +276,12 @@ class _MyHomePageState extends State<MyHomePage> {
           "insert": "\n",
           "attributes": {"list": "checked"},
         },
-
-        {"insert": "\n"},
-        {"insert": "\nvoid main() {"},
-        {
-          "insert": "\n",
-          "attributes": {"code-block": true},
-        },
-        {"insert": "  print('Hola desde Bloc de notas');"},
-        {
-          "insert": "\n",
-          "attributes": {"code-block": true},
-        },
-        {"insert": "}"},
+        {"insert":"\n\nvoid main() {"},
+        {"insert":"\n","attributes":{"code-block":true}},
+        {"insert":"  print('Hola desde Bloc de notas');"},
+        {"insert":"\n","attributes":{"code-block":true}},
+        {"insert":"}"},
+        {"insert":"\n","attributes":{"code-block":true}},
 
         {"insert": "\nEnlace útil: "},
         {
@@ -454,7 +447,14 @@ class _MyHomePageState extends State<MyHomePage> {
           "insert": "\n",
           "attributes": {"list": "ordered"},
         },
-        {"insert":"Piernas dentro y fuera:","attributes":{"bold":true}},
+        {
+          "insert":"Pierna adentro y fuera: 30 repeticiones.",
+          "attributed":{"bold":true}
+        },
+        {
+          "insert":"\n",
+          "attributes":{"list":"ordered"}
+        },
         {"insert": "Bloque 4: Core y Cardio Final"},
         {
           "insert": "\n",

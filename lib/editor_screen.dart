@@ -395,6 +395,7 @@ class _EditorScreenState extends State<EditorScreen> {
         String fechaFormateada = DateFormat('dd/MM/yyyy HH:mm').format(widget.item.lastModified);
 
         return Wrap(
+          children: [
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Center( // Center ayuda a que el texto quede centrado en el menú

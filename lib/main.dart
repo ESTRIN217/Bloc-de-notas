@@ -1507,13 +1507,13 @@ child: quill.QuillEditor.basic(
       );
 
       // 2. Usamos el ReorderableBuilder del nuevo paquete
-      return ReorderableBuilder(
+      return ReorderableBuilder<ListItem>(
         children: generatedChildren,
         onReorder: (reorderedListFunction) {
           setState(() {
             // El paquete nos proporciona una función (reorderedListFunction) 
             // que aplica el cambio de orden automáticamente a nuestra lista.
-            _items = reorderedListFunction(_items) as List<ListItem>;
+            _items = reorderedListFunction(_items);
             
             // Actualizamos nuestra lista filtrada y guardamos
             _filteredItems = List.from(_items);

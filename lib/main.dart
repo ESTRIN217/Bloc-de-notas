@@ -119,7 +119,7 @@ class MyHomePage extends StatefulWidget {
   
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
   bool _isListView = true;
   SortMethod _sortMethod = SortMethod.custom;
   late List<ListItem> _items;
@@ -133,6 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _items = [];
     _filteredItems = [];
     _searchController.addListener(_filterItems);
@@ -146,7 +147,22 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     _searchController.dispose();
+    // Retiramos el observador para evitar fugas de memoria
+    WidgetsBinding.instance.removeObserver(this);
+    _searchController.dispose(); // Asumo que ya tienes esto
     super.dispose();
+  }
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Si la app pasó de estar minimizada a estar visible nuevamente
+    if (state == AppLifecycleState.resumed) {
+      if (kDebugMode) {
+        print('La app volvió a primer plano. Buscando actualizaciones silenciosamente...');
+      }
+      // Llamamos a nuestro método silencioso de nuevo
+      context.read<UpdaterProvider>().checkUpdateOnStartup(context);
+    }
   }
 
   Future<void> _loadItems() async {

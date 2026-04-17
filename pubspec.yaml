@@ -1,7 +1,7 @@
 name: bloc_de_notas
 description: "A Blog de notas Flutter project."
 publish_to: 'none'
-version: 4.0.1+1
+version: 4.1.1+1
 
 environment:
   sdk: ^3.9.0

@@ -28,6 +28,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'drawing_embed.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(
@@ -1197,19 +1198,51 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
               title: Text(AppLocalizations.of(context)!.home),
               onTap: () => Navigator.pop(context),
             ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: Text(AppLocalizations.of(context)!.settings),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SettingsScreen(),
-                  ),
-                );
-              },
-            ),
+            // Definimos el canal de comunicación
+static const platform = MethodChannel('com.estrin217.bloc_de_notas/settings');
+
+ListTile(
+  leading: const Icon(Icons.settings),
+  title: Text(AppLocalizations.of(context)!.settings),
+  onTap: () async {
+    Navigator.pop(context); // Cierra el drawer
+
+    if (Platform.isAndroid) {
+      // Lógica para Android: MethodChannel
+      final themeProvider = context.read<ThemeProvider>();
+      try {
+        final Map<dynamic, dynamic>? result = await platform.invokeMethod('openNativeSettings', {
+          'useDynamicColors': themeProvider.useDynamicColors,
+          'themeMode': themeProvider.themeMode.toString(),
+          'languageCode': themeProvider.locale.languageCode,
+        });
+
+        if (result != null) {
+          if (result['useDynamicColors'] != null) {
+            themeProvider.setUseDynamicColors(result['useDynamicColors']);
+          }
+          if (result['themeMode'] != null) {
+            ThemeMode mode = ThemeMode.system;
+            if (result['themeMode'] == 'ThemeMode.light') mode = ThemeMode.light;
+            if (result['themeMode'] == 'ThemeMode.dark') mode = ThemeMode.dark;
+            themeProvider.setThemeMode(mode);
+          }
+          // Puedes agregar aquí la actualización del locale si lo necesitas
+        }
+      } on PlatformException catch (e) {
+        debugPrint("Error al abrir ajustes nativos: '${e.message}'.");
+      }
+    } else {
+      // Lógica para iOS/Otros: Pantalla de Flutter
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const SettingsScreen(),
+        ),
+      );
+    }
+  },
+),
             const Divider(),
             ListTile(
               enabled:

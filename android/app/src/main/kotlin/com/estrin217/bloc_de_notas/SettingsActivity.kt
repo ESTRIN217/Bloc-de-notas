@@ -1,86 +1,114 @@
 package com.estrin217.bloc_de_notas
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 class SettingsActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Recibimos los valores que mandó Flutter
-        val initialDynamicColors = intent.getBooleanExtra("useDynamicColors", true)
-        val initialThemeMode = intent.getStringExtra("themeMode") ?: "ThemeMode.system"
+        enableEdgeToEdge()
+
+        // 1. Recibimos los valores actuales de Flutter
+        val initialDynamic = intent.getBooleanExtra("useDynamicColors", true)
+        val initialTheme = intent.getStringExtra("themeMode") ?: "ThemeMode.system"
 
         setContent {
-            // Variables de estado en Compose
-            var useDynamicColors by remember { mutableStateOf(initialDynamicColors) }
-            var themeMode by remember { mutableStateOf(initialThemeMode) }
+            // Estados locales de la pantalla
+            var useDynamicColors by remember { mutableStateOf(initialDynamic) }
+            var themeMode by remember { mutableStateOf(initialTheme) }
 
-            MaterialTheme {
+            // Aplicamos el esquema de color (Nativo o Dinámico)
+            val context = LocalContext.current
+            val colorScheme = when {
+                useDynamicColors && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                    if (themeMode == "ThemeMode.dark") dynamicDarkColorScheme(context) 
+                    else dynamicLightColorScheme(context)
+                }
+                themeMode == "ThemeMode.dark" -> darkColorScheme()
+                else -> lightColorScheme()
+            }
+
+            MaterialTheme(colorScheme = colorScheme) {
                 Scaffold(
                     topBar = {
                         TopAppBar(
-                            title = { Text("Ajustes") },
+                            title = { Text("Ajustes", fontWeight = FontWeight.SemiBold) },
                             navigationIcon = {
-                                IconButton(onClick = { returnDataToFlutter(useDynamicColors, themeMode) }) {
+                                IconButton(onClick = { finishWithResult(useDynamicColors, themeMode) }) {
                                     Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
                                 }
                             }
                         )
                     }
-                ) { padding ->
-                    Column(modifier = Modifier.padding(padding).padding(16.dp)) {
-                        
-                        Text("Apariencia", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                        Spacer(modifier = Modifier.height(8.dp))
+                ) { innerPadding ->
+                    Column(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .padding(16.dp)
+                            .fillMaxSize()
+                    ) {
+                        Text(
+                            text = "APARIENCIA",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
+                        )
 
-                        // Tarjeta estilo "SettingsGroup" de tu Flutter original
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            )
                         ) {
-                            Column {
-                                // Switch de Colores Dinámicos
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(Icons.Default.Palette, contentDescription = null)
-                                        Spacer(modifier = Modifier.width(16.dp))
-                                        Text("Usar colores dinámicos")
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                // Fila: Colores Dinámicos
+                                SettingsRow(
+                                    icon = Icons.Default.ColorLens,
+                                    title = "Colores dinámicos",
+                                    control = {
+                                        Switch(
+                                            checked = useDynamicColors,
+                                            onCheckedChange = { useDynamicColors = it }
+                                        )
                                     }
-                                    Switch(
-                                        checked = useDynamicColors,
-                                        onCheckedChange = { useDynamicColors = it }
-                                    )
-                                }
-                                
-                                Divider()
+                                )
 
-                                // Selector de Tema (Simplificado para el ejemplo)
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text("Modo de Tema")
-                                    // Aquí puedes implementar un DropdownMenu o un SegmentedButton nativo
-                                    Text(themeMode.replace("ThemeMode.", ""), style = MaterialTheme.typography.bodyMedium)
-                                }
+                                Spacer(modifier = Modifier.height(16.dp))
+                                HorizontalDivider(thickness = 0.5.dp)
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // Fila: Modo de Tema (Connected Buttons)
+                                Text(
+                                    "Modo de tema",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.padding(bottom = 12.dp)
+                                )
+                                
+                                ConnectedThemePicker(
+                                    selectedMode = themeMode,
+                                    onModeSelected = { themeMode = it }
+                                )
                             }
                         }
                     }
@@ -89,15 +117,71 @@ class SettingsActivity : ComponentActivity() {
         }
     }
 
-    // Método para devolver la información al presionar atrás
-    private fun returnDataToFlutter(dynamicColors: Boolean, theme: String) {
+    private fun finishWithResult(dynamic: Boolean, theme: String) {
         val resultIntent = Intent().apply {
-            putExtra("useDynamicColors", dynamicColors)
+            putExtra("useDynamicColors", dynamic) // Misma bandera que Flutter
             putExtra("themeMode", theme)
         }
         setResult(RESULT_OK, resultIntent)
         finish()
     }
+}
+
+@Composable
+fun SettingsRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, control: @Composable () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+        }
+        control()
+    }
+}
+
+@Composable
+fun ConnectedThemePicker(selectedMode: String, onModeSelected: (String) -> Unit) {
+    val modes = listOf(
+        "ThemeMode.light" to "Apagado",
+        "ThemeMode.system" to "Sistema",
+        "ThemeMode.dark" to "Encendido"
+    )
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        modes.forEachIndexed { index, (modeValue, label) ->
+            val isSelected = selectedMode == modeValue
+            
+            // Definimos la forma según la posición
+            val shape = when (index) {
+                0 -> RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp) // Izquierda
+                modes.size - 1 -> RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp) // Derecha
+                else -> RectangleShape // Medio
+            }
+
+            OutlinedButton(
+                onClick = { onModeSelected(modeValue) },
+                shape = shape,
+                modifier = Modifier
+                    .weight(1f)
+                    .offset(x = if (index > 0) (-1 * index).dp else 0.dp), // Solapamos bordes
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else androidx.compose.ui.graphics.Color.Transparent,
+                    contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                ),
+                border = ButtonDefaults.outlinedButtonBorder.copy()
+            ) {
+                Text(label, fontSize = 12.sp)
+            }
+        }
+    }
+}
     
     // Sobrescribimos el botón de retroceso físico del dispositivo
     @Deprecated("Deprecated in Java")

@@ -125,6 +125,14 @@ class SettingsActivity : ComponentActivity() {
         setResult(RESULT_OK, resultIntent)
         finish()
     }
+    // Sobrescribimos el botón de retroceso físico del dispositivo
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        // Asegurarnos de guardar la info si usan el gesto de atrás del sistema
+        // Para implementar esto correctamente en Compose moderno se usa BackHandler,
+        // pero este método clásico te funcionará como puente rápido.
+        super.onBackPressed() 
+    }
 }
 
 @Composable
@@ -180,15 +188,5 @@ fun ConnectedThemePicker(selectedMode: String, onModeSelected: (String) -> Unit)
                 Text(label, fontSize = 12.sp)
             }
         }
-    }
-}
-    
-    // Sobrescribimos el botón de retroceso físico del dispositivo
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        // Asegurarnos de guardar la info si usan el gesto de atrás del sistema
-        // Para implementar esto correctamente en Compose moderno se usa BackHandler,
-        // pero este método clásico te funcionará como puente rápido.
-        super.onBackPressed() 
     }
 }

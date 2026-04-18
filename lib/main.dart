@@ -117,10 +117,9 @@ class MyHomePage extends StatefulWidget {
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
-  
 }
 
-class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _isListView = true;
   SortMethod _sortMethod = SortMethod.custom;
   late List<ListItem> _items;
@@ -130,6 +129,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
   bool _isSelectionMode = false;
   final List<ListItem> _selectedItems = [];
   bool _isLoading = true;
+  // Definimos el canal de comunicación
+  static const platform = MethodChannel('com.estrin217.bloc_de_notas/settings');
 
   @override
   void initState() {
@@ -153,13 +154,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
     _searchController.dispose(); // Asumo que ya tienes esto
     super.dispose();
   }
-  
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Si la app pasó de estar minimizada a estar visible nuevamente
     if (state == AppLifecycleState.resumed) {
       if (kDebugMode) {
-        print('La app volvió a primer plano. Buscando actualizaciones silenciosamente...');
+        print(
+          'La app volvió a primer plano. Buscando actualizaciones silenciosamente...',
+        );
       }
       // Llamamos a nuestro método silencioso de nuevo
       context.read<UpdaterProvider>().checkUpdateOnStartup(context);
@@ -298,12 +301,21 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
           "insert": "\n",
           "attributes": {"list": "checked"},
         },
-        {"insert":"\n\nvoid main() {"},
-        {"insert":"\n","attributes":{"code-block":true}},
-        {"insert":"  print('Hola desde Bloc de notas');"},
-        {"insert":"\n","attributes":{"code-block":true}},
-        {"insert":"}"},
-        {"insert":"\n","attributes":{"code-block":true}},
+        {"insert": "\n\nvoid main() {"},
+        {
+          "insert": "\n",
+          "attributes": {"code-block": true},
+        },
+        {"insert": "  print('Hola desde Bloc de notas');"},
+        {
+          "insert": "\n",
+          "attributes": {"code-block": true},
+        },
+        {"insert": "}"},
+        {
+          "insert": "\n",
+          "attributes": {"code-block": true},
+        },
 
         {"insert": "\nEnlace útil: "},
         {
@@ -470,12 +482,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
           "attributes": {"list": "ordered"},
         },
         {
-          "insert":"Pierna adentro y fuera: 30 repeticiones.",
-          "attributed":{"bold":true}
+          "insert": "Pierna adentro y fuera: 30 repeticiones.",
+          "attributed": {"bold": true},
         },
         {
-          "insert":"\n",
-          "attributes":{"list":"ordered"}
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
         },
         {"insert": "Bloque 4: Core y Cardio Final"},
         {
@@ -1128,7 +1140,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
         height: 48, // Altura estándar de la barra de búsqueda en Google
         decoration: BoxDecoration(
           // surfaceContainerHigh es el color oficial de Google para cajas de búsqueda
-          color: Theme.of(context).colorScheme.surfaceContainerHigh, 
+          color: Theme.of(context).colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(24.0),
         ),
         child: TextField(
@@ -1139,15 +1151,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
               Icons.search,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            border: InputBorder.none, // Quitamos el borde para usar el del Container
+            border: InputBorder
+                .none, // Quitamos el borde para usar el del Container
             contentPadding: const EdgeInsets.symmetric(
               vertical: 12, // Centra el texto verticalmente
               horizontal: 20,
             ),
           ),
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
       ),
       actions: [
@@ -1177,7 +1188,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: _buildAppBar(),
       drawer: Drawer(
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow, // Color MD3
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerLow, // Color MD3
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
@@ -1198,51 +1211,58 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver{
               title: Text(AppLocalizations.of(context)!.home),
               onTap: () => Navigator.pop(context),
             ),
-            // Definimos el canal de comunicación
-static const platform = MethodChannel('com.estrin217.bloc_de_notas/settings');
 
-ListTile(
-  leading: const Icon(Icons.settings),
-  title: Text(AppLocalizations.of(context)!.settings),
-  onTap: () async {
-    Navigator.pop(context); // Cierra el drawer
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: Text(AppLocalizations.of(context)!.settings),
+              onTap: () async {
+                Navigator.pop(context); // Cierra el drawer
 
-    if (Platform.isAndroid) {
-      // Lógica para Android: MethodChannel
-      final themeProvider = context.read<ThemeProvider>();
-      try {
-        final Map<dynamic, dynamic>? result = await platform.invokeMethod('openNativeSettings', {
-          'useDynamicColors': themeProvider.useDynamicColors,
-          'themeMode': themeProvider.themeMode.toString(),
-          'languageCode': themeProvider.locale.languageCode,
-        });
+                if (Platform.isAndroid) {
+                  // Lógica para Android: MethodChannel
+                  final themeProvider = context.read<ThemeProvider>();
+                  try {
+                    final Map<dynamic, dynamic>? result = await platform
+                        .invokeMethod('openNativeSettings', {
+                          'useDynamicColors': themeProvider.useDynamicColors,
+                          'themeMode': themeProvider.themeMode.toString(),
+                          'languageCode': themeProvider.locale.languageCode,
+                        });
 
-        if (result != null) {
-          if (result['useDynamicColors'] != null) {
-            themeProvider.setUseDynamicColors(result['useDynamicColors']);
-          }
-          if (result['themeMode'] != null) {
-            ThemeMode mode = ThemeMode.system;
-            if (result['themeMode'] == 'ThemeMode.light') mode = ThemeMode.light;
-            if (result['themeMode'] == 'ThemeMode.dark') mode = ThemeMode.dark;
-            themeProvider.setThemeMode(mode);
-          }
-          // Puedes agregar aquí la actualización del locale si lo necesitas
-        }
-      } on PlatformException catch (e) {
-        debugPrint("Error al abrir ajustes nativos: '${e.message}'.");
-      }
-    } else {
-      // Lógica para iOS/Otros: Pantalla de Flutter
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const SettingsScreen(),
-        ),
-      );
-    }
-  },
-),
+                    if (result != null) {
+                      if (result['useDynamicColors'] != null) {
+                        themeProvider.setUseDynamicColors(
+                          result['useDynamicColors'],
+                        );
+                      }
+                      if (result['themeMode'] != null) {
+                        ThemeMode mode = ThemeMode.system;
+                        if (result['themeMode'] == 'ThemeMode.light') {
+                          mode = ThemeMode.light;
+                        }
+                        if (result['themeMode'] == 'ThemeMode.dark') {
+                          mode = ThemeMode.dark;
+                        }
+                        themeProvider.setThemeMode(mode);
+                      }
+                      // Puedes agregar aquí la actualización del locale si lo necesitas
+                    }
+                  } on PlatformException catch (e) {
+                    debugPrint(
+                      "Error al abrir ajustes nativos: '${e.message}'.",
+                    );
+                  }
+                } else {
+                  // Lógica para iOS/Otros: Pantalla de Flutter
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
+                  );
+                }
+              },
+            ),
             const Divider(),
             ListTile(
               enabled:
@@ -1318,95 +1338,113 @@ ListTile(
     // 2. Configuramos el editor en modo lectura
     final richTextPreview = IgnorePointer(
       // IgnorePointer asegura que el toque pase al InkWell de la tarjeta
+      child: quill.QuillEditor.basic(
+        controller: previewController,
+        config: quill.QuillEditorConfig(
+          showCursor: false,
+          padding: EdgeInsets.zero,
+          scrollable: false,
 
-child: quill.QuillEditor.basic(
-  controller: previewController,
-  config: quill.QuillEditorConfig(
-    showCursor: false,
-    padding: EdgeInsets.zero,
-    scrollable: false,
-    
-    // AQUÍ ESTÁ EL CAMBIO CLAVE:
-    customStyles: quill.DefaultStyles(
-      // Estilo para texto normal
-      paragraph: quill.DefaultTextBlockStyle(
-        TextStyle(color: dynamicTextColor, fontSize: 16),
-        const quill.HorizontalSpacing(0, 0),
-        const quill.VerticalSpacing(0, 0),
-        const quill.VerticalSpacing(0, 0),
-        null,
+          // AQUÍ ESTÁ EL CAMBIO CLAVE:
+          customStyles: quill.DefaultStyles(
+            // Estilo para texto normal
+            paragraph: quill.DefaultTextBlockStyle(
+              TextStyle(color: dynamicTextColor, fontSize: 16),
+              const quill.HorizontalSpacing(0, 0),
+              const quill.VerticalSpacing(0, 0),
+              const quill.VerticalSpacing(0, 0),
+              null,
+            ),
+            // Estilo para Títulos Grandes (H1)
+            h1: quill.DefaultTextBlockStyle(
+              TextStyle(
+                color: dynamicTextColor,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+              const quill.HorizontalSpacing(0, 0),
+              const quill.VerticalSpacing(10, 0),
+              const quill.VerticalSpacing(0, 0),
+              null,
+            ),
+            // Estilo para Títulos Medianos (H2)
+            h2: quill.DefaultTextBlockStyle(
+              TextStyle(
+                color: dynamicTextColor,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+              const quill.HorizontalSpacing(0, 0),
+              const quill.VerticalSpacing(8, 0),
+              const quill.VerticalSpacing(0, 0),
+              null,
+            ),
+            // Estilo para Listas (Bullets y Checkboxes)
+            lists: quill.DefaultListBlockStyle(
+              TextStyle(color: dynamicTextColor, fontSize: 16),
+              const quill.HorizontalSpacing(0, 0),
+              const quill.VerticalSpacing(0, 0),
+              const quill.VerticalSpacing(0, 0),
+              null,
+              null, // Algunos versiones requieren un parámetro extra aquí para el checkbox
+            ),
+            // Estilo para el texto pequeño
+            small: TextStyle(color: dynamicTextColor, fontSize: 12),
+            // 1. Citas (Blockquotes) - La línea con la barra lateral
+            quote: quill.DefaultTextBlockStyle(
+              TextStyle(
+                color: dynamicTextColor,
+                fontSize: 16,
+                fontStyle: FontStyle.italic,
+              ),
+              const quill.HorizontalSpacing(16, 0), // Espacio para la barra
+              const quill.VerticalSpacing(8, 8),
+              const quill.VerticalSpacing(0, 0),
+              // Esto es para que la barra lateral no sea blanca si no quieres
+              BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    width: 4,
+                    color: dynamicTextColor.withValues(alpha: 0.3),
+                  ),
+                ),
+              ),
+            ),
+
+            // 2. Enlaces (Links)
+            link: TextStyle(
+              color: isDarkBackground
+                  ? Colors.blue[300]
+                  : Colors.blue[700], // Azul legible según fondo
+              decoration: TextDecoration.underline,
+            ),
+
+            // 4. Marcadores de listas (Los puntitos o números)
+            indent: quill.DefaultTextBlockStyle(
+              TextStyle(color: dynamicTextColor),
+              const quill.HorizontalSpacing(0, 0),
+              const quill.VerticalSpacing(0, 0),
+              const quill.VerticalSpacing(0, 0),
+              null,
+            ),
+
+            // 5. Estilo "Leading" (Para asegurar que el checkbox/bullet use el color)
+            leading: quill.DefaultTextBlockStyle(
+              TextStyle(color: dynamicTextColor),
+              const quill.HorizontalSpacing(0, 0),
+              const quill.VerticalSpacing(0, 0),
+              const quill.VerticalSpacing(0, 0),
+              null,
+            ),
+          ),
+
+          embedBuilders: [
+            ...FlutterQuillEmbeds.editorBuilders(),
+            AudioEmbedBuilder(),
+            DrawingEmbedBuilder(),
+          ],
+        ),
       ),
-      // Estilo para Títulos Grandes (H1)
-      h1: quill.DefaultTextBlockStyle(
-        TextStyle(color: dynamicTextColor, fontSize: 28, fontWeight: FontWeight.bold),
-        const quill.HorizontalSpacing(0, 0),
-        const quill.VerticalSpacing(10, 0),
-        const quill.VerticalSpacing(0, 0),
-        null,
-      ),
-      // Estilo para Títulos Medianos (H2)
-      h2: quill.DefaultTextBlockStyle(
-        TextStyle(color: dynamicTextColor, fontSize: 22, fontWeight: FontWeight.bold),
-        const quill.HorizontalSpacing(0, 0),
-        const quill.VerticalSpacing(8, 0),
-        const quill.VerticalSpacing(0, 0),
-        null,
-      ),
-      // Estilo para Listas (Bullets y Checkboxes)
-      lists: quill.DefaultListBlockStyle(
-        TextStyle(color: dynamicTextColor, fontSize: 16),
-        const quill.HorizontalSpacing(0, 0),
-        const quill.VerticalSpacing(0, 0),
-        const quill.VerticalSpacing(0, 0),
-        null,
-        null, // Algunos versiones requieren un parámetro extra aquí para el checkbox
-      ),
-      // Estilo para el texto pequeño
-      small: TextStyle(color: dynamicTextColor, fontSize: 12),
-        // 1. Citas (Blockquotes) - La línea con la barra lateral
-  quote: quill.DefaultTextBlockStyle(
-    TextStyle(color: dynamicTextColor, fontSize: 16, fontStyle: FontStyle.italic),
-    const quill.HorizontalSpacing(16, 0), // Espacio para la barra
-    const quill.VerticalSpacing(8, 8),
-    const quill.VerticalSpacing(0, 0),
-    // Esto es para que la barra lateral no sea blanca si no quieres
-    BoxDecoration(
-      border: Border(left: BorderSide(width: 4, color: dynamicTextColor.withValues(alpha: 0.3))),
-    ),
-  ),
-
-  // 2. Enlaces (Links)
-  link: TextStyle(
-    color: isDarkBackground ? Colors.blue[300] : Colors.blue[700], // Azul legible según fondo
-    decoration: TextDecoration.underline,
-  ),
-
-  // 4. Marcadores de listas (Los puntitos o números)
-  indent: quill.DefaultTextBlockStyle(
-    TextStyle(color: dynamicTextColor),
-    const quill.HorizontalSpacing(0, 0),
-    const quill.VerticalSpacing(0, 0),
-    const quill.VerticalSpacing(0, 0),
-    null,
-  ),
-
-  // 5. Estilo "Leading" (Para asegurar que el checkbox/bullet use el color)
-  leading: quill.DefaultTextBlockStyle(
-    TextStyle(color: dynamicTextColor),
-    const quill.HorizontalSpacing(0, 0),
-    const quill.VerticalSpacing(0, 0),
-    const quill.VerticalSpacing(0, 0),
-    null,
-  ),
-    ),
-
-    embedBuilders: [
-      ...FlutterQuillEmbeds.editorBuilders(),
-      AudioEmbedBuilder(),
-      DrawingEmbedBuilder(),
-    ],
-  ),
-),
     );
 
     final contentColumn = Column(
@@ -1449,13 +1487,15 @@ child: quill.QuillEditor.basic(
           ? Theme.of(context).colorScheme.primaryContainer
           : (item.backgroundColor != null
                 ? Color(item.backgroundColor!)
-                : Theme.of(context).colorScheme.surfaceContainerLow), // Fondo sutil MD3 para tarjetas
+                : Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerLow), // Fondo sutil MD3 para tarjetas
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
           // Usamos outlineVariant para un borde suave y elegante
-          color: isSelected 
-              ? Theme.of(context).colorScheme.primary 
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.outlineVariant,
           width: 1,
         ),
@@ -1560,10 +1600,10 @@ child: quill.QuillEditor.basic(
         children: generatedChildren,
         onReorder: (reorderedListFunction) {
           setState(() {
-            // El paquete nos proporciona una función (reorderedListFunction) 
+            // El paquete nos proporciona una función (reorderedListFunction)
             // que aplica el cambio de orden automáticamente a nuestra lista.
             _items = reorderedListFunction(_items);
-            
+
             // Actualizamos nuestra lista filtrada y guardamos
             _filteredItems = List.from(_items);
             _saveItems();

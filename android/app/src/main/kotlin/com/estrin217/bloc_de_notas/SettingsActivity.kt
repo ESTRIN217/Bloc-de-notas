@@ -17,13 +17,12 @@ import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 class SettingsActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -65,13 +64,12 @@ class SettingsActivity : ComponentActivity() {
                         modifier = Modifier
                             .padding(innerPadding)
                             .fillMaxSize()
-                            // El fondo de la pantalla debe contrastar sutilmente con las tarjetas
-                            .background(MaterialTheme.colorScheme.surface) 
+                            .background(MaterialTheme.colorScheme.surface)
                             .verticalScroll(rememberScrollState())
                     ) {
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Título de la sección (Como "Interfaz" en tu imagen)
+                        // Título de la sección
                         Text(
                             text = "Apariencia",
                             style = MaterialTheme.typography.labelLarge,
@@ -79,12 +77,12 @@ class SettingsActivity : ComponentActivity() {
                             modifier = Modifier.padding(start = 24.dp, bottom = 8.dp)
                         )
 
-                        // Tarjeta agrupada que contiene las opciones
+                        // Contenedor agrupado de la lista
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp),
-                            shape = RoundedCornerShape(24.dp), // Bordes bien redondeados
+                            shape = RoundedCornerShape(24.dp),
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                             ),
@@ -92,7 +90,7 @@ class SettingsActivity : ComponentActivity() {
                         ) {
                             Column(modifier = Modifier.padding(vertical = 8.dp)) {
                                 
-                                // Ítem 1: Colores Dinámicos
+                                // Ítem 1: Colores Dinámicos usando ListItem
                                 SettingsRow(
                                     icon = Icons.Default.ColorLens,
                                     title = "Colores dinámicos",
@@ -104,37 +102,33 @@ class SettingsActivity : ComponentActivity() {
                                     }
                                 )
 
-                                // Divisor sutil entre ítems del grupo
                                 HorizontalDivider(
                                     modifier = Modifier.padding(horizontal = 24.dp),
                                     thickness = 1.dp, 
                                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
                                 )
 
-                                // Ítem 2: Modo oscuro
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                                ) {
-                                    // Fila con el ícono y título para el modo oscuro
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                // Ítem 2: Título de Modo Oscuro usando ListItem
+                                ListItem(
+                                    leadingContent = {
                                         IconContainer(icon = Icons.Default.DarkMode)
-                                        Spacer(modifier = Modifier.width(16.dp))
+                                    },
+                                    headlineContent = {
                                         Text("Modo oscuro", style = MaterialTheme.typography.bodyLarge)
-                                    }
-                                    
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    
-                                    // Selector de botones que pediste separado
-                                    ConnectedThemePicker(
-                                        selectedMode = themeMode,
-                                        onModeSelected = { themeMode = it }
+                                    },
+                                    colors = ListItemDefaults.colors(
+                                        containerColor = Color.Transparent // Fondo transparente para ver la Card
                                     )
-                                }
+                                )
+                                
+                                // Selector de botones rellenados
+                                ConnectedThemePicker(
+                                    selectedMode = themeMode,
+                                    onModeSelected = { themeMode = it }
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
-                        
                         Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
@@ -157,13 +151,12 @@ class SettingsActivity : ComponentActivity() {
     }
 }
 
-// === COMPONENTES DE DISEÑO ===
+// === COMPONENTES REUTILIZABLES ===
 
-// Nuevo componente para recrear el fondo redondeado de los íconos de la imagen
 @Composable
 fun IconContainer(icon: androidx.compose.ui.graphics.vector.ImageVector) {
     Surface(
-        shape = RoundedCornerShape(12.dp), // Forma de rectángulo redondeado
+        shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.secondaryContainer,
         modifier = Modifier.size(40.dp)
     ) {
@@ -171,33 +164,36 @@ fun IconContainer(icon: androidx.compose.ui.graphics.vector.ImageVector) {
             imageVector = icon, 
             contentDescription = null, 
             tint = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier.padding(8.dp) // Tamaño del ícono dentro de su caja
+            modifier = Modifier.padding(8.dp)
         )
     }
 }
 
+// Implementación de ListItem que proporcionaste
 @Composable
 fun SettingsRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector, 
     title: String, 
     control: @Composable () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp), // Padding interno similar al de la imagen
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconContainer(icon = icon) // Usamos el contenedor que creamos arriba
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-        }
-        control()
-    }
+    ListItem(
+        leadingContent = {
+            IconContainer(icon = icon)
+        },
+        headlineContent = { 
+            Text(title, style = MaterialTheme.typography.bodyLarge) 
+        },
+        trailingContent = {
+            control()
+        },
+        // Hacemos el fondo transparente para que se mezcle con la Card grupal
+        colors = ListItemDefaults.colors(
+            containerColor = Color.Transparent
+        )
+    )
 }
 
+// Implementación de tus botones rellenados conectados
 @Composable
 fun ConnectedThemePicker(selectedMode: String, onModeSelected: (String) -> Unit) {
     val modes = listOf(
@@ -207,31 +203,37 @@ fun ConnectedThemePicker(selectedMode: String, onModeSelected: (String) -> Unit)
     )
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp) // El espaciado que solicitaste
     ) {
         modes.forEachIndexed { index, (modeValue, label) ->
             val isSelected = selectedMode == modeValue
             
             val shape = when (index) {
-                0 -> RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp)
-                modes.size - 1 -> RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
+                0 -> RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp)
+                modes.size - 1 -> RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp)
                 else -> RectangleShape
             }
 
-            OutlinedButton(
+            Button(
                 onClick = { onModeSelected(modeValue) },
+                modifier = Modifier.weight(1f),
                 shape = shape,
-                modifier = Modifier
-                    .weight(1f)
-                    .offset(x = if (index > 0) (-1 * index).dp else 0.dp), 
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else androidx.compose.ui.graphics.Color.Transparent,
-                    contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                ),
-                border = ButtonDefaults.outlinedButtonBorder.copy()
+                contentPadding = PaddingValues(0.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isSelected) 
+                        MaterialTheme.colorScheme.primaryContainer 
+                    else 
+                        MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = if (isSelected) 
+                        MaterialTheme.colorScheme.onPrimaryContainer 
+                    else 
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                )
             ) {
-                Text(label, fontSize = 12.sp)
+                Text(label, style = MaterialTheme.typography.bodySmall)
             }
         }
     }

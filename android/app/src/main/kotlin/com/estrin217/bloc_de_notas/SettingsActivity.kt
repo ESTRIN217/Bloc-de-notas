@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,16 +31,13 @@ class SettingsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // 1. Recibimos los valores actuales de Flutter
         val initialDynamic = intent.getBooleanExtra("useDynamicColors", true)
         val initialTheme = intent.getStringExtra("themeMode") ?: "ThemeMode.system"
 
         setContent {
-            // Estados locales de la pantalla
             var useDynamicColors by remember { mutableStateOf(initialDynamic) }
             var themeMode by remember { mutableStateOf(initialTheme) }
 
-            // Aplicamos el esquema de color (Nativo o Dinámico)
             val context = LocalContext.current
             val colorScheme = when {
                 useDynamicColors && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
@@ -53,7 +52,7 @@ class SettingsActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         TopAppBar(
-                            title = { Text("Ajustes", fontWeight = FontWeight.SemiBold) },
+                            title = { Text("Configuración", fontWeight = FontWeight.SemiBold) },
                             navigationIcon = {
                                 IconButton(onClick = { finishWithResult(useDynamicColors, themeMode) }) {
                                     Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
@@ -62,55 +61,78 @@ class SettingsActivity : ComponentActivity() {
                         )
                     }
                 ) { innerPadding ->
-                    // 2. Aquí cambiamos la estructura para que funcione como una lista
                     Column(
                         modifier = Modifier
                             .padding(innerPadding)
-                            .padding(horizontal = 16.dp)
                             .fillMaxSize()
-                            .verticalScroll(rememberScrollState()) // Permite deslizar si hay más elementos
+                            // El fondo de la pantalla debe contrastar sutilmente con las tarjetas
+                            .background(MaterialTheme.colorScheme.surface) 
+                            .verticalScroll(rememberScrollState())
                     ) {
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Título de la sección
+                        // Título de la sección (Como "Interfaz" en tu imagen)
                         Text(
-                            text = "APARIENCIA",
+                            text = "Apariencia",
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(start = 8.dp, bottom = 16.dp)
+                            modifier = Modifier.padding(start = 24.dp, bottom = 8.dp)
                         )
 
-                        // 3. Fila 1 de la lista: Colores Dinámicos (Independiente)
-                        SettingsRow(
-                            icon = Icons.Default.ColorLens,
-                            title = "Colores dinámicos",
-                            control = {
-                                Switch(
-                                    checked = useDynamicColors,
-                                    onCheckedChange = { useDynamicColors = it }
-                                )
-                            }
-                        )
-
-                        // Separador visual en la lista
-                        Spacer(modifier = Modifier.height(16.dp))
-                        HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // 4. Fila 2 de la lista: Modo de Tema (Totalmente separado del Switch)
-                        Column(
-                            modifier = Modifier.fillMaxWidth()
+                        // Tarjeta agrupada que contiene las opciones
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            shape = RoundedCornerShape(24.dp), // Bordes bien redondeados
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                         ) {
-                            Text(
-                                "Modo oscuro",
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(start = 8.dp, bottom = 12.dp)
-                            )
-                            
-                            ConnectedThemePicker(
-                                selectedMode = themeMode,
-                                onModeSelected = { themeMode = it }
-                            )
+                            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                                
+                                // Ítem 1: Colores Dinámicos
+                                SettingsRow(
+                                    icon = Icons.Default.ColorLens,
+                                    title = "Colores dinámicos",
+                                    control = {
+                                        Switch(
+                                            checked = useDynamicColors,
+                                            onCheckedChange = { useDynamicColors = it }
+                                        )
+                                    }
+                                )
+
+                                // Divisor sutil entre ítems del grupo
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(horizontal = 24.dp),
+                                    thickness = 1.dp, 
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                                )
+
+                                // Ítem 2: Modo oscuro
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                                ) {
+                                    // Fila con el ícono y título para el modo oscuro
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        IconContainer(icon = Icons.Default.DarkMode)
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        Text("Modo oscuro", style = MaterialTheme.typography.bodyLarge)
+                                    }
+                                    
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    
+                                    // Selector de botones que pediste separado
+                                    ConnectedThemePicker(
+                                        selectedMode = themeMode,
+                                        onModeSelected = { themeMode = it }
+                                    )
+                                }
+                            }
                         }
                         
                         Spacer(modifier = Modifier.height(24.dp))
@@ -122,24 +144,38 @@ class SettingsActivity : ComponentActivity() {
 
     private fun finishWithResult(dynamic: Boolean, theme: String) {
         val resultIntent = Intent().apply {
-            putExtra("useDynamicColors", dynamic) // Misma bandera que Flutter
+            putExtra("useDynamicColors", dynamic) 
             putExtra("themeMode", theme)
         }
         setResult(RESULT_OK, resultIntent)
         finish()
     }
 
-    // Sobrescribimos el botón de retroceso físico del dispositivo
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        // Asegurarnos de guardar la info si usan el gesto de atrás del sistema
-        // Para implementar esto correctamente en Compose moderno se usa BackHandler,
-        // pero este método clásico te funcionará como puente rápido.
         super.onBackPressed()
     }
 }
 
-// 5. Componentes extraídos de UI (sin cambios lógicos, solo visuales)
+// === COMPONENTES DE DISEÑO ===
+
+// Nuevo componente para recrear el fondo redondeado de los íconos de la imagen
+@Composable
+fun IconContainer(icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    Surface(
+        shape = RoundedCornerShape(12.dp), // Forma de rectángulo redondeado
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        modifier = Modifier.size(40.dp)
+    ) {
+        Icon(
+            imageVector = icon, 
+            contentDescription = null, 
+            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier.padding(8.dp) // Tamaño del ícono dentro de su caja
+        )
+    }
+}
+
 @Composable
 fun SettingsRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector, 
@@ -149,13 +185,13 @@ fun SettingsRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 8.dp), // Agregamos un poco de respiro al item
+            .padding(horizontal = 16.dp, vertical = 12.dp), // Padding interno similar al de la imagen
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(modifier = Modifier.width(12.dp))
+            IconContainer(icon = icon) // Usamos el contenedor que creamos arriba
+            Spacer(modifier = Modifier.width(16.dp))
             Text(title, style = MaterialTheme.typography.bodyLarge)
         }
         control()
@@ -177,11 +213,10 @@ fun ConnectedThemePicker(selectedMode: String, onModeSelected: (String) -> Unit)
         modes.forEachIndexed { index, (modeValue, label) ->
             val isSelected = selectedMode == modeValue
             
-            // Definimos la forma según la posición
             val shape = when (index) {
-                0 -> RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp) // Izquierda
-                modes.size - 1 -> RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp) // Derecha
-                else -> RectangleShape // Medio
+                0 -> RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp)
+                modes.size - 1 -> RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
+                else -> RectangleShape
             }
 
             OutlinedButton(
@@ -189,7 +224,7 @@ fun ConnectedThemePicker(selectedMode: String, onModeSelected: (String) -> Unit)
                 shape = shape,
                 modifier = Modifier
                     .weight(1f)
-                    .offset(x = if (index > 0) (-1 * index).dp else 0.dp), // Solapamos bordes
+                    .offset(x = if (index > 0) (-1 * index).dp else 0.dp), 
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else androidx.compose.ui.graphics.Color.Transparent,
                     contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface

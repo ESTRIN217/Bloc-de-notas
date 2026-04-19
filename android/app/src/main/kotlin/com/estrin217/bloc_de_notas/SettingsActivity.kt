@@ -1,7 +1,6 @@
 package com.estrin217.bloc_de_notas
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,49 +11,39 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ColorLens
-import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
-    @OptIn(ExperimentalMaterial3Api::class)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         val initialDynamic = intent.getBooleanExtra("useDynamicColors", true)
-        val initialTheme = intent.getStringExtra("themeMode") ?: "ThemeMode.system"
+        val initialTheme = intent.getStringExtra("themeMode") ?: "system"
 
         setContent {
             var useDynamicColors by remember { mutableStateOf(initialDynamic) }
             var themeMode by remember { mutableStateOf(initialTheme) }
+            val scrollState = rememberScrollState()
 
-            val context = LocalContext.current
-            val colorScheme = when {
-                useDynamicColors && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                    if (themeMode == "ThemeMode.dark") dynamicDarkColorScheme(context)
-                    else dynamicLightColorScheme(context)
-                }
-                themeMode == "ThemeMode.dark" -> darkColorScheme()
-                else -> lightColorScheme()
-            }
-
-            MaterialTheme(colorScheme = colorScheme) {
+            MaterialTheme {
                 Scaffold(
                     topBar = {
                         TopAppBar(
                             title = { Text("Configuración", fontWeight = FontWeight.SemiBold) },
                             navigationIcon = {
-                                IconButton(onClick = { finishWithResult(useDynamicColors, themeMode) }) {
-                                    Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
+                                IconButton(onClick = { finish() }) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
                                 }
                             }
                         )
@@ -65,175 +54,174 @@ class SettingsActivity : ComponentActivity() {
                             .padding(innerPadding)
                             .fillMaxSize()
                             .background(MaterialTheme.colorScheme.surface)
-                            .verticalScroll(rememberScrollState())
+                            .verticalScroll(scrollState)
+                            .padding(bottom = 24.dp)
                     ) {
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Título de la sección
-                        Text(
-                            text = "Apariencia",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(start = 24.dp, bottom = 8.dp)
-                        )
-
-                        // Contenedor agrupado de la lista
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                            ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                                
-                                // Ítem 1: Colores Dinámicos usando ListItem
-                                SettingsRow(
-                                    icon = Icons.Default.ColorLens,
-                                    title = "Colores dinámicos",
-                                    control = {
-                                        Switch(
-                                            checked = useDynamicColors,
-                                            onCheckedChange = { useDynamicColors = it }
-                                        )
-                                    }
-                                )
-
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(horizontal = 24.dp),
-                                    thickness = 1.dp, 
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                                )
-
-                                // Ítem 2: Título de Modo Oscuro usando ListItem
-                                ListItem(
-                                    leadingContent = {
-                                        IconContainer(icon = Icons.Default.DarkMode)
-                                    },
-                                    headlineContent = {
-                                        Text("Modo oscuro", style = MaterialTheme.typography.bodyLarge)
-                                    },
-                                    colors = ListItemDefaults.colors(
-                                        containerColor = Color.Transparent // Fondo transparente para ver la Card
+                        
+                        // SECCIÓN: APARIENCIA
+                        SectionTitle("Apariencia")
+                        SegmentedContainer {
+                            SettingsListItem(
+                                icon = Icons.Default.Palette,
+                                title = "Colores dinámicos",
+                                trailing = {
+                                    Switch(
+                                        checked = useDynamicColors,
+                                        onCheckedChange = { useDynamicColors = it }
                                     )
-                                )
-                                
-                                // Selector de botones rellenados
-                                ConnectedThemePicker(
-                                    selectedMode = themeMode,
-                                    onModeSelected = { themeMode = it }
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
+                                }
+                            )
+                            SettingsDivider()
+                            ListItem(
+                                leadingContent = { IconContainer(Icons.Default.DarkMode) },
+                                headlineContent = { Text("Modo oscuro") },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            )
+                            ThemePickerRow(
+                                selectedMode = themeMode,
+                                onModeSelected = { themeMode = it }
+                            )
                         }
-                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // SECCIÓN: INFORMACIÓN (Actualizador, Registro, Acerca de)
+                        SectionTitle("Información")
+                        SegmentedContainer {
+                            // 1. Actualizador
+                            SettingsListItem(
+                                icon = Icons.Default.Update,
+                                title = "Actualizar aplicación",
+                                subtitle = "Buscar nuevas versiones",
+                                onClick = { /* Abrir UpdaterScreen */ }
+                            )
+                            SettingsDivider()
+
+                            // 2. Registro de cambios
+                            SettingsListItem(
+                                icon = Icons.Default.History,
+                                title = "Registro de cambios",
+                                subtitle = "Novedades de la versión 4.1.0",
+                                onClick = { /* Mostrar changelog */ }
+                            )
+                            SettingsDivider()
+
+                            // 3. Acerca de
+                            SettingsListItem(
+                                icon = Icons.Default.Info,
+                                title = "Acerca de",
+                                subtitle = "Información del desarrollador y licencias",
+                                onClick = { /* Abrir AboutScreen */ }
+                            )
+                        }
+
+                        // SECCIÓN: AYUDA (Opcional, separada para limpieza)
+                        SectionTitle("Soporte")
+                        SegmentedContainer {
+                            SettingsListItem(
+                                icon = Icons.Default.HelpOutline,
+                                title = "Ayuda y comentarios",
+                                onClick = { /* Enviar feedback */ }
+                            )
+                        }
                     }
                 }
             }
         }
     }
-
-    private fun finishWithResult(dynamic: Boolean, theme: String) {
-        val resultIntent = Intent().apply {
-            putExtra("useDynamicColors", dynamic) 
-            putExtra("themeMode", theme)
-        }
-        setResult(RESULT_OK, resultIntent)
-        finish()
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        super.onBackPressed()
-    }
 }
 
-// === COMPONENTES REUTILIZABLES ===
+// === COMPONENTES UI REUTILIZABLES ===
 
 @Composable
-fun IconContainer(icon: androidx.compose.ui.graphics.vector.ImageVector) {
+fun SectionTitle(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 28.dp, top = 24.dp, bottom = 8.dp)
+    )
+}
+
+@Composable
+fun SegmentedContainer(content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        content = content
+    )
+}
+
+@Composable
+fun SettingsListItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String? = null,
+    onClick: (() -> Unit)? = null,
+    trailing: @Composable (() -> Unit)? = null
+) {
+    ListItem(
+        modifier = if (onClick != null) Modifier.fillMaxWidth() else Modifier,
+        leadingContent = { IconContainer(icon) },
+        headlineContent = { Text(title, style = MaterialTheme.typography.bodyLarge) },
+        supportingContent = subtitle?.let { { Text(it) } },
+        trailingContent = trailing,
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+    )
+}
+
+@Composable
+fun IconContainer(icon: ImageVector) {
     Surface(
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.secondaryContainer,
         modifier = Modifier.size(40.dp)
     ) {
-        Icon(
-            imageVector = icon, 
-            contentDescription = null, 
-            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier.padding(8.dp)
-        )
+        Box(contentAlignment = androidx.compose.ui.Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.size(20.dp)
+            )
+        }
     }
 }
 
-// Implementación de ListItem que proporcionaste
 @Composable
-fun SettingsRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector, 
-    title: String, 
-    control: @Composable () -> Unit
-) {
-    ListItem(
-        leadingContent = {
-            IconContainer(icon = icon)
-        },
-        headlineContent = { 
-            Text(title, style = MaterialTheme.typography.bodyLarge) 
-        },
-        trailingContent = {
-            control()
-        },
-        // Hacemos el fondo transparente para que se mezcle con la Card grupal
-        colors = ListItemDefaults.colors(
-            containerColor = Color.Transparent
-        )
+fun SettingsDivider() {
+    HorizontalDivider(
+        modifier = Modifier.padding(horizontal = 24.dp),
+        thickness = 0.5.dp,
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
     )
 }
 
-// Implementación de tus botones rellenados conectados
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConnectedThemePicker(selectedMode: String, onModeSelected: (String) -> Unit) {
-    val modes = listOf(
-        "ThemeMode.light" to "Apagado",
-        "ThemeMode.system" to "Sistema",
-        "ThemeMode.dark" to "Encendido"
-    )
-
+fun ThemePickerRow(selectedMode: String, onModeSelected: (String) -> Unit) {
+    val options = listOf("light" to "Claro", "system" to "Sistema", "dark" to "Oscuro")
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp) // El espaciado que solicitaste
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
     ) {
-        modes.forEachIndexed { index, (modeValue, label) ->
-            val isSelected = selectedMode == modeValue
-            
-            val shape = when (index) {
-                0 -> RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp)
-                modes.size - 1 -> RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp)
-                else -> RectangleShape
-            }
-
-            Button(
-                onClick = { onModeSelected(modeValue) },
+        options.forEachIndexed { index, (value, label) ->
+            val isSelected = selectedMode == value
+            ToggleButton(
+                checked = isSelected,
+                onCheckedChange = { onModeSelected(value) },
                 modifier = Modifier.weight(1f),
-                shape = shape,
-                contentPadding = PaddingValues(0.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) 
-                        MaterialTheme.colorScheme.primaryContainer 
-                    else 
-                        MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = if (isSelected) 
-                        MaterialTheme.colorScheme.onPrimaryContainer 
-                    else 
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                shapes = when (index) {
+                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                }
             ) {
-                Text(label, style = MaterialTheme.typography.bodySmall)
+                if (isSelected) {
+                    Icon(Icons.Default.Check, null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                }
+                Text(label, style = MaterialTheme.typography.labelMedium)
             }
         }
     }

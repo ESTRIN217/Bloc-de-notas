@@ -1264,7 +1264,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               },
             ),
             const Divider(),
-            if (!kIsWeb)
               ListTile(
               enabled:
                   false, // Mantiene el ícono y texto con un tono desactivado

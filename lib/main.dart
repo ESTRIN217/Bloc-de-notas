@@ -72,7 +72,7 @@ class MyApp extends StatelessWidget {
             }
 
             return MaterialApp(
-              title: 'Flutter Notes',
+              title: 'Bloc de notas',
               theme: ThemeData(
                 colorScheme: lightColorScheme,
                 useMaterial3: true,

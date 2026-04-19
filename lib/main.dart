@@ -482,12 +482,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           "attributes": {"list": "ordered"},
         },
         {
-          "insert": "Pierna adentro y fuera: 30 repeticiones.",
-          "attributed": {"bold": true},
+          "insert":"Pierna adentro y fuera: 30 repeticiones.",
+          "attributes":{"bold":true}
         },
         {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
+          "insert":"\n",
+          "attributes":{"list":"ordered"}
         },
         {"insert": "Bloque 4: Core y Cardio Final"},
         {
@@ -1264,7 +1264,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               },
             ),
             const Divider(),
-            ListTile(
+            if (!kIsWeb)
+              ListTile(
               enabled:
                   false, // Mantiene el ícono y texto con un tono desactivado
               leading: const Icon(

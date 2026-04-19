@@ -7,11 +7,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ColorLens
-import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,7 +42,7 @@ class SettingsActivity : ComponentActivity() {
             val context = LocalContext.current
             val colorScheme = when {
                 useDynamicColors && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                    if (themeMode == "ThemeMode.dark") dynamicDarkColorScheme(context) 
+                    if (themeMode == "ThemeMode.dark") dynamicDarkColorScheme(context)
                     else dynamicLightColorScheme(context)
                 }
                 themeMode == "ThemeMode.dark" -> darkColorScheme()
@@ -61,56 +62,58 @@ class SettingsActivity : ComponentActivity() {
                         )
                     }
                 ) { innerPadding ->
+                    // 2. Aquí cambiamos la estructura para que funcione como una lista
                     Column(
                         modifier = Modifier
                             .padding(innerPadding)
-                            .padding(16.dp)
+                            .padding(horizontal = 16.dp)
                             .fillMaxSize()
+                            .verticalScroll(rememberScrollState()) // Permite deslizar si hay más elementos
                     ) {
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Título de la sección
                         Text(
                             text = "APARIENCIA",
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
+                            modifier = Modifier.padding(start = 8.dp, bottom = 16.dp)
                         )
 
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                            )
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                // Fila: Colores Dinámicos
-                                SettingsRow(
-                                    icon = Icons.Default.ColorLens,
-                                    title = "Colores dinámicos",
-                                    control = {
-                                        Switch(
-                                            checked = useDynamicColors,
-                                            onCheckedChange = { useDynamicColors = it }
-                                        )
-                                    }
-                                )
-
-                                Spacer(modifier = Modifier.height(16.dp))
-                                HorizontalDivider(thickness = 0.5.dp)
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                // Fila: Modo de Tema (Connected Buttons)
-                                Text(
-                                    "Modo de tema",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier.padding(bottom = 12.dp)
-                                )
-                                
-                                ConnectedThemePicker(
-                                    selectedMode = themeMode,
-                                    onModeSelected = { themeMode = it }
+                        // 3. Fila 1 de la lista: Colores Dinámicos (Independiente)
+                        SettingsRow(
+                            icon = Icons.Default.ColorLens,
+                            title = "Colores dinámicos",
+                            control = {
+                                Switch(
+                                    checked = useDynamicColors,
+                                    onCheckedChange = { useDynamicColors = it }
                                 )
                             }
+                        )
+
+                        // Separador visual en la lista
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // 4. Fila 2 de la lista: Modo de Tema (Totalmente separado del Switch)
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                "Modo oscuro",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(start = 8.dp, bottom = 12.dp)
+                            )
+                            
+                            ConnectedThemePicker(
+                                selectedMode = themeMode,
+                                onModeSelected = { themeMode = it }
+                            )
                         }
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
             }
@@ -125,20 +128,28 @@ class SettingsActivity : ComponentActivity() {
         setResult(RESULT_OK, resultIntent)
         finish()
     }
+
     // Sobrescribimos el botón de retroceso físico del dispositivo
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         // Asegurarnos de guardar la info si usan el gesto de atrás del sistema
         // Para implementar esto correctamente en Compose moderno se usa BackHandler,
         // pero este método clásico te funcionará como puente rápido.
-        super.onBackPressed() 
+        super.onBackPressed()
     }
 }
 
+// 5. Componentes extraídos de UI (sin cambios lógicos, solo visuales)
 @Composable
-fun SettingsRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, control: @Composable () -> Unit) {
+fun SettingsRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector, 
+    title: String, 
+    control: @Composable () -> Unit
+) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 8.dp), // Agregamos un poco de respiro al item
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

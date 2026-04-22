@@ -1218,41 +1218,41 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               onTap: () async {
                 Navigator.pop(context); // Cierra el drawer
 
-                if (Platform.isAndroid) {
+                //if (Platform.isAndroid) {
                   // Lógica para Android: MethodChannel
-                  final themeProvider = context.read<ThemeProvider>();
-                  try {
-                    final Map<dynamic, dynamic>? result = await platform
-                        .invokeMethod('openNativeSettings', {
-                          'useDynamicColors': themeProvider.useDynamicColors,
-                          'themeMode': themeProvider.themeMode.toString(),
-                          'languageCode': themeProvider.locale.languageCode,
-                        });
+                //  final themeProvider = context.read<ThemeProvider>();
+               //   try {
+                 //   final Map<dynamic, dynamic>? result = await platform
+                   //     .invokeMethod('openNativeSettings', {
+                     //     'useDynamicColors': themeProvider.useDynamicColors,
+                       //   'themeMode': themeProvider.themeMode.toString(),
+                        //  'languageCode': themeProvider.locale.languageCode,
+                        //});
 
-                    if (result != null) {
-                      if (result['useDynamicColors'] != null) {
-                        themeProvider.setUseDynamicColors(
-                          result['useDynamicColors'],
-                        );
-                      }
-                      if (result['themeMode'] != null) {
-                        ThemeMode mode = ThemeMode.system;
-                        if (result['themeMode'] == 'ThemeMode.light') {
-                          mode = ThemeMode.light;
-                        }
-                        if (result['themeMode'] == 'ThemeMode.dark') {
-                          mode = ThemeMode.dark;
-                        }
-                        themeProvider.setThemeMode(mode);
-                      }
+                    //if (result != null) {
+                      //if (result['useDynamicColors'] != null) {
+                        //themeProvider.setUseDynamicColors(
+                          //result['useDynamicColors'],
+                        //);
+                      //}
+                      //if (result['themeMode'] != null) {
+                        //ThemeMode mode = ThemeMode.system;
+                        //if (result['themeMode'] == 'ThemeMode.light') {
+                        //  mode = ThemeMode.light;
+                        //}
+                        //if (result['themeMode'] == 'ThemeMode.dark') {
+                        //  mode = ThemeMode.dark;
+                        //}
+                        //themeProvider.setThemeMode(mode);
+                      //}
                       // Puedes agregar aquí la actualización del locale si lo necesitas
-                    }
-                  } on PlatformException catch (e) {
-                    debugPrint(
-                      "Error al abrir ajustes nativos: '${e.message}'.",
-                    );
-                  }
-                } else {
+                    //}
+                  //} on PlatformException catch (e) {
+                    //debugPrint(
+                    //  "Error al abrir ajustes nativos: '${e.message}'.",
+                    //);
+                  //}
+              //} else {
                   // Lógica para iOS/Otros: Pantalla de Flutter
                   Navigator.push(
                     context,
@@ -1260,7 +1260,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                       builder: (context) => const SettingsScreen(),
                     ),
                   );
-                }
+               // }
               },
             ),
             const Divider(),

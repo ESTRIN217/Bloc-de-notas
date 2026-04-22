@@ -6,7 +6,7 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-    id("org.jetbrains.kotlin.plugin.compose")
+    //id("org.jetbrains.kotlin.plugin.compose")
 }
 
 // 2. Cargamos las propiedades de forma segura
@@ -27,7 +27,7 @@ android {
     }
 
     kotlinOptions {
-        freeCompilerArgs +=  "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+        //freeCompilerArgs +=  "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
@@ -61,9 +61,9 @@ android {
             isShrinkResources = false
         }
     }
-    buildFeatures {
-        compose = true
-    }
+    //buildFeatures {
+       // compose = true
+    //}
 
 }
 
@@ -71,10 +71,10 @@ flutter {
     source = "../.."
 }
 
-dependencies {
+//dependencies {
     // ...
-    implementation(platform("androidx.compose:compose-bom:2026.03.01"))
-    implementation("androidx.compose.material3:material3:1.5.0-alpha17")
-    implementation("androidx.activity:activity-compose:1.13.0")
-    implementation("androidx.compose.material:material-icons-extended")
-}
+  //  implementation(platform("androidx.compose:compose-bom:2026.03.01"))
+    //implementation("androidx.compose.material3:material3:1.5.0-alpha17")
+    //implementation("androidx.activity:activity-compose:1.13.0")
+    //implementation("androidx.compose.material:material-icons-extended")
+//}

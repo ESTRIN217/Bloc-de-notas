@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
 package com.estrin217.bloc_de_notas
 
 import android.content.Intent
@@ -23,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ToggleButton
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 class SettingsActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

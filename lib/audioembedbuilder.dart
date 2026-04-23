@@ -89,7 +89,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     }
 
     await _audioPlayer.setSource(source); 
-    final initialDuration = await _audioPlayer.getDuration(); [cite: 423]
+    final initialDuration = await _audioPlayer.getDuration();
     if (initialDuration != null && mounted) {
       setState(() => _duration = initialDuration); 
     }
@@ -209,7 +209,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween, [cite: 451]
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(_formatDuration(_position), style: const TextStyle(fontSize: 12)),
                       Text(_formatDuration(_duration), style: const TextStyle(fontSize: 12)),

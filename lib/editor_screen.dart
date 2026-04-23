@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_to_pdf/flutter_quill_to_pdf.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart'
     hide ListItem;
 import 'package:image_picker/image_picker.dart';
@@ -804,7 +803,7 @@ class _EditorScreenState extends State<EditorScreen> {
   // --- MÉTODO 1: SELECCIONAR AUDIO EXISTENTE ---
   Future<void> _pickAudioFile() async {
   try {
-    final result = await FilePicker.platform.pickFiles( // Cambiado a .platform
+    final result = await FilePicker.pickFiles( // Cambiado a .platform
       type: FileType.audio,
       allowMultiple: false,
       withData: kIsWeb, // Importante: En web necesitamos los bytes
@@ -846,7 +845,7 @@ class _EditorScreenState extends State<EditorScreen> {
       }
     } else {
       // Verificación de permisos (en web el navegador pedirá permiso automáticamente)
-      final hasPermission = await _audioRecorder.hasPermission(); [cite: 148]
+      final hasPermission = await _audioRecorder.hasPermission();
       
       if (hasPermission) {
         if (kIsWeb) {

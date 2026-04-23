@@ -130,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final List<ListItem> _selectedItems = [];
   bool _isLoading = true;
   // Definimos el canal de comunicación
-  static const platform = MethodChannel('com.estrin217.bloc_de_notas/settings');
+  //static const platform = MethodChannel('com.estrin217.bloc_de_notas/settings');
 
   @override
   void initState() {
@@ -1439,10 +1439,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           ),
 
           embedBuilders: [
-            ...FlutterQuillEmbeds.editorBuilders(),
-            AudioEmbedBuilder(),
-            DrawingEmbedBuilder(),
-          ],
+  // 1. Builders personalizados primero
+  AudioEmbedBuilder(),
+  DrawingEmbedBuilder(),
+
+  // 2. Builders de la librería según la plataforma
+  if (kIsWeb) 
+    ...FlutterQuillEmbeds.editorWebBuilders() 
+  else 
+    ...FlutterQuillEmbeds.editorBuilders(),
+],
         ),
       ),
     );

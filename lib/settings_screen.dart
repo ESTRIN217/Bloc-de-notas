@@ -62,6 +62,11 @@ class SettingsScreen extends StatelessWidget {
                           }),
                         ),
                       ],
+                      ],
+                      ),
+                        _buildSettingsGroup(
+                    context,
+                    children: [
                       ListTile(
                         // Aplicamos el fondo al icono del modo oscuro
                         leading: _buildIconContainer(context, Icons.dark_mode),
@@ -152,7 +157,11 @@ class SettingsScreen extends StatelessWidget {
                             );
                           },
                         ),
-
+                        ],
+                        ),
+                  _buildSettingsGroup(
+                    context,
+                    children: [
                       ListTile(
                         // Aplicamos el fondo al icono de GitHub (FontAwesome también funciona con IconData)
                         leading: _buildFaIconContainer(
@@ -166,6 +175,11 @@ class SettingsScreen extends StatelessWidget {
                           _showChangelogBottomSheet(context);
                         },
                       ),
+                      ],
+                      ),
+                  _buildSettingsGroup(
+                    context,
+                    children: [
                       ListTile(
                         // Aplicamos el fondo al icono de información
                         leading: _buildIconContainer(

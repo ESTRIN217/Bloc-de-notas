@@ -721,10 +721,16 @@ class _EditorScreenState extends State<EditorScreen> {
                       ),
 
                       embedBuilders: [
-                        ...FlutterQuillEmbeds.editorBuilders(),
-                        AudioEmbedBuilder(),
-                        DrawingEmbedBuilder(),
-                      ],
+  // 1. Builders personalizados primero
+  AudioEmbedBuilder(),
+  DrawingEmbedBuilder(),
+
+  // 2. Builders de la librería según la plataforma
+  if (kIsWeb) 
+    ...FlutterQuillEmbeds.editorWebBuilders() 
+  else 
+    ...FlutterQuillEmbeds.editorBuilders(),
+],
                     ),
                   ),
                 ),
@@ -797,77 +803,73 @@ class _EditorScreenState extends State<EditorScreen> {
 
   // --- MÉTODO 1: SELECCIONAR AUDIO EXISTENTE ---
   Future<void> _pickAudioFile() async {
-    try {
-      final result = await FilePicker.pickFiles(
-        type: FileType.audio,
-        allowMultiple: false,
-      );
+  try {
+    final result = await FilePicker.platform.pickFiles( // Cambiado a .platform
+      type: FileType.audio,
+      allowMultiple: false,
+      withData: kIsWeb, // Importante: En web necesitamos los bytes
+    );
 
-      if (result != null && result.files.single.path != null) {
-        final originalPath = result.files.single.path!;
-
-        // (Opcional pero recomendado) Copiar el archivo a la carpeta de tu app
-        // para que si el usuario lo borra de "Descargas", la nota no se rompa.
+    if (result != null) {
+      String audioPath;
+      
+      if (kIsWeb) {
+        // En web generamos una URL temporal para los bytes del archivo
+        final bytes = result.files.single.bytes!;
+        audioPath = Uri.dataFromBytes(bytes, mimeType: 'audio/mpeg').toString();
+      } else {
+        // Lógica existente para móviles [cite: 140, 142]
         final dir = await getApplicationDocumentsDirectory();
         final fileName = result.files.single.name;
-        final savedFile = await File(
-          originalPath,
-        ).copy('${dir.path}/$fileName');
-
-        _insertarAudioAlEditor(savedFile.path);
+        final savedFile = await File(result.files.single.path!).copy('${dir.path}/$fileName');
+        audioPath = savedFile.path;
       }
-    } catch (e) {
-      debugPrint('Error al seleccionar audio: $e');
+      
+      _insertarAudioAlEditor(audioPath);
     }
+  } catch (e) {
+    debugPrint('Error al seleccionar audio: $e');
   }
+} 
 
   // --- MÉTODO 2: GRABAR NOTA DE VOZ ---
   Future<void> _toggleRecording() async {
-    try {
-      if (_isRecording) {
-        // DETENER GRABACIÓN
-        final path = await _audioRecorder.stop();
+  try {
+    if (_isRecording) {
+      final path = await _audioRecorder.stop();
+      if (!mounted) return;
+      setState(() => _isRecording = false);
 
-        // GUARDIA: Verificar si el widget sigue en el árbol antes de actualizar UI
-        if (!mounted) return;
-        setState(() => _isRecording = false);
-
-        if (path != null) {
-          _insertarAudioAlEditor(path);
-        }
-      } else {
-        // INICIAR GRABACIÓN
-        final status = await Permission.microphone.request();
-
-        if (status.isGranted) {
-          final dir = await getApplicationDocumentsDirectory();
-          final path =
-              '${dir.path}/nota_voz_${DateTime.now().millisecondsSinceEpoch}.m4a';
-
-          await _audioRecorder.start(
-            const RecordConfig(encoder: AudioEncoder.aacLc),
-            path: path,
-          );
-
-          if (!mounted) return; // Guardia tras el await de inicio
-          setState(() => _isRecording = true);
-        } else {
-          // GUARDIA: Antes de usar el context para el SnackBar
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Se requiere permiso de micrófono para grabar'),
-            ),
-          );
-        }
+      if (path != null) {
+        // En web, 'path' será una Blob URL (ej: blob:http://localhost:...)
+        _insertarAudioAlEditor(path); 
       }
-    } catch (e) {
-      debugPrint('Error en la grabación: $e');
-      if (mounted) {
-        setState(() => _isRecording = false);
+    } else {
+      // Verificación de permisos (en web el navegador pedirá permiso automáticamente)
+      final hasPermission = await _audioRecorder.hasPermission(); [cite: 148]
+      
+      if (hasPermission) {
+        if (kIsWeb) {
+          // En web no pasamos 'path', el navegador gestiona el almacenamiento temporal
+          await _audioRecorder.start(
+            const RecordConfig(encoder: AudioEncoder.opus), // Opus es estándar en web
+            path: '', 
+          );
+        } else {
+          // Lógica existente para móvil
+          final dir = await getApplicationDocumentsDirectory();
+          final path = '${dir.path}/nota_voz_${DateTime.now().millisecondsSinceEpoch}.m4a';
+          await _audioRecorder.start(const RecordConfig(), path: path);
+        }
+        
+        if (!mounted) return;
+        setState(() => _isRecording = true);
       }
     }
+  } catch (e) {
+    debugPrint('Error en la grabación: $e');
   }
+}
 
   // (El método que ya teníamos del paso anterior)
   void _insertarAudioAlEditor(String filePath) {

@@ -22,13 +22,14 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+    isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
         //freeCompilerArgs +=  "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -37,6 +38,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true
     }
 
     // 3. signingConfigs DEBE ir antes de buildTypes
@@ -70,11 +72,10 @@ android {
 flutter {
     source = "../.."
 }
-
-//dependencies {
-    // ...
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
   //  implementation(platform("androidx.compose:compose-bom:2026.03.01"))
     //implementation("androidx.compose.material3:material3:1.5.0-alpha17")
     //implementation("androidx.activity:activity-compose:1.13.0")
     //implementation("androidx.compose.material:material-icons-extended")
-//}
+}

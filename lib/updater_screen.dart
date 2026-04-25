@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'updater_provider.dart';
 import 'l10n/app_localizations.dart';
 
-class UpdaterScreen extends StatelessWidget {
+class UpdaterScreen extends StatefulWidget {
   const UpdaterScreen({super.key});
 
   @override
+  State<UpdaterScreen> createState() => _UpdaterScreenState();
+}
+
+class _UpdaterScreenState extends State<UpdaterScreen> {
+  bool _showChangelog = false;
+
+  @override
   Widget build(BuildContext context) {
-    // Escuchamos el UpdaterProvider para reconstruir la UI
     final updater = context.watch<UpdaterProvider>();
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -21,27 +28,17 @@ class UpdaterScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         children: [
-          // Sección: Versión Actual
-          _buildSectionTitle(
-            context,
-            AppLocalizations.of(context)!.version_actual,
-          ),
+          _buildSectionTitle(context, AppLocalizations.of(context)!.version_actual),
           _buildGroup(
             context,
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 8,
-              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               title: Text(
-                'Version: ${updater.currentVersion}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 17,
-                ),
+                'Versión: ${updater.currentVersion}',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
               ),
               subtitle: Text(
-                'universal - FOSS', // Texto descriptivo según la imagen
+                'universal - FOSS',
                 style: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
             ),
@@ -49,35 +46,25 @@ class UpdaterScreen extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Sección: Ajustes de actualización
-          _buildSectionTitle(
-            context,
-            AppLocalizations.of(context)!.ajuste_de_actulizacion,
-          ),
+          _buildSectionTitle(context, AppLocalizations.of(context)!.ajuste_de_actulizacion),
           _buildGroup(
             context,
             child: Column(
               children: [
                 _buildSwitchTile(
                   context,
-                  title: AppLocalizations.of(
-                    context,
-                  )!.buscar_actualizaciones_automaticamente,
+                  title: AppLocalizations.of(context)!.buscar_actualizaciones_automaticamente,
                   icon: Icons.refresh_rounded,
                   value: updater.autoUpdate,
-                  onChanged: (val) =>
-                      context.read<UpdaterProvider>().toggleAutoUpdate(val),
+                  onChanged: (val) => context.read<UpdaterProvider>().toggleAutoUpdate(val),
                 ),
                 const Divider(height: 1, indent: 70, endIndent: 20),
                 _buildSwitchTile(
                   context,
-                  title: AppLocalizations.of(
-                    context,
-                  )!.habilitar_notificaciones_de_actualizacion,
+                  title: AppLocalizations.of(context)!.habilitar_notificaciones_de_actualizacion,
                   icon: Icons.notifications_none_rounded,
                   value: updater.notifications,
-                  onChanged: (val) =>
-                      context.read<UpdaterProvider>().toggleNotifications(val),
+                  onChanged: (val) => context.read<UpdaterProvider>().toggleNotifications(val),
                 ),
               ],
             ),
@@ -85,29 +72,68 @@ class UpdaterScreen extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Sección: Buscar actualizaciones
-          _buildSectionTitle(
-            context,
-            AppLocalizations.of(context)!.buscar_actualizaciones,
-          ),
+          _buildSectionTitle(context, AppLocalizations.of(context)!.buscar_actualizaciones),
           _buildGroup(
             context,
-            child: ListTile(
-              onTap: updater.isChecking
-                  ? null
-                  : () => context.read<UpdaterProvider>().checkForUpdates(
-                      context,
+            child: Column(
+              children: [
+                ListTile(
+                  onTap: updater.isChecking
+                      ? null
+                      : () {
+                          if (updater.hasUpdate) {
+                            updater.launchDownloadUrl();
+                          } else {
+                            context.read<UpdaterProvider>().checkForUpdates(context);
+                          }
+                        },
+                  leading: _buildIconContainer(
+                    context,
+                    updater.isChecking
+                        ? Icons.hourglass_empty
+                        : (updater.hasUpdate ? Icons.download_rounded : Icons.refresh_rounded),
+                  ),
+                  title: Text(
+                    updater.hasUpdate
+                        ? 'Última: ${updater.latestVersion}'
+                        : AppLocalizations.of(context)!.buscar_actualizaciones,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                
+                // Botón Toggle para el Changelog (Solo visible si hay actualización)
+                if (updater.hasUpdate && updater.latestChangelog != null) ...[
+                  const Divider(height: 1),
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _showChangelog = !_showChangelog;
+                      });
+                    },
+                    icon: Icon(_showChangelog ? Icons.visibility_off : Icons.visibility),
+                    label: Text(_showChangelog ? 'Ocultar registro de cambios' : 'Ver registro de cambios'),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
                     ),
-              leading: _buildIconContainer(
-                context,
-                updater.isChecking
-                    ? Icons.hourglass_empty
-                    : Icons.refresh_rounded,
-              ),
-              title: Text(
-                AppLocalizations.of(context)!.buscar_actualizaciones,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
+                  ),
+                  
+                  // Contenido del Changelog
+                  AnimatedCrossFade(
+                    firstChild: const SizedBox(width: double.infinity),
+                    secondChild: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: MarkdownBody(
+                        data: updater.latestChangelog!,
+                        styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
+                      ),
+                    ),
+                    crossFadeState: _showChangelog ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                    duration: const Duration(milliseconds: 300),
+                  ),
+                ]
+              ],
             ),
           ),
         ],
@@ -116,7 +142,6 @@ class UpdaterScreen extends StatelessWidget {
   }
 
   // --- Funciones de Ayuda de Diseño ---
-
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 8, bottom: 8, top: 12),
@@ -152,9 +177,7 @@ class UpdaterScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),

@@ -158,22 +158,22 @@ class AboutScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           // Botón de Apoyo
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF8D5545), // Color café
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              onPressed: () =>
-                  _openUrl('https://www.buymeacoffee.com/estrin217'),
-              icon: const Icon(Icons.coffee),
-              label: const Text("Buy me a coffee!"),
-            ),
-          ),
+          //SizedBox(
+          //  width: double.infinity,
+          //  child: FilledButton.icon(
+            //  style: FilledButton.styleFrom(
+            //    backgroundColor: const Color(0xFF8D5545), // Color café
+            //    padding: const EdgeInsets.symmetric(vertical: 16),
+            //    shape: RoundedRectangleBorder(
+              //    borderRadius: BorderRadius.circular(16),
+              //  ),
+              //),
+              //onPressed: () =>
+              //    _openUrl('https://www.buymeacoffee.com/estrin217'),
+            //  icon: const Icon(Icons.coffee),
+            //  label: const Text("Buy me a coffee!"),
+            //),
+          //),
         ],
       ),
     );

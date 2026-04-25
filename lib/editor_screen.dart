@@ -503,10 +503,48 @@ class _EditorScreenState extends State<EditorScreen> {
         return quill.QuillSimpleToolbar(
           controller: _contentController,
           config: quill.QuillSimpleToolbarConfig(
-            // Añadimos los botones de extensiones predeterminados (incluye cámara, galería y video)
             embedButtons: FlutterQuillEmbeds.toolbarButtons(
-              // Ya no es necesario redefinir imageButtonOptions a menos que
-              // quieras cambiar iconos o deshabilitar algo específico.
+              imageButtonOptions: QuillToolbarImageButtonOptions(
+                imageButtonConfigurations: QuillToolbarImageConfigurations(
+                  onImageInsertedCallback: (imageUrl) async {
+                    // imageUrl aquí suele ser algo como 'blob:http://...'
+                    if (imageUrl.startsWith('blob:')) {
+                      try {
+                        // 1. Convertir el blob a bytes usando http
+                        final response = await http.get(Uri.parse(imageUrl));
+                        final bytes = response.bodyBytes;
+                        
+                        // 2. Convertir a Base64
+                        final base64String = base64Encode(bytes);
+                        final base64Image = 'data:image/png;base64,$base64String';
+
+                        // 3. Reemplazar la imagen en el controlador
+                        // Restamos 1 al offset porque el cursor ya avanzó al insertar la imagen blob
+                        final index = _contentController.selection.baseOffset - 1; 
+                        
+                        if (index >= 0) {
+                          // Borramos la imagen temporal 'blob' (ocupa 1 de longitud)
+                          _contentController.replaceText(index, 1, '', null);
+                          // Insertamos la imagen permanente en Base64
+                          _contentController.document.insert(
+                            index, 
+                            quill.BlockEmbed.image(base64Image)
+                          );
+                          // Restauramos el cursor
+                          _contentController.updateSelection(
+                            TextSelection.collapsed(offset: index + 1), 
+                            quill.ChangeSource.local,
+                          );
+                        }
+                      } catch (e) {
+                        if (kDebugMode) {
+                          print('Error al convertir la imagen a Base64: $e');
+                        }
+                      }
+                    }
+                  },
+                ),
+              ),
             ),
           ),
         );
@@ -836,27 +874,30 @@ class _EditorScreenState extends State<EditorScreen> {
   Future<void> _toggleRecording() async {
   try {
     if (_isRecording) {
-      final path = await _audioRecorder.stop();
-      if (!mounted) return;
+      // 1. Apagamos el estado visual inmediatamente para que el botón responda rápido
       setState(() => _isRecording = false);
 
-      if (path != null) {
+      // 2. Detenemos la grabación
+      final path = await _audioRecorder.stop();
+      if (!mounted) return;
+
+      // 3. Verificamos que el path sea válido antes de insertarlo
+      if (path != null && path.isNotEmpty) {
         // En web, 'path' será una Blob URL (ej: blob:http://localhost:...)
         _insertarAudioAlEditor(path); 
       }
     } else {
-      // Verificación de permisos (en web el navegador pedirá permiso automáticamente)
-      final hasPermission = await _audioRecorder.hasPermission(); [cite: 148]
+      final hasPermission = await _audioRecorder.hasPermission();
       
       if (hasPermission) {
         if (kIsWeb) {
-          // En web no pasamos 'path', el navegador gestiona el almacenamiento temporal
+          // En web, dejamos RecordConfig() por defecto. El navegador usará su formato 
+          // nativo más compatible (usualmente WebM o WAV) evitando fallos de codec.
           await _audioRecorder.start(
-            const RecordConfig(encoder: AudioEncoder.opus), // Opus es estándar en web
+            const RecordConfig(), 
             path: '', 
           );
         } else {
-          // Lógica existente para móvil
           final dir = await getApplicationDocumentsDirectory();
           final path = '${dir.path}/nota_voz_${DateTime.now().millisecondsSinceEpoch}.m4a';
           await _audioRecorder.start(const RecordConfig(), path: path);
@@ -868,6 +909,10 @@ class _EditorScreenState extends State<EditorScreen> {
     }
   } catch (e) {
     debugPrint('Error en la grabación: $e');
+    // Si algo falla catastróficamente, liberamos la interfaz para que no quede atascada
+    if (mounted) {
+      setState(() => _isRecording = false);
+    }
   }
 }
 

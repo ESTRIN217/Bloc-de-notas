@@ -142,8 +142,9 @@ class UpdaterProvider with ChangeNotifier {
           }
         }
       } else {
-        if (context.mounted)
+        if (context.mounted){
           _showSnackBar(context, 'Error al buscar actualizaciones');
+        }
       }
     } catch (e) {
       if (context.mounted) _showSnackBar(context, 'Error de conexión');

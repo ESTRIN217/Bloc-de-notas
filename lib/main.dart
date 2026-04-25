@@ -1540,14 +1540,26 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   child: contentColumn,
                 ),
               ),
-              if (canReorder && !_isSelectionMode && isListView)
-                ReorderableDragStartListener(
-                  index: _filteredItems.indexOf(item),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
-                    child: Icon(Icons.drag_handle, color: dynamicIconColor),
-                  ),
-                ),
+              // Dentro de la construcción de la tarjeta, donde tienes el ícono:
+
+if (canReorder && !_isSelectionMode)
+  if (isListView)
+    ReorderableDragStartListener(
+      index: _filteredItems.indexOf(item),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
+        child: Icon(Icons.drag_handle, color: dynamicIconColor),
+      ),
+    )
+  else
+    // Para la vista Grid usamos DragStartListener del paquete reorderable_grid
+    DragStartListener(
+      index: _filteredItems.indexOf(item),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
+        child: Icon(Icons.drag_handle, color: dynamicIconColor),
+      ),
+    ),
             ],
           ),
         ),
@@ -1589,16 +1601,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     final bool canReorder =
         _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
 
-    const gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-      maxCrossAxisExtent: 200,
+    // Detectamos la orientación del teléfono
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+    // Configuramos 3 columnas en horizontal y 2 en vertical
+    final gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: isLandscape ? 3 : 2,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
-      childAspectRatio: 0.75,
+      childAspectRatio: 0.75, // Ajusta este valor si necesitas que las tarjetas sean más altas o bajas
     );
 
     if (canReorder) {
-      // 1. Generamos la lista de widgets hijos por adelantado.
-      // Es obligatorio que cada widget tenga su Key única (ValueKey).
       final generatedChildren = List.generate(
         _filteredItems.length,
         (index) => Container(
@@ -1607,41 +1621,31 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         ),
       );
 
-      // 2. Usamos el ReorderableBuilder del nuevo paquete
       return ReorderableBuilder<ListItem>(
-        children: generatedChildren,
-        onReorder: (reorderedListFunction) {
-          setState(() {
-            // El paquete nos proporciona una función (reorderedListFunction)
-            // que aplica el cambio de orden automáticamente a nuestra lista.
-            _items = reorderedListFunction(_items);
-
-            // Actualizamos nuestra lista filtrada y guardamos
-            _filteredItems = List.from(_items);
-            _saveItems();
-          });
-        },
-        builder: (children) {
-          // 3. Devolvemos un GridView estándar pasándole los hijos (children)
-          // que el ReorderableBuilder nos entrega ya gestionados.
-          return GridView(
-            padding: const EdgeInsets.all(16.0),
-            gridDelegate: gridDelegate,
-            children: children,
-          );
-        },
-      );
-    }
-
-    // El GridView para cuando no estamos en modo reordenar se mantiene igual
-    return GridView.builder(
+  children: generatedChildren,
+  isLongPressEnabled: false, // DESACTIVAMOS el long press para mover
+  dragChildBoxDecoration: BoxDecoration(
+    boxShadow: [
+      BoxShadow(color: Colors.black26, blurRadius: 10, spreadRadius: 1)
+    ],
+  ),
+  onReorder: (reorderedListFunction) {
+    setState(() {
+      _items = List.from(reorderedListFunction(_items));
+      _filteredItems = List.from(_items);
+      _saveItems();
+    });
+  },
+  builder: (children) {
+    return GridView(
       padding: const EdgeInsets.all(16.0),
       gridDelegate: gridDelegate,
-      itemCount: _filteredItems.length,
-      itemBuilder: (context, index) =>
-          _buildItem(_filteredItems[index], isListView: false),
+      children: children,
     );
-  }
+  },
+);
+    }
+}
 
   Future<void> _cleanupImagesForSelectedItems() async {
     for (final item in _selectedItems) {

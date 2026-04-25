@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'update_widget.dart';
+import 'updater_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -64,9 +65,9 @@ class SettingsScreen extends StatelessWidget {
                           }),
                         ),
                       ],
-                      ],
-                      ),
-                        _buildSettingsGroup(
+                    ],
+                  ),
+                  _buildSettingsGroup(
                     context,
                     children: [
                       ListTile(
@@ -159,8 +160,8 @@ class SettingsScreen extends StatelessWidget {
                             );
                           },
                         ),
-                        ],
-                        ),
+                    ],
+                  ),
                   _buildSettingsGroup(
                     context,
                     children: [
@@ -177,8 +178,8 @@ class SettingsScreen extends StatelessWidget {
                           _showChangelogBottomSheet(context);
                         },
                       ),
-                      ],
-                      ),
+                    ],
+                  ),
                   _buildSettingsGroup(
                     context,
                     children: [
@@ -200,27 +201,31 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-if (!kIsWeb && themeProvider.hasUpdate(context)) // Aquí usamos un helper, pero mejor usar el provider directamente:
-// NUEVA SECCIÓN DE ACTUALIZACIÓN (Solo visible si hay actualización y no es web)
-                  if (!kIsWeb && updater.hasUpdate) ...[
-                    _buildSectionTitle(context, 'Actualización'),
-                    _buildSettingsGroup(
-                      context,
-                      children: [
-                        const UpdateAvailableWidget(),
-                        if (updater.latestChangelog != null) ...[
-                          const Divider(height: 1),
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: MarkdownBody(
-                              data: updater.latestChangelog!,
-                              styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
+                  if (!kIsWeb &&
+                      updater
+                          .hasUpdate) // Aquí usamos un helper, pero mejor usar el provider directamente:
+                    // NUEVA SECCIÓN DE ACTUALIZACIÓN (Solo visible si hay actualización y no es web)
+                    if (!kIsWeb && updater.hasUpdate) ...[
+                      _buildSectionTitle(context, 'Actualización'),
+                      _buildSettingsGroup(
+                        context,
+                        children: [
+                          const UpdateAvailableWidget(),
+                          if (updater.latestChangelog != null) ...[
+                            const Divider(height: 1),
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: MarkdownBody(
+                                data: updater.latestChangelog!,
+                                styleSheet: MarkdownStyleSheet.fromTheme(
+                                  Theme.of(context),
+                                ),
+                              ),
                             ),
-                          ),
-                        ]
-                      ],
-                    ),
-                  ],
+                          ],
+                        ],
+                      ),
+                    ],
                 ],
               );
             },
@@ -256,19 +261,19 @@ if (!kIsWeb && themeProvider.hasUpdate(context)) // Aquí usamos un helper, pero
     required List<Widget> children,
   }) {
     return Card.outlined(
-  elevation: 0,
-  margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-  color: Theme.of(context).colorScheme.surface,
-  clipBehavior: Clip.antiAlias,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(24),
-    side: BorderSide(
-      color: Theme.of(context).colorScheme.outlineVariant,
-      width: 1.0,
-    ),
-  ),
-  child: Column(children: children),
-);
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      color: Theme.of(context).colorScheme.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outlineVariant,
+          width: 1.0,
+        ),
+      ),
+      child: Column(children: children),
+    );
   }
 
   Widget _buildIconContainer(BuildContext context, IconData icon) {
@@ -320,7 +325,9 @@ if (!kIsWeb && themeProvider.hasUpdate(context)) // Aquí usamos un helper, pero
                     AppLocalizations.of(context)!.system_default,
                   ), // Usa la clave del ARB
                   onTap: () {
-                    themeProvider.setLocale(WidgetsBinding.instance.platformDispatcher.locale);
+                    themeProvider.setLocale(
+                      WidgetsBinding.instance.platformDispatcher.locale,
+                    );
                     Navigator.pop(context);
                   },
                 ),
@@ -535,7 +542,8 @@ class ChangelogSheet extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
-    /// Etiquetas pequeñas para la versión
+
+  /// Etiquetas pequeñas para la versión
   Widget _buildBadge(BuildContext context, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

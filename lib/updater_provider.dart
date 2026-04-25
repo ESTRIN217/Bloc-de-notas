@@ -18,14 +18,16 @@ class UpdaterProvider with ChangeNotifier {
   String? _downloadUrl;
 
   // Instancia del plugin de notificaciones
-  final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   bool get autoUpdate => _autoUpdate;
   bool get notifications => _notifications;
   String get currentVersion => _currentVersion;
   bool get isChecking => _isChecking;
-  
-  bool get hasUpdate => !kIsWeb && _latestVersion != null && _latestVersion != _currentVersion;
+
+  bool get hasUpdate =>
+      !kIsWeb && _latestVersion != null && _latestVersion != _currentVersion;
   String? get latestVersion => _latestVersion;
   String? get latestChangelog => _latestChangelog;
   String? get downloadUrl => _downloadUrl;
@@ -41,17 +43,27 @@ class UpdaterProvider with ChangeNotifier {
     if (kIsWeb) return;
 
     // Usamos el icono por defecto de la app
+    // Configuración para Android
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-    );
+    // Configuración para iOS/macOS
+    const DarwinInitializationSettings initializationSettingsDarwin =
+        DarwinInitializationSettings();
 
+    // Combinar ambas
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsDarwin,
+        );
+
+    // Pasar al método initialize
     await _notificationsPlugin.initialize(
-      initializationSettings,
+      // DEBES poner el nombre 'initializationSettings:' antes de la variable
+      settings: initializationSettings,
+
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        // Al tocar la notificación, abre el enlace si existe un payload
         if (response.payload != null) {
           final Uri uri = Uri.parse(response.payload!);
           if (await canLaunchUrl(uri)) {
@@ -63,7 +75,9 @@ class UpdaterProvider with ChangeNotifier {
 
     // Solicitar permisos en Android 13+
     _notificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.requestNotificationsPermission();
   }
 
@@ -109,7 +123,11 @@ class UpdaterProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await http.get(Uri.parse('https://api.github.com/repos/ESTRIN217/Bloc-de-notas/releases/latest'));
+      final response = await http.get(
+        Uri.parse(
+          'https://api.github.com/repos/ESTRIN217/Bloc-de-notas/releases/latest',
+        ),
+      );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         _latestVersion = data['tag_name'].toString().replaceAll('v', '');
@@ -124,7 +142,8 @@ class UpdaterProvider with ChangeNotifier {
           }
         }
       } else {
-        if (context.mounted) _showSnackBar(context, 'Error al buscar actualizaciones');
+        if (context.mounted)
+          _showSnackBar(context, 'Error al buscar actualizaciones');
       }
     } catch (e) {
       if (context.mounted) _showSnackBar(context, 'Error de conexión');
@@ -140,7 +159,11 @@ class UpdaterProvider with ChangeNotifier {
     _isChecking = true;
     notifyListeners();
     try {
-      final response = await http.get(Uri.parse('https://api.github.com/repos/ESTRIN217/Bloc-de-notas/releases/latest'));
+      final response = await http.get(
+        Uri.parse(
+          'https://api.github.com/repos/ESTRIN217/Bloc-de-notas/releases/latest',
+        ),
+      );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         _latestVersion = data['tag_name'].toString().replaceAll('v', '');
@@ -162,32 +185,34 @@ class UpdaterProvider with ChangeNotifier {
 
   // --- Ejecución de la Notificación Local ---
   Future<void> _showNativeNotification() async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'updater_channel_id',
-      'Actualizaciones de la app',
-      channelDescription: 'Notifica cuando hay una nueva versión disponible',
-      importance: Importance.max,
-      priority: Priority.high,
-      icon: '@mipmap/ic_launcher', // Asegura que use tu icono de app
-      color: Colors.blue, // Puedes cambiar esto al color primario de tu app
-    );
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'updater_channel_id',
+          'Actualizaciones de la app',
+          channelDescription:
+              'Notifica cuando hay una nueva versión disponible',
+          importance: Importance.max,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher', // Asegura que use tu icono de app
+          color: Colors.blue, // Puedes cambiar esto al color primario de tu app
+        );
 
     const NotificationDetails platformDetails = NotificationDetails(
       android: androidDetails,
     );
 
     await _notificationsPlugin.show(
-      0, // ID de la notificación
-      'Actualización disponible',
-      'Versión $_latestVersion',
-      platformDetails,
+      id: 0, // ID de la notificación
+      title: 'Actualización disponible',
+      body: 'Versión $_latestVersion',
+      notificationDetails: platformDetails,
       payload: _downloadUrl, // Pasamos la URL al payload para abrirla al tocar
     );
   }
 
   void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

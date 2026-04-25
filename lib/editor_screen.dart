@@ -20,6 +20,7 @@ import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:record/record.dart';
 import 'drawing_embed.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
 enum TtsState { playing, stopped }
 
@@ -391,17 +392,21 @@ class _EditorScreenState extends State<EditorScreen> {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
-        String fechaFormateada = DateFormat('dd/MM/yyyy HH:mm').format(widget.item.lastModified);
+        String fechaFormateada = DateFormat(
+          'dd/MM/yyyy HH:mm',
+        ).format(widget.item.lastModified);
 
         return Wrap(
           children: [
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Center( // Center ayuda a que el texto quede centrado en el menú
+              child: Center(
+                // Center ayuda a que el texto quede centrado en el menú
                 child: Text(
                   'Modificado el: $fechaFormateada',
                   style: const TextStyle(
-                    color: Colors.grey, // Un color gris para que parezca información secundaria
+                    color: Colors
+                        .grey, // Un color gris para que parezca información secundaria
                     fontSize: 14,
                   ),
                 ),
@@ -504,7 +509,7 @@ class _EditorScreenState extends State<EditorScreen> {
           config: quill.QuillSimpleToolbarConfig(
             embedButtons: FlutterQuillEmbeds.toolbarButtons(
               imageButtonOptions: QuillToolbarImageButtonOptions(
-                imageButtonConfigurations: QuillToolbarImageConfigurations(
+                imageButtonConfig: QuillToolbarImageConfig(
                   onImageInsertedCallback: (imageUrl) async {
                     // imageUrl aquí suele ser algo como 'blob:http://...'
                     if (imageUrl.startsWith('blob:')) {
@@ -512,26 +517,28 @@ class _EditorScreenState extends State<EditorScreen> {
                         // 1. Convertir el blob a bytes usando http
                         final response = await http.get(Uri.parse(imageUrl));
                         final bytes = response.bodyBytes;
-                        
+
                         // 2. Convertir a Base64
                         final base64String = base64Encode(bytes);
-                        final base64Image = 'data:image/png;base64,$base64String';
+                        final base64Image =
+                            'data:image/png;base64,$base64String';
 
                         // 3. Reemplazar la imagen en el controlador
                         // Restamos 1 al offset porque el cursor ya avanzó al insertar la imagen blob
-                        final index = _contentController.selection.baseOffset - 1; 
-                        
+                        final index =
+                            _contentController.selection.baseOffset - 1;
+
                         if (index >= 0) {
                           // Borramos la imagen temporal 'blob' (ocupa 1 de longitud)
                           _contentController.replaceText(index, 1, '', null);
                           // Insertamos la imagen permanente en Base64
                           _contentController.document.insert(
-                            index, 
-                            quill.BlockEmbed.image(base64Image)
+                            index,
+                            quill.BlockEmbed.image(base64Image),
                           );
                           // Restauramos el cursor
                           _contentController.updateSelection(
-                            TextSelection.collapsed(offset: index + 1), 
+                            TextSelection.collapsed(offset: index + 1),
                             quill.ChangeSource.local,
                           );
                         }
@@ -718,56 +725,70 @@ class _EditorScreenState extends State<EditorScreen> {
                           null,
                           null, // Algunos versiones requieren un parámetro extra aquí para el checkbox
                         ),
-                          // 1. Citas (Blockquotes) - La línea con la barra lateral
-  quote: quill.DefaultTextBlockStyle(
-    TextStyle(color: dynamicTextColor, fontSize: 16, fontStyle: FontStyle.italic),
-    const quill.HorizontalSpacing(16, 0), // Espacio para la barra
-    const quill.VerticalSpacing(8, 8),
-    const quill.VerticalSpacing(0, 0),
-    // Esto es para que la barra lateral no sea blanca si no quieres
-    BoxDecoration(
-      border: Border(left: BorderSide(width: 4, color: dynamicTextColor.withValues(alpha: 0.3))),
-    ),
-  ),
+                        // 1. Citas (Blockquotes) - La línea con la barra lateral
+                        quote: quill.DefaultTextBlockStyle(
+                          TextStyle(
+                            color: dynamicTextColor,
+                            fontSize: 16,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          const quill.HorizontalSpacing(
+                            16,
+                            0,
+                          ), // Espacio para la barra
+                          const quill.VerticalSpacing(8, 8),
+                          const quill.VerticalSpacing(0, 0),
+                          // Esto es para que la barra lateral no sea blanca si no quieres
+                          BoxDecoration(
+                            border: Border(
+                              left: BorderSide(
+                                width: 4,
+                                color: dynamicTextColor.withValues(alpha: 0.3),
+                              ),
+                            ),
+                          ),
+                        ),
 
-  // 2. Enlaces (Links)
-  link: TextStyle(
-    color: isDarkBackground ? Colors.blue[300] : Colors.blue[700], // Azul legible según fondo
-    decoration: TextDecoration.underline,
-  ),
+                        // 2. Enlaces (Links)
+                        link: TextStyle(
+                          color: isDarkBackground
+                              ? Colors.blue[300]
+                              : Colors.blue[700], // Azul legible según fondo
+                          decoration: TextDecoration.underline,
+                        ),
 
-  // 4. Marcadores de listas (Los puntitos o números)
-  indent: quill.DefaultTextBlockStyle(
-    TextStyle(color: dynamicTextColor),
-    const quill.HorizontalSpacing(0, 0),
-    const quill.VerticalSpacing(0, 0),
-    const quill.VerticalSpacing(0, 0),
-    null,
-  ),
+                        // 4. Marcadores de listas (Los puntitos o números)
+                        indent: quill.DefaultTextBlockStyle(
+                          TextStyle(color: dynamicTextColor),
+                          const quill.HorizontalSpacing(0, 0),
+                          const quill.VerticalSpacing(0, 0),
+                          const quill.VerticalSpacing(0, 0),
+                          null,
+                        ),
 
-  // 5. Estilo "Leading" (Para asegurar que el checkbox/bullet use el color)
-  leading: quill.DefaultTextBlockStyle(
-    TextStyle(color: dynamicTextColor),
-    const quill.HorizontalSpacing(0, 0),
-    const quill.VerticalSpacing(0, 0),
-    const quill.VerticalSpacing(0, 0),
-    null,
-  ),
+                        // 5. Estilo "Leading" (Para asegurar que el checkbox/bullet use el color)
+                        leading: quill.DefaultTextBlockStyle(
+                          TextStyle(color: dynamicTextColor),
+                          const quill.HorizontalSpacing(0, 0),
+                          const quill.VerticalSpacing(0, 0),
+                          const quill.VerticalSpacing(0, 0),
+                          null,
+                        ),
                         // Estilo para el texto pequeño
                         small: TextStyle(color: dynamicTextColor, fontSize: 12),
                       ),
 
                       embedBuilders: [
-  // 1. Builders personalizados primero
-  AudioEmbedBuilder(),
-  DrawingEmbedBuilder(),
+                        // 1. Builders personalizados primero
+                        AudioEmbedBuilder(),
+                        DrawingEmbedBuilder(),
 
-  // 2. Builders de la librería según la plataforma
-  if (kIsWeb) 
-    ...FlutterQuillEmbeds.editorWebBuilders() 
-  else 
-    ...FlutterQuillEmbeds.editorBuilders(),
-],
+                        // 2. Builders de la librería según la plataforma
+                        if (kIsWeb)
+                          ...FlutterQuillEmbeds.editorWebBuilders()
+                        else
+                          ...FlutterQuillEmbeds.editorBuilders(),
+                      ],
                     ),
                   ),
                 ),
@@ -840,81 +861,85 @@ class _EditorScreenState extends State<EditorScreen> {
 
   // --- MÉTODO 1: SELECCIONAR AUDIO EXISTENTE ---
   Future<void> _pickAudioFile() async {
-  try {
-    final result = await FilePicker.pickFiles( // Cambiado a .platform
-      type: FileType.audio,
-      allowMultiple: false,
-      withData: kIsWeb, // Importante: En web necesitamos los bytes
-    );
+    try {
+      final result = await FilePicker.pickFiles(
+        // Cambiado a .platform
+        type: FileType.audio,
+        allowMultiple: false,
+        withData: kIsWeb, // Importante: En web necesitamos los bytes
+      );
 
-    if (result != null) {
-      String audioPath;
-      
-      if (kIsWeb) {
-        // En web generamos una URL temporal para los bytes del archivo
-        final bytes = result.files.single.bytes!;
-        audioPath = Uri.dataFromBytes(bytes, mimeType: 'audio/mpeg').toString();
-      } else {
-        // Lógica existente para móviles [cite: 140, 142]
-        final dir = await getApplicationDocumentsDirectory();
-        final fileName = result.files.single.name;
-        final savedFile = await File(result.files.single.path!).copy('${dir.path}/$fileName');
-        audioPath = savedFile.path;
+      if (result != null) {
+        String audioPath;
+
+        if (kIsWeb) {
+          // En web generamos una URL temporal para los bytes del archivo
+          final bytes = result.files.single.bytes!;
+          audioPath = Uri.dataFromBytes(
+            bytes,
+            mimeType: 'audio/mpeg',
+          ).toString();
+        } else {
+          // Lógica existente para móviles [cite: 140, 142]
+          final dir = await getApplicationDocumentsDirectory();
+          final fileName = result.files.single.name;
+          final savedFile = await File(
+            result.files.single.path!,
+          ).copy('${dir.path}/$fileName');
+          audioPath = savedFile.path;
+        }
+
+        _insertarAudioAlEditor(audioPath);
       }
-      
-      _insertarAudioAlEditor(audioPath);
+    } catch (e) {
+      debugPrint('Error al seleccionar audio: $e');
     }
-  } catch (e) {
-    debugPrint('Error al seleccionar audio: $e');
   }
-} 
 
   // --- MÉTODO 2: GRABAR NOTA DE VOZ ---
   Future<void> _toggleRecording() async {
-  try {
-    if (_isRecording) {
-      // 1. Apagamos el estado visual inmediatamente para que el botón responda rápido
-      setState(() => _isRecording = false);
+    try {
+      if (_isRecording) {
+        // 1. Apagamos el estado visual inmediatamente para que el botón responda rápido
+        setState(() => _isRecording = false);
 
-      // 2. Detenemos la grabación
-      final path = await _audioRecorder.stop();
-      if (!mounted) return;
-
-      // 3. Verificamos que el path sea válido antes de insertarlo
-      if (path != null && path.isNotEmpty) {
-        // En web, 'path' será una Blob URL (ej: blob:http://localhost:...)
-        _insertarAudioAlEditor(path); 
-      }
-    } else {
-      // Verificación de permisos (en web el navegador pedirá permiso automáticamente)
-      final hasPermission = await _audioRecorder.hasPermission();
-      
-      if (hasPermission) {
-        if (kIsWeb) {
-          // En web, dejamos RecordConfig() por defecto. El navegador usará su formato 
-          // nativo más compatible (usualmente WebM o WAV) evitando fallos de codec.
-          await _audioRecorder.start(
-            const RecordConfig(), 
-            path: '', 
-          );
-        } else {
-          final dir = await getApplicationDocumentsDirectory();
-          final path = '${dir.path}/nota_voz_${DateTime.now().millisecondsSinceEpoch}.m4a';
-          await _audioRecorder.start(const RecordConfig(), path: path);
-        }
-        
+        // 2. Detenemos la grabación
+        final path = await _audioRecorder.stop();
         if (!mounted) return;
-        setState(() => _isRecording = true);
+
+        // 3. Verificamos que el path sea válido antes de insertarlo
+        if (path != null && path.isNotEmpty) {
+          // En web, 'path' será una Blob URL (ej: blob:http://localhost:...)
+          _insertarAudioAlEditor(path);
+        }
+      } else {
+        // Verificación de permisos (en web el navegador pedirá permiso automáticamente)
+        final hasPermission = await _audioRecorder.hasPermission();
+
+        if (hasPermission) {
+          if (kIsWeb) {
+            // En web, dejamos RecordConfig() por defecto. El navegador usará su formato
+            // nativo más compatible (usualmente WebM o WAV) evitando fallos de codec.
+            await _audioRecorder.start(const RecordConfig(), path: '');
+          } else {
+            final dir = await getApplicationDocumentsDirectory();
+            final path =
+                '${dir.path}/nota_voz_${DateTime.now().millisecondsSinceEpoch}.m4a';
+            await _audioRecorder.start(const RecordConfig(), path: path);
+          }
+
+          if (!mounted) return;
+          setState(() => _isRecording = true);
+        }
       }
-    }
-  } catch (e) {
-    debugPrint('Error en la grabación: $e');
-    // Si algo falla catastróficamente, liberamos la interfaz para que no quede atascada
-    if (mounted) {
-      setState(() => _isRecording = false);
+    } catch (e) {
+      debugPrint('Error en la grabación: $e');
+      // Si algo falla catastróficamente, liberamos la interfaz para que no quede atascada
+      if (mounted) {
+        setState(() => _isRecording = false);
+      }
     }
   }
-}
 
   // (El método que ya teníamos del paso anterior)
   void _insertarAudioAlEditor(String filePath) {

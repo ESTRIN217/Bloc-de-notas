@@ -12,7 +12,9 @@ class UpdateAvailableWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),

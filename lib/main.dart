@@ -28,7 +28,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'drawing_embed.dart';
-import 'package:flutter/services.dart';
 import 'update_widget.dart';
 
 void main() {

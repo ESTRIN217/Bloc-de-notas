@@ -28,14 +28,23 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         children: [
-          _buildSectionTitle(context, AppLocalizations.of(context)!.version_actual),
+          _buildSectionTitle(
+            context,
+            AppLocalizations.of(context)!.version_actual,
+          ),
           _buildGroup(
             context,
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 8,
+              ),
               title: Text(
                 'Versión: ${updater.currentVersion}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17,
+                ),
               ),
               subtitle: Text(
                 'universal - FOSS',
@@ -46,25 +55,34 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
 
           const SizedBox(height: 16),
 
-          _buildSectionTitle(context, AppLocalizations.of(context)!.ajuste_de_actulizacion),
+          _buildSectionTitle(
+            context,
+            AppLocalizations.of(context)!.ajuste_de_actulizacion,
+          ),
           _buildGroup(
             context,
             child: Column(
               children: [
                 _buildSwitchTile(
                   context,
-                  title: AppLocalizations.of(context)!.buscar_actualizaciones_automaticamente,
+                  title: AppLocalizations.of(
+                    context,
+                  )!.buscar_actualizaciones_automaticamente,
                   icon: Icons.refresh_rounded,
                   value: updater.autoUpdate,
-                  onChanged: (val) => context.read<UpdaterProvider>().toggleAutoUpdate(val),
+                  onChanged: (val) =>
+                      context.read<UpdaterProvider>().toggleAutoUpdate(val),
                 ),
                 const Divider(height: 1, indent: 70, endIndent: 20),
                 _buildSwitchTile(
                   context,
-                  title: AppLocalizations.of(context)!.habilitar_notificaciones_de_actualizacion,
+                  title: AppLocalizations.of(
+                    context,
+                  )!.habilitar_notificaciones_de_actualizacion,
                   icon: Icons.notifications_none_rounded,
                   value: updater.notifications,
-                  onChanged: (val) => context.read<UpdaterProvider>().toggleNotifications(val),
+                  onChanged: (val) =>
+                      context.read<UpdaterProvider>().toggleNotifications(val),
                 ),
               ],
             ),
@@ -72,7 +90,10 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
 
           const SizedBox(height: 16),
 
-          _buildSectionTitle(context, AppLocalizations.of(context)!.buscar_actualizaciones),
+          _buildSectionTitle(
+            context,
+            AppLocalizations.of(context)!.buscar_actualizaciones,
+          ),
           _buildGroup(
             context,
             child: Column(
@@ -84,14 +105,18 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                           if (updater.hasUpdate) {
                             updater.launchDownloadUrl();
                           } else {
-                            context.read<UpdaterProvider>().checkForUpdates(context);
+                            context.read<UpdaterProvider>().checkForUpdates(
+                              context,
+                            );
                           }
                         },
                   leading: _buildIconContainer(
                     context,
                     updater.isChecking
                         ? Icons.hourglass_empty
-                        : (updater.hasUpdate ? Icons.download_rounded : Icons.refresh_rounded),
+                        : (updater.hasUpdate
+                              ? Icons.download_rounded
+                              : Icons.refresh_rounded),
                   ),
                   title: Text(
                     updater.hasUpdate
@@ -100,7 +125,7 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
-                
+
                 // Botón Toggle para el Changelog (Solo visible si hay actualización)
                 if (updater.hasUpdate && updater.latestChangelog != null) ...[
                   const Divider(height: 1),
@@ -110,15 +135,23 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                         _showChangelog = !_showChangelog;
                       });
                     },
-                    icon: Icon(_showChangelog ? Icons.visibility_off : Icons.visibility),
-                    label: Text(_showChangelog ? 'Ocultar registro de cambios' : 'Ver registro de cambios'),
+                    icon: Icon(
+                      _showChangelog ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    label: Text(
+                      _showChangelog
+                          ? 'Ocultar registro de cambios'
+                          : 'Ver registro de cambios',
+                    ),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       minimumSize: const Size(double.infinity, 50),
-                      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
+                      ),
                     ),
                   ),
-                  
+
                   // Contenido del Changelog
                   AnimatedCrossFade(
                     firstChild: const SizedBox(width: double.infinity),
@@ -126,13 +159,17 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                       padding: const EdgeInsets.all(16.0),
                       child: MarkdownBody(
                         data: updater.latestChangelog!,
-                        styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
+                        styleSheet: MarkdownStyleSheet.fromTheme(
+                          Theme.of(context),
+                        ),
                       ),
                     ),
-                    crossFadeState: _showChangelog ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                    crossFadeState: _showChangelog
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
                     duration: const Duration(milliseconds: 300),
                   ),
-                ]
+                ],
               ],
             ),
           ),
@@ -177,7 +214,9 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),

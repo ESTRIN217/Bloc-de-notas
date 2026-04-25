@@ -11,12 +11,14 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'update_widget.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final updater = context.watch<UpdaterProvider>();
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
@@ -198,6 +200,27 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+if (!kIsWeb && themeProvider.hasUpdate(context)) // Aquí usamos un helper, pero mejor usar el provider directamente:
+// NUEVA SECCIÓN DE ACTUALIZACIÓN (Solo visible si hay actualización y no es web)
+                  if (!kIsWeb && updater.hasUpdate) ...[
+                    _buildSectionTitle(context, 'Actualización'),
+                    _buildSettingsGroup(
+                      context,
+                      children: [
+                        const UpdateAvailableWidget(),
+                        if (updater.latestChangelog != null) ...[
+                          const Divider(height: 1),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: MarkdownBody(
+                              data: updater.latestChangelog!,
+                              styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
+                            ),
+                          ),
+                        ]
+                      ],
+                    ),
+                  ],
                 ],
               );
             },

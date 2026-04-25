@@ -28,6 +28,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'drawing_embed.dart';
+import 'package:flutter/services.dart';
+import 'update_widget.dart';
 
 void main() {
   runApp(
@@ -141,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _loadItems();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Llamamos a nuestro nuevo método silencioso
-      context.read<UpdaterProvider>().checkUpdateOnStartup(context);
+      context.read<UpdaterProvider>().checkUpdateOnStartup();
     });
   }
 
@@ -164,7 +166,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         );
       }
       // Llamamos a nuestro método silencioso de nuevo
-      context.read<UpdaterProvider>().checkUpdateOnStartup(context);
+      context.read<UpdaterProvider>().checkUpdateOnStartup();
     }
   }
 
@@ -1212,7 +1214,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ),
 
             ListTile(
-              leading: const Icon(Icons.settings),
+              leading: Badge(
+          isLabelVisible: context.watch<UpdaterProvider>().hasUpdate,
+          backgroundColor: Colors.red,
+          smallSize: 10,
+          child: const Icon(Icons.settings),
+        ),
               title: Text(AppLocalizations.of(context)!.settings),
               onTap: () async {
                 Navigator.pop(context); // Cierra el drawer
@@ -1263,6 +1270,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               },
             ),
             const Divider(),
+            const UpdateAvailableWidget(isDrawerTile: true),
               ListTile(
               enabled:
                   false, // Mantiene el ícono y texto con un tono desactivado

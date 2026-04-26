@@ -17,37 +17,54 @@ class UpdaterProvider with ChangeNotifier {
   String? _latestChangelog;
   String? _downloadUrl;
 
-  // Instancia del plugin de notificaciones
-  final FlutterLocalNotificationsPlugin _notificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
 
+  // --- Getters ---
   bool get autoUpdate => _autoUpdate;
   bool get notifications => _notifications;
   String get currentVersion => _currentVersion;
   bool get isChecking => _isChecking;
-
-  bool get hasUpdate =>
-      !kIsWeb && _latestVersion != null && _latestVersion != _currentVersion;
+  
+  bool get hasUpdate => !kIsWeb && _latestVersion != null && _latestVersion != _currentVersion;
   String? get latestVersion => _latestVersion;
   String? get latestChangelog => _latestChangelog;
   String? get downloadUrl => _downloadUrl;
 
   UpdaterProvider() {
-    _initNotifications();
-    _loadSettings();
-    _loadCurrentVersion();
+    _initProvider();
   }
 
-  // --- Inicialización de Notificaciones ---
+  Future<void> _initProvider() async {
+    // 1. Inicializar Notificaciones
+    await _initNotifications();
+
+    // 2. Obtener versión real de la app
+    final packageInfo = await PackageInfo.fromPlatform();
+    _currentVersion = packageInfo.version;
+
+    // 3. Cargar ajustes y caché de actualización
+    final prefs = await SharedPreferences.getInstance();
+    _autoUpdate = prefs.getBool('auto_update') ?? true;
+    _notifications = prefs.getBool('update_notifications') ?? true;
+    
+    _latestVersion = prefs.getString('cached_latest_version');
+    _latestChangelog = prefs.getString('cached_latest_changelog');
+    _downloadUrl = prefs.getString('cached_download_url');
+
+    notifyListeners();
+
+    // 4. Lógica: Si ya estamos actualizados (o no hay datos), preguntar a GitHub
+    if (_latestVersion == null || _latestVersion == _currentVersion) {
+      if (_autoUpdate) checkUpdateOnStartup();
+    }
+  }
+
   Future<void> _initNotifications() async {
     if (kIsWeb) return;
 
-    // Usamos el icono por defecto de la app
-    // Configuración para Android
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    // Configuración para iOS/macOS
     const DarwinInitializationSettings initializationSettingsDarwin =
         DarwinInitializationSettings();
 
@@ -58,7 +75,7 @@ class UpdaterProvider with ChangeNotifier {
           iOS: initializationSettingsDarwin,
         );
 
-    // Pasar al método initialize
+    // Corregido: Usamos el parámetro posicional para las configuraciones
     await _notificationsPlugin.initialize(
       // DEBES poner el nombre 'initializationSettings:' antes de la variable
       settings: initializationSettings,
@@ -73,28 +90,22 @@ class UpdaterProvider with ChangeNotifier {
       },
     );
 
-    // Solicitar permisos en Android 13+
-    _notificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.requestNotificationsPermission();
+    // Permisos para Android 13+
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      _notificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+    }
   }
 
-  // --- Lógica del Provider ---
-  Future<void> _loadSettings() async {
+  Future<void> _saveUpdateToCache(String version, String? changelog, String? url) async {
     final prefs = await SharedPreferences.getInstance();
-    _autoUpdate = prefs.getBool('auto_update') ?? true;
-    _notifications = prefs.getBool('update_notifications') ?? true;
-    notifyListeners();
+    await prefs.setString('cached_latest_version', version);
+    await prefs.setString('cached_latest_changelog', changelog ?? '');
+    await prefs.setString('cached_download_url', url ?? '');
   }
 
-  Future<void> _loadCurrentVersion() async {
-    final packageInfo = await PackageInfo.fromPlatform();
-    _currentVersion = packageInfo.version;
-    notifyListeners();
-  }
-
+  // --- Ajustes ---
   void toggleAutoUpdate(bool value) async {
     _autoUpdate = value;
     final prefs = await SharedPreferences.getInstance();
@@ -112,11 +123,12 @@ class UpdaterProvider with ChangeNotifier {
   Future<void> launchDownloadUrl() async {
     if (_downloadUrl == null) return;
     final Uri uri = Uri.parse(_downloadUrl!);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      throw Exception('No se pudo abrir el enlace $_downloadUrl');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
+  // --- Lógica de Búsqueda ---
   Future<void> checkForUpdates(BuildContext context) async {
     if (kIsWeb) return;
     _isChecking = true;
@@ -124,15 +136,15 @@ class UpdaterProvider with ChangeNotifier {
 
     try {
       final response = await http.get(
-        Uri.parse(
-          'https://api.github.com/repos/ESTRIN217/Bloc-de-notas/releases/latest',
-        ),
+        Uri.parse('https://api.github.com/repos/ESTRIN217/Bloc-de-notas/releases/latest'),
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         _latestVersion = data['tag_name'].toString().replaceAll('v', '');
         _downloadUrl = data['html_url'];
         _latestChangelog = data['body'];
+        
+        await _saveUpdateToCache(_latestVersion!, _latestChangelog, _downloadUrl);
 
         if (context.mounted) {
           if (hasUpdate) {
@@ -140,10 +152,6 @@ class UpdaterProvider with ChangeNotifier {
           } else {
             _showSnackBar(context, 'Ya tienes la última versión');
           }
-        }
-      } else {
-        if (context.mounted){
-          _showSnackBar(context, 'Error al buscar actualizaciones');
         }
       }
     } catch (e) {
@@ -155,36 +163,31 @@ class UpdaterProvider with ChangeNotifier {
   }
 
   Future<void> checkUpdateOnStartup() async {
-    if (kIsWeb || !_autoUpdate) return;
-
-    _isChecking = true;
-    notifyListeners();
+    if (kIsWeb) return;
     try {
-      final response = await http.get(
-        Uri.parse(
-          'https://api.github.com/repos/ESTRIN217/Bloc-de-notas/releases/latest',
-        ),
-      );
+      final response = await http.get(Uri.parse('https://api.github.com/repos/ESTRIN217/Bloc-de-notas/releases/latest'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        _latestVersion = data['tag_name'].toString().replaceAll('v', '');
-        _downloadUrl = data['html_url'];
-        _latestChangelog = data['body'];
+        final newVersion = data['tag_name'].toString().replaceAll('v', '');
 
-        // Solo mostramos la notificación si está habilitada en los ajustes
-        if (hasUpdate && _notifications) {
-          _showNativeNotification();
+        if (newVersion != _latestVersion) {
+          _latestVersion = newVersion;
+          _downloadUrl = data['html_url'];
+          _latestChangelog = data['body'];
+          await _saveUpdateToCache(_latestVersion!, _latestChangelog, _downloadUrl);
+          
+          if (hasUpdate && _notifications) {
+            _showNativeNotification();
+          }
+          notifyListeners();
         }
       }
     } catch (e) {
-      if (kDebugMode) print('Error silencioso al buscar actualizaciones: $e');
-    } finally {
-      _isChecking = false;
-      notifyListeners();
+      if (kDebugMode) print('Error silencioso: $e');
     }
   }
 
-  // --- Ejecución de la Notificación Local ---
+  // --- Ejecución de la Notificación ---
   Future<void> _showNativeNotification() async {
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
@@ -198,10 +201,9 @@ class UpdaterProvider with ChangeNotifier {
           color: Colors.blue, // Puedes cambiar esto al color primario de tu app
         );
 
-    const NotificationDetails platformDetails = NotificationDetails(
-      android: androidDetails,
-    );
+    const NotificationDetails platformDetails = NotificationDetails(android: androidDetails);
 
+    // Corregido: Parámetros posicionales para id, title, body y notificationDetails
     await _notificationsPlugin.show(
       id: 0, // ID de la notificación
       title: 'Actualización disponible',
@@ -212,8 +214,6 @@ class UpdaterProvider with ChangeNotifier {
   }
 
   void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 }

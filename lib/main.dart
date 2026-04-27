@@ -482,12 +482,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           "attributes": {"list": "ordered"},
         },
         {
-          "insert":"Pierna adentro y fuera: 30 repeticiones.",
-          "attributes":{"bold":true}
+          "insert": "Pierna adentro y fuera: 30 repeticiones.",
+          "attributes": {"bold": true},
         },
         {
-          "insert":"\n",
-          "attributes":{"list":"ordered"}
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
         },
         {"insert": "Bloque 4: Core y Cardio Final"},
         {
@@ -1214,63 +1214,63 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
             ListTile(
               leading: Badge(
-          isLabelVisible: context.watch<UpdaterProvider>().hasUpdate,
-          backgroundColor: Colors.red,
-          smallSize: 10,
-          child: const Icon(Icons.settings),
-        ),
+                isLabelVisible: context.watch<UpdaterProvider>().hasUpdate,
+                backgroundColor: Colors.red,
+                smallSize: 10,
+                child: const Icon(Icons.settings),
+              ),
               title: Text(AppLocalizations.of(context)!.settings),
               onTap: () async {
                 Navigator.pop(context); // Cierra el drawer
 
                 //if (Platform.isAndroid) {
-                  // Lógica para Android: MethodChannel
+                // Lógica para Android: MethodChannel
                 //  final themeProvider = context.read<ThemeProvider>();
-               //   try {
-                 //   final Map<dynamic, dynamic>? result = await platform
-                   //     .invokeMethod('openNativeSettings', {
-                     //     'useDynamicColors': themeProvider.useDynamicColors,
-                       //   'themeMode': themeProvider.themeMode.toString(),
-                        //  'languageCode': themeProvider.locale.languageCode,
-                        //});
+                //   try {
+                //   final Map<dynamic, dynamic>? result = await platform
+                //     .invokeMethod('openNativeSettings', {
+                //     'useDynamicColors': themeProvider.useDynamicColors,
+                //   'themeMode': themeProvider.themeMode.toString(),
+                //  'languageCode': themeProvider.locale.languageCode,
+                //});
 
-                    //if (result != null) {
-                      //if (result['useDynamicColors'] != null) {
-                        //themeProvider.setUseDynamicColors(
-                          //result['useDynamicColors'],
-                        //);
-                      //}
-                      //if (result['themeMode'] != null) {
-                        //ThemeMode mode = ThemeMode.system;
-                        //if (result['themeMode'] == 'ThemeMode.light') {
-                        //  mode = ThemeMode.light;
-                        //}
-                        //if (result['themeMode'] == 'ThemeMode.dark') {
-                        //  mode = ThemeMode.dark;
-                        //}
-                        //themeProvider.setThemeMode(mode);
-                      //}
-                      // Puedes agregar aquí la actualización del locale si lo necesitas
-                    //}
-                  //} on PlatformException catch (e) {
-                    //debugPrint(
-                    //  "Error al abrir ajustes nativos: '${e.message}'.",
-                    //);
-                  //}
-              //} else {
-                  // Lógica para iOS/Otros: Pantalla de Flutter
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsScreen(),
-                    ),
-                  );
-               // }
+                //if (result != null) {
+                //if (result['useDynamicColors'] != null) {
+                //themeProvider.setUseDynamicColors(
+                //result['useDynamicColors'],
+                //);
+                //}
+                //if (result['themeMode'] != null) {
+                //ThemeMode mode = ThemeMode.system;
+                //if (result['themeMode'] == 'ThemeMode.light') {
+                //  mode = ThemeMode.light;
+                //}
+                //if (result['themeMode'] == 'ThemeMode.dark') {
+                //  mode = ThemeMode.dark;
+                //}
+                //themeProvider.setThemeMode(mode);
+                //}
+                // Puedes agregar aquí la actualización del locale si lo necesitas
+                //}
+                //} on PlatformException catch (e) {
+                //debugPrint(
+                //  "Error al abrir ajustes nativos: '${e.message}'.",
+                //);
+                //}
+                //} else {
+                // Lógica para iOS/Otros: Pantalla de Flutter
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SettingsScreen(),
+                  ),
+                );
+                // }
               },
             ),
             const Divider(),
             const UpdateAvailableWidget(isDrawerTile: true),
-              ListTile(
+            ListTile(
               enabled:
                   false, // Mantiene el ícono y texto con un tono desactivado
               leading: const Icon(
@@ -1445,16 +1445,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           ),
 
           embedBuilders: [
-  // 1. Builders personalizados primero
-  AudioEmbedBuilder(),
-  DrawingEmbedBuilder(),
+            // 1. Builders personalizados primero
+            AudioEmbedBuilder(),
+            DrawingEmbedBuilder(),
 
-  // 2. Builders de la librería según la plataforma
-  if (kIsWeb) 
-    ...FlutterQuillEmbeds.editorWebBuilders() 
-  else 
-    ...FlutterQuillEmbeds.editorBuilders(),
-],
+            // 2. Builders de la librería según la plataforma
+            if (kIsWeb)
+              ...FlutterQuillEmbeds.editorWebBuilders()
+            else
+              ...FlutterQuillEmbeds.editorBuilders(),
+          ],
         ),
       ),
     );
@@ -1493,9 +1493,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       ],
     );
     final Widget dragIcon = Padding(
-    padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
-    child: Icon(Icons.drag_handle, color: dynamicIconColor),
-  );
+      padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
+      child: Icon(Icons.drag_handle, color: dynamicIconColor),
+    );
 
     return Card.outlined(
       clipBehavior: Clip.antiAlias,
@@ -1545,19 +1545,21 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 ),
               ),
               if (canReorder && !_isSelectionMode) ...[
-          if (isListView)
-            // Modo Lista (Flutter Nativo)
-            ReorderableDragStartListener(
-              index: _filteredItems.indexOf(item),
-              child: dragIcon,
-            )
-          else
-            // Modo Grid (Paquete flutter_reorderable_grid_view)
-            ReorderableDragViewer(
-              key: ValueKey(_filteredItems[index].id), // ¡Clave: debe coincidir con el padre en el Grid!
-              child: dragIcon,
-            ),
-        ],
+                isListView
+                    // Modo Lista (Flutter Nativo)
+                    ? ReorderableDragStartListener(
+                        index: _filteredItems.indexOf(item),
+                        child: dragIcon,
+                      )
+                    // Modo Grid (Paquete flutter_reorderable_grid_view)
+                    : CustomDraggable(
+                        key: ValueKey(
+                          item.id,
+                        ), // ¡Clave: debe ser igual a la del contenedor del item!
+                        data: item, // Pasas el objeto de tu item aquí
+                        child: dragIcon,
+                      ),
+              ],
             ],
           ),
         ),
@@ -1619,7 +1621,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
       // 2. Usamos el ReorderableBuilder del nuevo paquete
       return ReorderableBuilder<ListItem>(
-        enableDraggable: false
+        enableDraggable: false,
         children: generatedChildren,
         onReorder: (reorderedListFunction) {
           setState(() {

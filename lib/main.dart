@@ -482,12 +482,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           "attributes": {"list": "ordered"},
         },
         {
-          "insert":"Pierna adentro y fuera: 30 repeticiones.",
-          "attributes":{"bold":true}
+          "insert": "Pierna adentro y fuera: 30 repeticiones.",
+          "attributes": {"bold": true},
         },
         {
-          "insert":"\n",
-          "attributes":{"list":"ordered"}
+          "insert": "\n",
+          "attributes": {"list": "ordered"},
         },
         {"insert": "Bloque 4: Core y Cardio Final"},
         {
@@ -1214,63 +1214,63 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
             ListTile(
               leading: Badge(
-          isLabelVisible: context.watch<UpdaterProvider>().hasUpdate,
-          backgroundColor: Colors.red,
-          smallSize: 10,
-          child: const Icon(Icons.settings),
-        ),
+                isLabelVisible: context.watch<UpdaterProvider>().hasUpdate,
+                backgroundColor: Colors.red,
+                smallSize: 10,
+                child: const Icon(Icons.settings),
+              ),
               title: Text(AppLocalizations.of(context)!.settings),
               onTap: () async {
                 Navigator.pop(context); // Cierra el drawer
 
                 //if (Platform.isAndroid) {
-                  // Lógica para Android: MethodChannel
+                // Lógica para Android: MethodChannel
                 //  final themeProvider = context.read<ThemeProvider>();
-               //   try {
-                 //   final Map<dynamic, dynamic>? result = await platform
-                   //     .invokeMethod('openNativeSettings', {
-                     //     'useDynamicColors': themeProvider.useDynamicColors,
-                       //   'themeMode': themeProvider.themeMode.toString(),
-                        //  'languageCode': themeProvider.locale.languageCode,
-                        //});
+                //   try {
+                //   final Map<dynamic, dynamic>? result = await platform
+                //     .invokeMethod('openNativeSettings', {
+                //     'useDynamicColors': themeProvider.useDynamicColors,
+                //   'themeMode': themeProvider.themeMode.toString(),
+                //  'languageCode': themeProvider.locale.languageCode,
+                //});
 
-                    //if (result != null) {
-                      //if (result['useDynamicColors'] != null) {
-                        //themeProvider.setUseDynamicColors(
-                          //result['useDynamicColors'],
-                        //);
-                      //}
-                      //if (result['themeMode'] != null) {
-                        //ThemeMode mode = ThemeMode.system;
-                        //if (result['themeMode'] == 'ThemeMode.light') {
-                        //  mode = ThemeMode.light;
-                        //}
-                        //if (result['themeMode'] == 'ThemeMode.dark') {
-                        //  mode = ThemeMode.dark;
-                        //}
-                        //themeProvider.setThemeMode(mode);
-                      //}
-                      // Puedes agregar aquí la actualización del locale si lo necesitas
-                    //}
-                  //} on PlatformException catch (e) {
-                    //debugPrint(
-                    //  "Error al abrir ajustes nativos: '${e.message}'.",
-                    //);
-                  //}
-              //} else {
-                  // Lógica para iOS/Otros: Pantalla de Flutter
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsScreen(),
-                    ),
-                  );
-               // }
+                //if (result != null) {
+                //if (result['useDynamicColors'] != null) {
+                //themeProvider.setUseDynamicColors(
+                //result['useDynamicColors'],
+                //);
+                //}
+                //if (result['themeMode'] != null) {
+                //ThemeMode mode = ThemeMode.system;
+                //if (result['themeMode'] == 'ThemeMode.light') {
+                //  mode = ThemeMode.light;
+                //}
+                //if (result['themeMode'] == 'ThemeMode.dark') {
+                //  mode = ThemeMode.dark;
+                //}
+                //themeProvider.setThemeMode(mode);
+                //}
+                // Puedes agregar aquí la actualización del locale si lo necesitas
+                //}
+                //} on PlatformException catch (e) {
+                //debugPrint(
+                //  "Error al abrir ajustes nativos: '${e.message}'.",
+                //);
+                //}
+                //} else {
+                // Lógica para iOS/Otros: Pantalla de Flutter
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SettingsScreen(),
+                  ),
+                );
+                // }
               },
             ),
             const Divider(),
             const UpdateAvailableWidget(isDrawerTile: true),
-              ListTile(
+            ListTile(
               enabled:
                   false, // Mantiene el ícono y texto con un tono desactivado
               leading: const Icon(
@@ -1445,16 +1445,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           ),
 
           embedBuilders: [
-  // 1. Builders personalizados primero
-  AudioEmbedBuilder(),
-  DrawingEmbedBuilder(),
+            // 1. Builders personalizados primero
+            AudioEmbedBuilder(),
+            DrawingEmbedBuilder(),
 
-  // 2. Builders de la librería según la plataforma
-  if (kIsWeb) 
-    ...FlutterQuillEmbeds.editorWebBuilders() 
-  else 
-    ...FlutterQuillEmbeds.editorBuilders(),
-],
+            // 2. Builders de la librería según la plataforma
+            if (kIsWeb)
+              ...FlutterQuillEmbeds.editorWebBuilders()
+            else
+              ...FlutterQuillEmbeds.editorBuilders(),
+          ],
         ),
       ),
     );
@@ -1491,6 +1491,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   child: ClipRect(child: richTextPreview),
                 ),
       ],
+    );
+    final Widget dragIcon = Padding(
+      padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
+      child: Icon(Icons.drag_handle, color: dynamicIconColor),
     );
 
     return Card.outlined(
@@ -1540,26 +1544,22 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   child: contentColumn,
                 ),
               ),
-              // Dentro de la construcción de la tarjeta, donde tienes el ícono:
-
-if (canReorder && !_isSelectionMode)
-  if (isListView)
-    ReorderableDragStartListener(
-      index: _filteredItems.indexOf(item),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
-        child: Icon(Icons.drag_handle, color: dynamicIconColor),
-      ),
-    )
-  else
-    // Para la vista Grid usamos DragStartListener del paquete reorderable_grid
-    DragStartListener(
-      index: _filteredItems.indexOf(item),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
-        child: Icon(Icons.drag_handle, color: dynamicIconColor),
-      ),
-    ),
+              if (canReorder && !_isSelectionMode) ...[
+                isListView
+                    // Modo Lista (Flutter Nativo)
+                    ? ReorderableDragStartListener(
+                        index: _filteredItems.indexOf(item),
+                        child: dragIcon,
+                      )
+                    // Modo Grid (Paquete flutter_reorderable_grid_view)
+                    : CustomDraggable(
+                        key: ValueKey(
+                          item.id,
+                        ), // ¡Clave: debe ser igual a la del contenedor del item!
+                        data: _filteredItems.indexOf(item), // Pasas el objeto de tu item aquí
+                        child: dragIcon,
+                      ),
+              ],
             ],
           ),
         ),
@@ -1601,18 +1601,16 @@ if (canReorder && !_isSelectionMode)
     final bool canReorder =
         _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
 
-    // Detectamos la orientación del teléfono
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-
-    // Configuramos 3 columnas en horizontal y 2 en vertical
-    final gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: isLandscape ? 3 : 2,
+    const gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
+      maxCrossAxisExtent: 200,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
-      childAspectRatio: 0.75, // Ajusta este valor si necesitas que las tarjetas sean más altas o bajas
+      childAspectRatio: 0.75,
     );
 
     if (canReorder) {
+      // 1. Generamos la lista de widgets hijos por adelantado.
+      // Es obligatorio que cada widget tenga su Key única (ValueKey).
       final generatedChildren = List.generate(
         _filteredItems.length,
         (index) => Container(
@@ -1621,31 +1619,42 @@ if (canReorder && !_isSelectionMode)
         ),
       );
 
+      // 2. Usamos el ReorderableBuilder del nuevo paquete
       return ReorderableBuilder<ListItem>(
-  children: generatedChildren,
-  isLongPressEnabled: false, // DESACTIVAMOS el long press para mover
-  dragChildBoxDecoration: BoxDecoration(
-    boxShadow: [
-      BoxShadow(color: Colors.black26, blurRadius: 10, spreadRadius: 1)
-    ],
-  ),
-  onReorder: (reorderedListFunction) {
-    setState(() {
-      _items = List.from(reorderedListFunction(_items));
-      _filteredItems = List.from(_items);
-      _saveItems();
-    });
-  },
-  builder: (children) {
-    return GridView(
+        enableDraggable: false,
+        children: generatedChildren,
+        onReorder: (reorderedListFunction) {
+          setState(() {
+            // El paquete nos proporciona una función (reorderedListFunction)
+            // que aplica el cambio de orden automáticamente a nuestra lista.
+            _items = reorderedListFunction(_items);
+
+            // Actualizamos nuestra lista filtrada y guardamos
+            _filteredItems = List.from(_items);
+            _saveItems();
+          });
+        },
+        builder: (children) {
+          // 3. Devolvemos un GridView estándar pasándole los hijos (children)
+          // que el ReorderableBuilder nos entrega ya gestionados.
+          return GridView(
+            padding: const EdgeInsets.all(16.0),
+            gridDelegate: gridDelegate,
+            children: children,
+          );
+        },
+      );
+    }
+
+    // El GridView para cuando no estamos en modo reordenar se mantiene igual
+    return GridView.builder(
       padding: const EdgeInsets.all(16.0),
       gridDelegate: gridDelegate,
-      children: children,
+      itemCount: _filteredItems.length,
+      itemBuilder: (context, index) =>
+          _buildItem(_filteredItems[index], isListView: false),
     );
-  },
-);
-    }
-}
+  }
 
   Future<void> _cleanupImagesForSelectedItems() async {
     for (final item in _selectedItems) {

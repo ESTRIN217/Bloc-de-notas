@@ -1600,6 +1600,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   Widget _buildGridView() {
     final bool canReorder =
         _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
+    final _scrollController = ScrollController();
 
     const gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
       maxCrossAxisExtent: 200,
@@ -1621,6 +1622,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
       // 2. Usamos el ReorderableBuilder del nuevo paquete
       return ReorderableBuilder<ListItem>(
+        scrollController: _scrollController,
         enableDraggable: false,
         children: generatedChildren,
         onReorder: (reorderedListFunction) {
@@ -1638,6 +1640,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           // 3. Devolvemos un GridView estándar pasándole los hijos (children)
           // que el ReorderableBuilder nos entrega ya gestionados.
           return GridView(
+            controller: _scrollController,
             padding: const EdgeInsets.all(16.0),
             gridDelegate: gridDelegate,
             children: children,

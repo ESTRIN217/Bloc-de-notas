@@ -1492,6 +1492,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 ),
       ],
     );
+    final Widget dragIcon = Padding(
+    padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
+    child: Icon(Icons.drag_handle, color: dynamicIconColor),
+  );
 
     return Card.outlined(
       clipBehavior: Clip.antiAlias,
@@ -1540,14 +1544,20 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   child: contentColumn,
                 ),
               ),
-              if (canReorder && !_isSelectionMode && isListView)
-                ReorderableDragStartListener(
-                  index: _filteredItems.indexOf(item),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
-                    child: Icon(Icons.drag_handle, color: dynamicIconColor),
-                  ),
-                ),
+              if (canReorder && !_isSelectionMode) ...[
+          if (isListView)
+            // Modo Lista (Flutter Nativo)
+            ReorderableDragStartListener(
+              index: _filteredItems.indexOf(item),
+              child: dragIcon,
+            )
+          else
+            // Modo Grid (Paquete flutter_reorderable_grid_view)
+            ReorderableDragViewer(
+              key: ValueKey(_filteredItems[index].id), // ¡Clave: debe coincidir con el padre en el Grid!
+              child: dragIcon,
+            ),
+        ],
             ],
           ),
         ),
@@ -1609,6 +1619,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
       // 2. Usamos el ReorderableBuilder del nuevo paquete
       return ReorderableBuilder<ListItem>(
+        enableDraggable: false
         children: generatedChildren,
         onReorder: (reorderedListFunction) {
           setState(() {

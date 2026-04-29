@@ -48,68 +48,60 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
-        return DynamicColorBuilder(
-          builder: (lightDynamic, darkDynamic) {
-            ColorScheme lightColorScheme;
-            ColorScheme darkColorScheme;
+  return Consumer<ThemeProvider>(
+    builder: (context, themeProvider, child) {
+      // 1. Definimos el TextTheme base (puedes ajustar el brillo según prefieras)
+      final textTheme = GoogleFonts.notoSansTextTheme(
+        Theme.of(context).textTheme,
+      );
 
-            if (themeProvider.useDynamicColors &&
-                lightDynamic != null &&
-                darkDynamic != null) {
-              lightColorScheme = lightDynamic;
-              darkColorScheme = darkDynamic;
-            } else {
-              lightColorScheme = ColorScheme.fromSeed(
-                seedColor: Colors.deepPurple,
-                brightness: Brightness.light,
-              );
-              darkColorScheme = ColorScheme.fromSeed(
-                seedColor: Colors.deepPurple,
-                brightness: Brightness.dark,
-              );
-            }
+      // 2. Instanciamos tu clase personalizada
+      final materialTheme = MaterialTheme(textTheme);
 
-            return MaterialApp(
-              title: 'Bloc de notas',
-              theme: ThemeData(
-                colorScheme: lightColorScheme,
-                useMaterial3: true,
-                textTheme: GoogleFonts.notoSansTextTheme(
-                  ThemeData(brightness: Brightness.light).textTheme,
-                ),
-              ),
-              darkTheme: ThemeData(
-                colorScheme: darkColorScheme,
-                useMaterial3: true,
-                textTheme: GoogleFonts.notoSansTextTheme(
-                  ThemeData(brightness: Brightness.dark).textTheme,
-                ),
-              ),
-              themeMode: themeProvider.themeMode,
-              locale: themeProvider.locale,
-              localizationsDelegates: const [
-                AppLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-                FlutterQuillLocalizations.delegate,
-              ],
-              supportedLocales: const [
-                Locale('en'),
-                Locale('es'),
-                Locale('es', 'VE'),
-                Locale('pt'),
-                Locale('pt', 'BR'),
-              ],
-              home: const MyHomePage(),
-            );
-          },
-        );
-      },
-    );
-  }
+      return DynamicColorBuilder(
+        builder: (lightDynamic, darkDynamic) {
+          ThemeData lightTheme;
+          ThemeData darkTheme;
+
+          // 3. Lógica para colores dinámicos vs. esquema estático de tu archivo
+          if (themeProvider.useDynamicColors && lightDynamic != null && darkDynamic != null) {
+            // Usamos el método theme() de tu clase con los colores del sistema
+            lightTheme = materialTheme.theme(lightDynamic);
+            darkTheme = materialTheme.theme(darkDynamic);
+          } else {
+            // Usamos los esquemas definidos manualmente en tu theme.dart [cite: 6, 21]
+            lightTheme = materialTheme.light();
+            darkTheme = materialTheme.dark();
+          }
+
+          return MaterialApp(
+            title: 'Bloc de notas',
+            // 4. Asignamos los temas generados por tu clase
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            themeMode: themeProvider.themeMode,
+            locale: themeProvider.locale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+              FlutterQuillLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'),
+              Locale('es'),
+              Locale('es', 'VE'),
+              Locale('pt'),
+              Locale('pt', 'BR'),
+            ],
+            home: const MyHomePage(),
+          );
+        },
+      );
+    },
+  );
+}
 }
 
 class MyHomePage extends StatefulWidget {

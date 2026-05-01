@@ -29,6 +29,7 @@ import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'drawing_embed.dart';
 import 'update_widget.dart';
+import 'theme.dart';
 
 void main() {
   runApp(

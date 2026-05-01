@@ -1582,66 +1582,70 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   Widget _buildGridView() {
-    final bool canReorder =
-        _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
-    final scrollController = ScrollController();
+  final bool canReorder =
+      _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
+  final scrollController = ScrollController(); // Sincronización obligatoria
 
-    const gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
+  if (canReorder) {
+    return ReorderableBuilder(
+      key: const Key('reorderable_grid'),
+      scrollController: scrollController,
+      longPressDelay: const Duration(milliseconds: 300), // UX recomendada
+      
+      // Configuración de animaciones y feedback visual
+      dragChildBoxDecoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 10, spreadRadius: 2),
+        ],
+      ),
+      
+      // Uso del nuevo callback de reordenamiento de la v5.6.0
+      onReorder: (reorderCallback) {
+        setState(() {
+          _items = reorderCallback(_items); 
+          _filteredItems = List.from(_items);
+          _saveItems();
+        });
+      },
+      
+      // Se generan las llaves únicas obligatorias para cada hijo
+      builder: (children) {
+        return GridView(
+          controller: scrollController, // El controlador debe ser el mismo
+          padding: const EdgeInsets.all(16.0),
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 200,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 0.75,
+          ),
+          children: children,
+        );
+      },
+      children: _filteredItems.map((item) {
+        return Container(
+          key: ValueKey(item.id), // Clave única obligatoria
+          child: _buildItem(item, isListView: false),
+        );
+      }).toList(),
+    );
+  }
+
+  // Vista estática cuando no se puede reordenar
+  return GridView.builder(
+    padding: const EdgeInsets.all(16.0),
+    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
       maxCrossAxisExtent: 200,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
       childAspectRatio: 0.75,
-    );
-
-    if (canReorder) {
-      // 1. Generamos la lista de widgets hijos por adelantado.
-      // Es obligatorio que cada widget tenga su Key única (ValueKey).
-      final generatedChildren = List.generate(
-        _filteredItems.length,
-        (index) => Container(
-          key: ValueKey(_filteredItems[index].id),
-          child: _buildItem(_filteredItems[index], isListView: false),
-        ),
-      );
-
-      // 2. Usamos el ReorderableBuilder del nuevo paquete
-      return ReorderableBuilder<ListItem>(
-        scrollController: scrollController,
-        enableDraggable: false,
-        children: generatedChildren,
-        onReorder: (reorderedListFunction) {
-          setState(() {
-            // El paquete nos proporciona una función (reorderedListFunction)
-            // que aplica el cambio de orden automáticamente a nuestra lista.
-            _items = reorderedListFunction(_items);
-
-            // Actualizamos nuestra lista filtrada y guardamos
-            _filteredItems = List.from(_items);
-            _saveItems();
-          });
-        },
-        builder: (children) {
-          // 3. Devolvemos un GridView estándar pasándole los hijos (children)
-          // que el ReorderableBuilder nos entrega ya gestionados.
-          return GridView(
-            controller: scrollController,
-            padding: const EdgeInsets.all(16.0),
-            gridDelegate: gridDelegate,
-            children: children,
-          );
-        },
-      );
-    }
-
-    // El GridView para cuando no estamos en modo reordenar se mantiene igual
-    return GridView.builder(
-      padding: const EdgeInsets.all(16.0),
-      gridDelegate: gridDelegate,
-      itemCount: _filteredItems.length,
-      itemBuilder: (context, index) =>
-          _buildItem(_filteredItems[index], isListView: false),
-    );
-  }
+    ),
+    itemCount: _filteredItems.length,
+    itemBuilder: (context, index) =>
+        _buildItem(_filteredItems[index], isListView: false),
+  );
+}
 
   Future<void> _cleanupImagesForSelectedItems() async {
     for (final item in _selectedItems) {

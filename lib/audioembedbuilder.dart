@@ -71,12 +71,14 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     }); 
 
     _audioPlayer.onPlayerStateChanged.listen((state) {
-      if (mounted) {
-        setState(() => _isPlaying = state == PlayerState.playing);
-        if (state == PlayerState.completed) {
-          setState(() => _position = Duration.zero);
-        }
-      }
+  if (mounted) {
+    setState(() => _isPlaying = state == PlayerState.playing);
+    if (state == PlayerState.completed) {
+      // Agregamos el seek para que el reproductor vuelva al inicio internamente
+      _audioPlayer.seek(Duration.zero); 
+      setState(() => _position = Duration.zero);
+    }
+  }
     }); 
 
     // --- CAMBIO PARA COMPATIBILIDAD WEB ---
@@ -175,13 +177,18 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
             ),
             iconSize: 36,
             color: Theme.of(context).colorScheme.primary, 
-            onPressed: () {
-              if (_isPlaying) {
-                _audioPlayer.pause();
-              } else {
-                _audioPlayer.resume();
-              }
-            }, 
+            onPressed: () async {
+  if (_isPlaying) {
+    await _audioPlayer.pause();
+  } else {
+    // Si la posición actual es igual o mayor a la duración, 
+    // forzamos el regreso al inicio antes de reproducir.
+    if (_position >= _duration && _duration > Duration.zero) {
+      await _audioPlayer.seek(Duration.zero);
+    }
+    await _audioPlayer.resume();
+  }
+}, 
           ),
           Expanded(
             child: Column(

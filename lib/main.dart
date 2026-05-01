@@ -1537,22 +1537,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   child: contentColumn,
                 ),
               ),
-              if (canReorder && !_isSelectionMode) ...[
-                isListView
-                    // Modo Lista (Flutter Nativo)
-                    ? ReorderableDragStartListener(
-                        index: _filteredItems.indexOf(item),
-                        child: dragIcon,
-                      )
-                    // Modo Grid (Paquete flutter_reorderable_grid_view)
-                    : CustomDraggable(
-                        key: ValueKey(
-                          item.id,
-                        ), // ¡Clave: debe ser igual a la del contenedor del item!
-                        data: _filteredItems.indexOf(item), // Pasas el objeto de tu item aquí
-                        child: dragIcon,
-                      ),
-              ],
+             if (canReorder && !_isSelectionMode) ...[
+               // Usamos el listener estándar de Flutter para ambos casos
+               ReorderableDragStartListener(
+                 index: _filteredItems.indexOf(item),
+                 child: dragIcon,
+               ),
+             ],
             ],
           ),
         ),

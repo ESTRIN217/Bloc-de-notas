@@ -1587,7 +1587,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final scrollController = ScrollController(); // Sincronización obligatoria
 
   if (canReorder) {
-    return ReorderableBuilder(
+    return ReorderableBuilder<ListItem>(
       key: const Key('reorderable_grid'),
       scrollController: scrollController,
       longPressDelay: const Duration(milliseconds: 300), // UX recomendada
@@ -1601,9 +1601,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       ),
       
       // Uso del nuevo callback de reordenamiento de la v5.6.0
-      onReorder: (reorderCallback) {
+      onReorder: (ReorderedListFunction<ListItem> reorderCallback) {
         setState(() {
-          _items = reorderCallback(_items); 
+          _items = reorderCallback(_items);
           _filteredItems = List.from(_items);
           _saveItems();
         });

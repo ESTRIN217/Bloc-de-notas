@@ -359,14 +359,8 @@ class _EditorScreenState extends State<EditorScreen> {
 
   void _deleteItem() async {
     if (!mounted) return;
-
-    // 1. Limpiamos las imágenes del almacenamiento interno
-    await _cleanupImages();
-
-    // 2. VERIFICACIÓN CRÍTICA: ¿Sigue el widget en el árbol después del await?
-    if (!mounted) return;
-
-    // 3. Ahora es seguro usar el context para el Navigator
+    // Quitamos la limpieza de imágenes (await _cleanupImages();) 
+    // porque ahora la nota irá a la papelera primero.
     Navigator.pop(context, "DELETE");
   }
 
@@ -795,42 +789,52 @@ class _EditorScreenState extends State<EditorScreen> {
               ),
             ],
           ),
-          bottomNavigationBar: BottomAppBar(
-            elevation: 0,
-            color: Colors.transparent,
-            child: Row(
-              children: [
-                IconButton.outlined(
-                  icon: Icon(Icons.palette_outlined, color: dynamicIconColor),
-                  onPressed: _showBackgroundSheet,
-                ),
-                IconButton.outlined(
-                  icon: Icon(Icons.tune, color: dynamicIconColor),
-                  onPressed: _showTextTools,
-                ),
-                IconButton.outlined(
-                  icon: Icon(
-                    _ttsState == TtsState.playing
-                        ? Icons.stop
-                        : Icons.volume_up,
-                    color: dynamicIconColor,
-                  ),
-                  onPressed: _toggleSpeak,
-                ),
-                IconButton.outlined(
-                  icon: Icon(
-                    Icons.fiber_manual_record,
-                    color: dynamicIconColor,
-                  ),
-                  onPressed: _showAudioMenu,
-                ),
-                IconButton.outlined(
-                  icon: Icon(Icons.gesture, color: dynamicIconColor),
-                  onPressed: _insertarLienzo,
-                ),
-              ],
-            ),
+          bottomNavigationBar: Padding(
+  padding: const EdgeInsets.fromLTRB(16, 0, 16, 20), // Margen lateral y separación del suelo
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.9), // Fondo sutil
+      borderRadius: BorderRadius.circular(28), // Bordes muy redondeados (M3)
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribuye los iconos uniformemente
+      mainAxisSize: MainAxisSize.min, // Ajusta el ancho al contenido
+      children: [
+        IconButton.outlined(
+          icon: Icon(Icons.palette_outlined, color: dynamicIconColor),
+          onPressed: _showBackgroundSheet,
+        ),
+        IconButton.outlined(
+          icon: Icon(Icons.tune, color: dynamicIconColor),
+          onPressed: _showTextTools,
+        ),
+        IconButton.outlined(
+          icon: Icon(
+            _ttsState == TtsState.playing ? Icons.stop : Icons.volume_up,
+            color: dynamicIconColor,
           ),
+          onPressed: _toggleSpeak,
+        ),
+        IconButton.outlined(
+          icon: Icon(Icons.fiber_manual_record, color: dynamicIconColor),
+          onPressed: _showAudioMenu,
+        ),
+        IconButton.outlined(
+          icon: Icon(Icons.gesture, color: dynamicIconColor),
+          onPressed: _insertarLienzo,
+        ),
+      ],
+    ),
+  ),
+),
         ),
       ),
     );

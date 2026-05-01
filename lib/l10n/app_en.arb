@@ -24,6 +24,8 @@
       "count": {}
     }
   },
+  "select": "Select",
+  "@select": {},
   "share": "Share",
   "@share": {},
   "delete": "Delete",

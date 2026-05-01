@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:io' show Platform; // Para detectar Android/iOS
+import 'package:flutter/foundation.dart' show kIsWeb; // Para detectar si es Web
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -84,19 +87,39 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                FutureBuilder<PackageInfo>(
-                  future: PackageInfo.fromPlatform(),
-                  builder: (context, snapshot) {
-                    final version = snapshot.data?.version ?? "...";
-                    return Row(
-                      children: [
-                        _buildBadge(context, version),
-                        const SizedBox(width: 8),
-                        _buildBadge(context, "UNIVERSAL"),
-                      ],
-                    );
-                  },
-                ),
+               FutureBuilder<List<dynamic>>(
+  future: Future.wait([
+    PackageInfo.fromPlatform(),
+    DeviceInfoPlugin().deviceInfo,
+  ]),
+  builder: (context, snapshot) {
+    // Manejo de estados de carga/error
+    final version = snapshot.data?[0].version ?? "...";
+    String archLabel = "...";
+
+    if (snapshot.hasData) {
+      final deviceData = snapshot.data![1];
+
+      if (kIsWeb) {
+        final webInfo = deviceData as WebBrowserInfo;
+        // Muestra el navegador (ej: CHROME o FIREFOX)
+        archLabel = webInfo.browserName.name.toUpperCase();
+      } else {
+        // En Android, toma la arquitectura (ej: ARM64-V8A)
+        final androidInfo = deviceData as AndroidDeviceInfo;
+        archLabel = androidInfo.supportedAbis.first.toUpperCase();
+      }
+    }
+
+    return Row(
+      children: [
+        _buildBadge(context, version),
+        const SizedBox(width: 8),
+        _buildBadge(context, archLabel),
+      ],
+    );
+  },
+),
               ],
             ),
           ),

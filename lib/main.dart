@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:bloc_de_notas/audioembedbuilder.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io' show Platform; // Solo se usa si !kIsWeb
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill/flutter_quill.dart';
@@ -27,6 +29,7 @@ import 'updater_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'drawing_embed.dart';
 import 'update_widget.dart';
 import 'theme.dart';
@@ -124,6 +127,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _isLoading = true;
   // Definimos el canal de comunicación
   //static const platform = MethodChannel('com.estrin217.bloc_de_notas/settings');
+  bool _isTrashView = false; // Controla si estamos viendo el inicio o la papelera
+  late List<ListItem> _trashedItems;
 
   @override
   void initState() {
@@ -131,6 +136,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _items = [];
     _filteredItems = [];
+    _trashedItems = [];
     _searchController.addListener(_filterItems);
     _loadItems();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -214,6 +220,25 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       });
       _saveItems();
     }
+    // --- Cargar Papelera ---
+      String? trashedContents;
+      if (kIsWeb) {
+        final prefs = await SharedPreferences.getInstance();
+        trashedContents = prefs.getString('trashed_notes');
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/trashed_notes.json');
+        if (await file.exists()) {
+          trashedContents = await file.readAsString();
+        }
+      }
+
+      if (trashedContents != null && trashedContents.isNotEmpty) {
+        final List<dynamic> jsonList = jsonDecode(trashedContents);
+        setState(() {
+          _trashedItems = jsonList.map((json) => ListItem.fromJson(json)).toList();
+        });
+      }
   }
 
   ListItem _createWelcomeNote() {
@@ -633,12 +658,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   void _filterItems() {
     final query = _searchController.text.toLowerCase();
+    // Elegimos la fuente de datos según la vista
+    final sourceList = _isTrashView ? _trashedItems : _items; 
+    
     setState(() {
-      _filteredItems = _items.where((item) {
+      _filteredItems = sourceList.where((item) {
         final titleMatch = item.title.toLowerCase().contains(query);
-        final summaryMatch = item.document.toPlainText().toLowerCase().contains(
-          query,
-        );
+        final summaryMatch = item.document.toPlainText().toLowerCase().contains(query);
         return titleMatch || summaryMatch;
       }).toList();
       _sortFilteredItems();
@@ -691,11 +717,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     if (result == null) return;
 
     if (result == "DELETE") {
+      final itemToDelete = _items.firstWhere((i) => i.id == originalItem.id);
       setState(() {
         _items.removeWhere((i) => i.id == originalItem.id);
+        _trashedItems.add(itemToDelete); // Movemos a papelera
         _filterItems();
         _saveItems();
+        _saveTrashedItems();
       });
+      _showUndoSnackbar([itemToDelete]); // Mostramos SnackBar
     } else if (result is ListItem) {
       setState(() {
         final index = _items.indexWhere((i) => i.id == result.id);
@@ -749,16 +779,49 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     });
   }
 
-  void _deleteSelectedItems() async {
-    // 1. Primero limpiamos los archivos físicos
-    await _cleanupImagesForSelectedItems();
+  void _showUndoSnackbar(List<ListItem> deletedItems) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    scaffoldMessenger.clearSnackBars();
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        content: const Text('Movido a la papelera'),
+        behavior: SnackBarBehavior.floating, // Estilo flotante de Material 3
+        action: SnackBarAction(
+          label: 'Deshacer',
+          onPressed: () {
+            setState(() {
+              _trashedItems.removeWhere((item) => deletedItems.contains(item));
+              _items.addAll(deletedItems);
+              _saveItems();
+              _saveTrashedItems();
+              _filterItems();
+            });
+          },
+        ),
+      ),
+    );
+  }
 
-    // 2. Luego actualizamos la UI y la base de datos
+  // Modifica _deleteSelectedItems para que maneje la papelera
+  void _deleteSelectedItems() async {
+    final itemsToDelete = List<ListItem>.from(_selectedItems);
+    
     setState(() {
-      _items.removeWhere((item) => _selectedItems.contains(item));
-      _filterItems();
+      if (_isTrashView) {
+        // Eliminación definitiva desde la papelera
+        _cleanupImagesForItems(itemsToDelete);
+        _trashedItems.removeWhere((item) => itemsToDelete.contains(item));
+        _saveTrashedItems();
+      } else {
+        // Enviar a la papelera desde el inicio
+        _items.removeWhere((item) => itemsToDelete.contains(item));
+        _trashedItems.addAll(itemsToDelete);
+        _saveItems();
+        _saveTrashedItems();
+        _showUndoSnackbar(itemsToDelete);
+      }
       _exitSelectionMode();
-      _saveItems(); // Asumo que esto guarda la lista actualizada en SharedPreferences o DB
+      _filterItems();
     });
   }
 
@@ -1202,7 +1265,22 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ListTile(
               leading: const Icon(Icons.home),
               title: Text(AppLocalizations.of(context)!.home),
-              onTap: () => Navigator.pop(context),
+              selected: !_isTrashView,
+              onTap: () {
+                setState(() => _isTrashView = false);
+                _filterItems();
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline),
+              title: const Text('Papelera'),
+              selected: _isTrashView,
+              onTap: () {
+                setState(() => _isTrashView = true);
+                _filterItems();
+                Navigator.pop(context);
+              },
             ),
 
             ListTile(
@@ -1264,41 +1342,52 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             const Divider(),
             const UpdateAvailableWidget(isDrawerTile: true),
             ListTile(
-              enabled:
-                  false, // Mantiene el ícono y texto con un tono desactivado
-              leading: const Icon(
-                Icons.info_outline,
-                size: 20,
-              ), // El nuevo ícono
-              title: FutureBuilder<PackageInfo>(
-                future: PackageInfo.fromPlatform(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    final version = snapshot.data!.version;
-                    final buildNumber = snapshot.data!.buildNumber;
-                    return Text(
-                      'Versión $version ($buildNumber) • UNIVERSAL',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    );
-                  } else {
-                    return const Text(
-                      'Cargando...',
-                      style: TextStyle(fontSize: 12),
-                    );
-                  }
-                },
+  enabled: false,
+  leading: const Icon(Icons.info_outline, size: 20),
+  title: FutureBuilder<List<dynamic>>(
+    future: Future.wait([
+      PackageInfo.fromPlatform(),
+      DeviceInfoPlugin().deviceInfo, // Usamos .deviceInfo para que sea genérico
+    ]),
+    builder: (context, snapshot) {
+      if (snapshot.hasData) {
+        final PackageInfo packageInfo = snapshot.data![0];
+        final deviceData = snapshot.data![1];
+        
+        String platformDetail = "";
+
+        if (kIsWeb) {
+          // Extraemos el nombre del navegador y la versión (ej. Chrome 124)
+          final webInfo = deviceData as WebBrowserInfo;
+          platformDetail = "${webInfo.browserName.name.toUpperCase()} ${webInfo.appVersion.split(' ').first}";
+        } else if (Platform.isAndroid) {
+          final androidInfo = deviceData as AndroidDeviceInfo;
+          platformDetail = androidInfo.supportedAbis.first.toUpperCase();
+        } else {
+          platformDetail = "NATIVE";
+        }
+
+        return Text(
+          'Versión ${packageInfo.version} (${packageInfo.buildNumber}) • $platformDetail',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
               ),
-            ),
+        );
+      }
+      
+      return const Text('Cargando...', style: TextStyle(fontSize: 12));
+    },
+  ),
+),
           ],
         ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : (_isListView ? _buildListView() : _buildGridView()),
-      floatingActionButton: _isSelectionMode
+      floatingActionButton: (_isSelectionMode || _isTrashView)
           ? null
           : FloatingActionButton(
               onPressed: () => _navigateToEditor(),
@@ -1537,13 +1626,26 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   child: contentColumn,
                 ),
               ),
-             if (canReorder && !_isSelectionMode) ...[
-               // Usamos el listener estándar de Flutter para ambos casos
-               ReorderableDragStartListener(
-                 index: _filteredItems.indexOf(item),
-                 child: dragIcon,
-               ),
-             ],
+             if (!_isSelectionMode) ...[
+                if (isListView) ...[
+                  // En LISTA: Mostramos el icono de arrastre si el orden es personalizado
+                  if (canReorder)
+                    ReorderableDragStartListener(
+                      index: _filteredItems.indexOf(item),
+                      child: dragIcon,
+                    ),
+                ] else ...[
+                  // En GRIDVIEW: Ocultamos el arrastre y mostramos los tres puntos para selección
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: IconButton(
+                      icon: Icon(Icons.more_vert, color: dynamicIconColor),
+                      onPressed: () => _startSelectionMode(item),
+                      tooltip: AppLocalizations.of(context)!.select,
+                    ),
+                  ),
+                ],
+              ],
             ],
           ),
         ),
@@ -1647,8 +1749,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   );
 }
 
-  Future<void> _cleanupImagesForSelectedItems() async {
-    for (final item in _selectedItems) {
+  Future<void> _cleanupImagesForItems(List<ListItem> itemsToClean) async {
+    for (final item in itemsToClean) {
       try {
         // 1. Decodificamos el summary que guardaste como JSON
         final List<dynamic> delta = jsonDecode(item.summary);
@@ -1680,6 +1782,24 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           print('Error al limpiar imágenes de la nota ${item.id}: $e');
         }
       }
+    }
+  }
+  Future<void> _saveTrashedItems() async {
+    try {
+      final List<Map<String, dynamic>> jsonList = _trashedItems
+          .map((item) => item.toJson())
+          .toList();
+      final contents = jsonEncode(jsonList);
+      if (kIsWeb) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('trashed_notes', contents);
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/trashed_notes.json');
+        await file.writeAsString(contents);
+      }
+    } catch (e) {
+      debugPrint("Error guardando papelera: $e");
     }
   }
 }

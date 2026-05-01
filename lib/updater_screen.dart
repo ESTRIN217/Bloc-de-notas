@@ -3,6 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'updater_provider.dart';
 import 'l10n/app_localizations.dart';
+import 'dart:io' show Platform; // Para detectar Android/iOS
+import 'package:flutter/foundation.dart' show kIsWeb; // Para detectar si es Web
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class UpdaterScreen extends StatefulWidget {
   const UpdaterScreen({super.key});
@@ -33,25 +37,42 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
             AppLocalizations.of(context)!.version_actual,
           ),
           _buildGroup(
-            context,
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 8,
-              ),
-              title: Text(
-                'Versión: ${updater.currentVersion}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 17,
-                ),
-              ),
-              subtitle: Text(
-                'universal - FOSS',
-                style: TextStyle(color: colorScheme.onSurfaceVariant),
-              ),
-            ),
-          ),
+  context,
+  child: ListTile(
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 20,
+      vertical: 8,
+    ),
+    title: Text(
+      'Versión: ${updater.currentVersion}',
+      style: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 17,
+      ),
+    ),
+    subtitle: FutureBuilder<BaseDeviceInfo>(
+      future: DeviceInfoPlugin().deviceInfo,
+      builder: (context, snapshot) {
+        String arch = "Cargando...";
+        
+        if (snapshot.hasData) {
+          if (kIsWeb) {
+            final webInfo = snapshot.data as WebBrowserInfo;
+            arch = webInfo.browserName.name.toUpperCase();
+          } else {
+            final androidInfo = snapshot.data as AndroidDeviceInfo;
+            arch = androidInfo.supportedAbis.first.toUpperCase();
+          }
+        }
+
+        return Text(
+          '$arch - FOSS',
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        );
+      },
+    ),
+  ),
+),
 
           const SizedBox(height: 16),
 

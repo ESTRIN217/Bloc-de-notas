@@ -128,6 +128,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   //static const platform = MethodChannel('com.estrin217.bloc_de_notas/settings');
   bool _isTrashView = false; // Controla si estamos viendo el inicio o la papelera
   late List<ListItem> _trashedItems;
+  List<String> _availableTags = [];
+  String? _selectedTagFilter;
 
   @override
   void initState() {
@@ -137,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _filteredItems = [];
     _trashedItems = [];
     _searchController.addListener(_filterItems);
-    _loadItems();
+    _loadAllData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Llamamos a nuestro nuevo método silencioso
       context.read<UpdaterProvider>().checkUpdateOnStartup();
@@ -165,6 +167,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       // Llamamos a nuestro método silencioso de nuevo
       context.read<UpdaterProvider>().checkUpdateOnStartup();
     }
+  }
+  // NUEVO: Método unificado para cargar todo
+  Future<void> _loadAllData() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Cargar Etiquetas
+    setState(() {
+      _availableTags = prefs.getStringList('available_tags') ?? [];
+    });
+
+    await _loadItems();
   }
 
   Future<void> _loadItems() async {
@@ -635,6 +648,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
     return exerciteNote;
   }
+  // NUEVO: Guardar Etiquetas
+  Future<void> _saveTags() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('available_tags', _availableTags);
+  }
 
   Future<void> _saveItems() async {
     try {
@@ -655,16 +673,20 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
+  // MODIFICADO: Lógica de filtro para incluir etiquetas
   void _filterItems() {
     final query = _searchController.text.toLowerCase();
-    // Elegimos la fuente de datos según la vista
     final sourceList = _isTrashView ? _trashedItems : _items; 
     
     setState(() {
       _filteredItems = sourceList.where((item) {
         final titleMatch = item.title.toLowerCase().contains(query);
         final summaryMatch = item.document.toPlainText().toLowerCase().contains(query);
-        return titleMatch || summaryMatch;
+        final matchesSearch = titleMatch || summaryMatch;
+        
+        final matchesTag = _selectedTagFilter == null || item.tags.contains(_selectedTagFilter);
+
+        return matchesSearch && matchesTag;
       }).toList();
       _sortFilteredItems();
     });
@@ -706,6 +728,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           title: '',
           summary: '',
           lastModified: DateTime.now(),
+          tags: _selectedTagFilter != null ? [_selectedTagFilter!] : [], // Asigna la etiqueta actual si hay filtro
         );
 
     final result = await Navigator.push(
@@ -713,7 +736,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       MaterialPageRoute(builder: (context) => EditorScreen(item: originalItem)),
     );
 
-    if (result == null) return;
+    if (result == null) {
+      _loadAllData(); // Recargamos por si editó etiquetas dentro del editor
+      return; 
+    }
 
     if (result == "DELETE") {
       final itemToDelete = _items.firstWhere((i) => i.id == originalItem.id);
@@ -747,6 +773,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         _filterItems();
         _saveItems();
       });
+      _loadAllData(); // Recargamos las etiquetas globales por si se crearon nuevas
     }
   }
 
@@ -776,6 +803,144 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       _isSelectionMode = false;
       _selectedItems.clear();
     });
+  }
+  // NUEVO: Diálogo para asignar etiquetas en modo selección
+  void _showAssignTagDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Etiquetar notas'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: _availableTags.isEmpty 
+              ? const Text('No hay etiquetas creadas. Créalas desde el menú lateral.')
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _availableTags.length,
+                  itemBuilder: (context, index) {
+                    final tag = _availableTags[index];
+                    return ListTile(
+                      title: Text(tag),
+                      trailing: const Icon(Icons.add_circle_outline),
+                      onTap: () {
+                        setState(() {
+                          for (var item in _selectedItems) {
+                            final index = _items.indexWhere((i) => i.id == item.id);
+                            if (index != -1) {
+                              final updatedTags = List<String>.from(_items[index].tags);
+                              if (!updatedTags.contains(tag)) {
+                                updatedTags.add(tag);
+                                _items[index] = ListItem(
+                                  id: _items[index].id,
+                                  title: _items[index].title,
+                                  summary: _items[index].summary,
+                                  lastModified: DateTime.now(),
+                                  backgroundColor: _items[index].backgroundColor,
+                                  backgroundImagePath: _items[index].backgroundImagePath,
+                                  tags: updatedTags,
+                                );
+                              }
+                            }
+                          }
+                          _saveItems();
+                          _filterItems();
+                        });
+                        Navigator.pop(context);
+                        _exitSelectionMode();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Etiqueta "$tag" añadida a ${_selectedItems.length} notas')),
+                        );
+                      },
+                    );
+                  },
+                ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+          ],
+        );
+      }
+    );
+  }
+  // NUEVO: Diálogo para gestionar/crear etiquetas desde el Drawer
+  void _showManageTagsDialog() {
+    final TextEditingController tagController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return AlertDialog(
+              title: const Text('Gestionar Etiquetas'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: tagController,
+                      decoration: InputDecoration(
+                        hintText: 'Nueva etiqueta...',
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () {
+                            final newTag = tagController.text.trim();
+                            if (newTag.isNotEmpty && !_availableTags.contains(newTag)) {
+                              setState(() {
+                                _availableTags.add(newTag);
+                                _saveTags();
+                              });
+                              setModalState(() {});
+                              tagController.clear();
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _availableTags.length,
+                        itemBuilder: (context, index) {
+                          final tag = _availableTags[index];
+                          return ListTile(
+                            title: Text(tag),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  _availableTags.remove(tag);
+                                  if (_selectedTagFilter == tag) _selectedTagFilter = null;
+                                  _saveTags();
+                                  _filterItems(); // Refrescar vista
+                                });
+                                setModalState(() {});
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cerrar'),
+                ),
+              ],
+            );
+          }
+        );
+      }
+    );
   }
 
   void _showUndoSnackbar(List<ListItem> deletedItems) {
@@ -1160,6 +1325,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         title: Text('${_selectedItems.length} seleccionados'),
         actions: [
           IconButton(
+            icon: Icon(Icons.label_outline, color: Theme.of(context).colorScheme.onSurface),
+            onPressed: _showAssignTagDialog,
+            tooltip: 'Etiquetar',
+          ),
+          IconButton(
             icon: Icon(
               Icons.share,
               color: Theme.of(context).colorScheme.onSurface,
@@ -1271,6 +1441,39 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 Navigator.pop(context);
               },
             ),
+            // NUEVA SECCIÓN: Etiquetas
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('ETIQUETAS', style: Theme.of(context).textTheme.labelSmall),
+                  IconButton(
+                    icon: const Icon(Icons.add, size: 20),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showManageTagsDialog();
+                    },
+                  )
+                ],
+              ),
+            ),
+            ..._availableTags.map((tag) => ListTile(
+              leading: const Icon(Icons.label_outline),
+              title: Text(tag),
+              selected: _selectedTagFilter == tag && !_isTrashView,
+              onTap: () {
+                setState(() {
+                  _isTrashView = false;
+                  _selectedTagFilter = tag;
+                });
+                _filterItems();
+                Navigator.pop(context);
+              },
+            )),
+            
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.delete_outline),
               title: const Text('Papelera'),
@@ -1571,6 +1774,26 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // En GridView, el Expanded tomará el espacio restante
                   child: ClipRect(child: richTextPreview),
                 ),
+                // NUEVO: Visualización de etiquetas al final de la tarjeta
+        if (item.tags.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: item.tags.map((tag) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: dynamicTextColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: dynamicTextColor.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                tag,
+                style: TextStyle(fontSize: 10, color: dynamicTextColor),
+              ),
+            )).toList(),
+          ),
+        ]
       ],
     );
     final Widget dragIcon = Padding(

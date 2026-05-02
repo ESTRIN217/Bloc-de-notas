@@ -10,6 +10,7 @@ class ListItem {
   final DateTime lastModified;
   final int? backgroundColor;
   final String? backgroundImagePath;
+  final List<String> tags;
 
   ListItem({
     required this.id,
@@ -18,6 +19,7 @@ class ListItem {
     required this.lastModified,
     this.backgroundColor,
     this.backgroundImagePath,
+    this.tags = const [],
   });
 
   factory ListItem.fromJson(Map<String, dynamic> json) {
@@ -28,6 +30,7 @@ class ListItem {
       lastModified: DateTime.parse(json['lastModified']),
       backgroundColor: json['backgroundColor'],
       backgroundImagePath: json['backgroundImagePath'],
+      tags: List<String>.from(json['tags'] ?? []), // <-- NUEVO
     );
   }
 
@@ -39,6 +42,7 @@ class ListItem {
       'lastModified': lastModified.toIso8601String(),
       'backgroundColor': backgroundColor,
       'backgroundImagePath': backgroundImagePath,
+      'tags': tags,
     };
   }
 

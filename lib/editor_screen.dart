@@ -21,6 +21,7 @@ import 'package:record/record.dart';
 import 'drawing_embed.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart'; // IMPORTANTE AÑADIR
 
 enum TtsState { playing, stopped }
 
@@ -44,6 +45,9 @@ class _EditorScreenState extends State<EditorScreen> {
 
   int? _backgroundColorValue;
   String? _backgroundImagePath;
+  // NUEVO: Estado de etiquetas
+  List<String> _currentTags = [];
+  List<String> _availableGlobalTags = [];
 
   @override
   void initState() {
@@ -55,7 +59,25 @@ class _EditorScreenState extends State<EditorScreen> {
     );
     _backgroundColorValue = widget.item.backgroundColor;
     _backgroundImagePath = widget.item.backgroundImagePath;
+    _currentTags = List.from(widget.item.tags); // Inicializamos las etiquetas
     _initTts();
+    _loadGlobalTags();
+  }
+  // NUEVO: Cargar etiquetas globales para el modal
+  Future<void> _loadGlobalTags() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _availableGlobalTags = prefs.getStringList('available_tags') ?? [];
+    });
+  }
+
+  // NUEVO: Guardar una nueva etiqueta global desde el editor
+  Future<void> _saveNewGlobalTag(String tag) async {
+    if (!_availableGlobalTags.contains(tag)) {
+      _availableGlobalTags.add(tag);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('available_tags', _availableGlobalTags);
+    }
   }
 
   void _initTts() {
@@ -112,8 +134,93 @@ class _EditorScreenState extends State<EditorScreen> {
       lastModified: DateTime.now(),
       backgroundColor: _backgroundColorValue,
       backgroundImagePath: _backgroundImagePath,
+      tags: _currentTags, // NUEVO: Pasamos las etiquetas al guardar
     );
     Navigator.pop(context, updatedItem);
+  }
+  // NUEVO: Diálogo para gestionar las etiquetas de la nota actual
+  void _showTagsDialog() {
+    final TextEditingController newTagController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return AlertDialog(
+              title: const Text('Etiquetas de la nota'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Campo para crear nueva
+                    TextField(
+                      controller: newTagController,
+                      decoration: InputDecoration(
+                        hintText: 'Crear nueva etiqueta...',
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () {
+                            final tag = newTagController.text.trim();
+                            if (tag.isNotEmpty) {
+                              _saveNewGlobalTag(tag);
+                              setState(() {
+                                if (!_currentTags.contains(tag)) {
+                                  _currentTags.add(tag);
+                                }
+                              });
+                              setModalState(() {});
+                              newTagController.clear();
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Tus etiquetas:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    // Lista de etiquetas con checkboxes (estilo Material 3)
+                    Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _availableGlobalTags.length,
+                        itemBuilder: (context, index) {
+                          final tag = _availableGlobalTags[index];
+                          final isSelected = _currentTags.contains(tag);
+                          
+                          return CheckboxListTile(
+                            title: Text(tag),
+                            value: isSelected,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                if (value == true) {
+                                  _currentTags.add(tag);
+                                } else {
+                                  _currentTags.remove(tag);
+                                }
+                              });
+                              setModalState(() {});
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Listo'),
+                ),
+              ],
+            );
+          }
+        );
+      }
+    );
   }
 
   void _showShareMenu(BuildContext context) {
@@ -639,8 +746,25 @@ class _EditorScreenState extends State<EditorScreen> {
               ),
             ],
           ),
-          body: Column(
+          body: Stack(
             children: [
+              Column(
+            children: [
+              // NUEVO: Visualización de etiquetas justo encima o al lado del título
+                  if (_currentTags.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                      child: Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: _currentTags.map((tag) => ActionChip(
+                          label: Text(tag, style: TextStyle(color: dynamicTextColor, fontSize: 12)),
+                          backgroundColor: dynamicTextColor.withValues(alpha: 0.1),
+                          side: BorderSide.none,
+                          onPressed: _showTagsDialog, // Al tocarlas, abre el diálogo
+                        )).toList(),
+                      ),
+                    ),
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16.0,
@@ -675,7 +799,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       autoFocus: false,
                       placeholder: 'Escribe algo increíble...',
                       expands: false,
-                      padding: EdgeInsets.zero,
+                      padding: const EdgeInsets.only(bottom: 90),
 
                       customStyles: quill.DefaultStyles(
                         // Estilo para texto normal
@@ -789,52 +913,59 @@ class _EditorScreenState extends State<EditorScreen> {
               ),
             ],
           ),
-          bottomNavigationBar: Padding(
-  padding: const EdgeInsets.fromLTRB(16, 0, 16, 20), // Margen lateral y separación del suelo
-  child: Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.9), // Fondo sutil
-      borderRadius: BorderRadius.circular(28), // Bordes muy redondeados (M3)
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.1),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribuye los iconos uniformemente
-      mainAxisSize: MainAxisSize.min, // Ajusta el ancho al contenido
-      children: [
-        IconButton.outlined(
-          icon: Icon(Icons.palette_outlined, color: dynamicIconColor),
-          onPressed: _showBackgroundSheet,
-        ),
-        IconButton.outlined(
-          icon: Icon(Icons.tune, color: dynamicIconColor),
-          onPressed: _showTextTools,
-        ),
-        IconButton.outlined(
-          icon: Icon(
-            _ttsState == TtsState.playing ? Icons.stop : Icons.volume_up,
-            color: dynamicIconColor,
+          Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  // Solo padding inferior, la separación visual por encima del teclado
+                  padding: const EdgeInsets.only(bottom: 16.0), 
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      // Usamos withValues(alpha: 0.9) como dicta la sintaxis actual de Flutter
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.9), 
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly, 
+                      mainAxisSize: MainAxisSize.min, // Evita que se estire a los bordes
+                      children: [
+                        IconButton.outlined(
+                          icon: Icon(Icons.palette_outlined, color: dynamicIconColor),
+                          onPressed: _showBackgroundSheet,
+                        ),
+                        IconButton.outlined(
+                          icon: Icon(Icons.tune, color: dynamicIconColor),
+                          onPressed: _showTextTools,
+                        ),
+                        IconButton.outlined(
+                          icon: Icon(
+                            _ttsState == TtsState.playing ? Icons.stop : Icons.volume_up,
+                            color: dynamicIconColor,
+                          ),
+                          onPressed: _toggleSpeak,
+                        ),
+                        IconButton.outlined(
+                          icon: Icon(Icons.fiber_manual_record, color: dynamicIconColor),
+                          onPressed: _showAudioMenu,
+                        ),
+                        IconButton.outlined(
+                          icon: Icon(Icons.gesture, color: dynamicIconColor),
+                          onPressed: _insertarLienzo,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          onPressed: _toggleSpeak,
-        ),
-        IconButton.outlined(
-          icon: Icon(Icons.fiber_manual_record, color: dynamicIconColor),
-          onPressed: _showAudioMenu,
-        ),
-        IconButton.outlined(
-          icon: Icon(Icons.gesture, color: dynamicIconColor),
-          onPressed: _insertarLienzo,
-        ),
-      ],
-    ),
-  ),
-),
         ),
       ),
     );

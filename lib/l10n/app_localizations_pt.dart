@@ -41,6 +41,9 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get select => 'selecione';
+
+  @override
   String get share => 'Partilhar';
 
   @override
@@ -202,6 +205,9 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String selected(Object count) {
     return '$count selecionados';
   }
+
+  @override
+  String get select => 'selecione';
 
   @override
   String get share => 'Compartilhar';

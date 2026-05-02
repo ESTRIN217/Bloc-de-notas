@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:io' show Platform; // Para detectar Android/iOS
+// Para detectar Android/iOS
 import 'package:flutter/foundation.dart' show kIsWeb; // Para detectar si es Web
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';

@@ -162,6 +162,12 @@ abstract class AppLocalizations {
   /// **'{count} selected'**
   String selected(Object count);
 
+  /// No description provided for @select.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get select;
+
   /// No description provided for @share.
   ///
   /// In en, this message translates to:

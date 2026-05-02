@@ -794,11 +794,11 @@ class _EditorScreenState extends State<EditorScreen> {
   child: Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.9), // Fondo sutil
+      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.9), // Fondo sutil
       borderRadius: BorderRadius.circular(28), // Bordes muy redondeados (M3)
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.1),
+          color: Colors.black.withValues(alpha: 0.1),
           blurRadius: 10,
           offset: const Offset(0, 4),
         ),
@@ -838,29 +838,6 @@ class _EditorScreenState extends State<EditorScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _cleanupImages() async {
-    final delta = _contentController.document.toDelta().toJson();
-
-    for (final op in delta) {
-      if (op.containsKey('insert') && op['insert'] is Map) {
-        final insert = op['insert'] as Map;
-        if (insert.containsKey('image')) {
-          final String path = insert['image'];
-          final file = File(path);
-
-          // Verificamos que el archivo exista Y que esté dentro de tu carpeta de caché
-          if (await file.exists() &&
-              path.contains('com.estrin217.bloc_de_notas/cache')) {
-            await file.delete();
-            if (kDebugMode) {
-              print('Imagen eliminada de la caché (Editor): $path');
-            }
-          }
-        }
-      }
-    }
   }
 
   // --- MÉTODO 1: SELECCIONAR AUDIO EXISTENTE ---

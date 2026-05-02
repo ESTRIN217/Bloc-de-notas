@@ -4,8 +4,7 @@ import 'dart:io';
 import 'package:bloc_de_notas/audioembedbuilder.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' show Platform; // Solo se usa si !kIsWeb
+// Solo se usa si !kIsWeb
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill/flutter_quill.dart';
@@ -1359,7 +1358,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         if (kIsWeb) {
           // Extraemos el nombre del navegador y la versión (ej. Chrome 124)
           final webInfo = deviceData as WebBrowserInfo;
-          platformDetail = "${webInfo.browserName.name.toUpperCase()} ${webInfo.appVersion.split(' ').first}";
+          platformDetail = "${webInfo.browserName.name.toUpperCase()} ${webInfo.appVersion?.split(' ').first}";
         } else if (Platform.isAndroid) {
           final androidInfo = deviceData as AndroidDeviceInfo;
           platformDetail = androidInfo.supportedAbis.first.toUpperCase();
@@ -1372,7 +1371,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
               ),
         );
       }

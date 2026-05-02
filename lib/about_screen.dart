@@ -87,55 +87,56 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-               FutureBuilder<List<dynamic>>(
-  future: Future.wait([
-    PackageInfo.fromPlatform(),
-    DeviceInfoPlugin().deviceInfo,
-  ]).catchError((e) {
-    // Si falla la carga, devolvemos valores por defecto para no bloquear la UI
-    return [null, null];
-  }),
-  builder: (context, snapshot) {
-    // 1. Valores por defecto iniciales
-    String version = "...";
-    String archLabel = "...";
+                FutureBuilder<List<dynamic>>(
+                  future:
+                      Future.wait<dynamic>([
+                        PackageInfo.fromPlatform(),
+                        DeviceInfoPlugin().deviceInfo,
+                      ]).catchError((e) {
+                        // Si falla la carga, devolvemos valores por defecto para no bloquear la UI
+                        return <dynamic>[null, null];
+                      }),
+                  builder: (context, snapshot) {
+                    // 1. Valores por defecto iniciales
+                    String version = "...";
+                    String archLabel = "...";
 
-    // 2. Si hay datos (y no son nulos por el catchError)
-    if (snapshot.hasData && snapshot.data![0] != null) {
-      final PackageInfo? packageInfo = snapshot.data![0];
-      final deviceData = snapshot.data![1];
+                    // 2. Si hay datos (y no son nulos por el catchError)
+                    if (snapshot.hasData && snapshot.data![0] != null) {
+                      final PackageInfo? packageInfo = snapshot.data![0];
+                      final deviceData = snapshot.data![1];
 
-      version = packageInfo?.version ?? "...";
+                      version = packageInfo?.version ?? "...";
 
-      if (kIsWeb) {
-        // Validación segura sin forzar el cast con "as"
-        if (deviceData is WebBrowserInfo) {
-          archLabel = deviceData.browserName.name.toUpperCase();
-        } else {
-          archLabel = "WEB";
-        }
-      } else if (deviceData is AndroidDeviceInfo) {
-        archLabel = deviceData.supportedAbis.isNotEmpty 
-            ? deviceData.supportedAbis.first.toUpperCase() 
-            : "ANDROID";
-      }
-    } 
-    // 3. Si hay un error crítico en el Future
-    else if (snapshot.hasError) {
-      version = "Error";
-      archLabel = "Error";
-    }
+                      if (kIsWeb) {
+                        // Validación segura sin forzar el cast con "as"
+                        if (deviceData is WebBrowserInfo) {
+                          archLabel = deviceData.browserName.name.toUpperCase();
+                        } else {
+                          archLabel = "WEB";
+                        }
+                      } else if (deviceData is AndroidDeviceInfo) {
+                        archLabel = deviceData.supportedAbis.isNotEmpty
+                            ? deviceData.supportedAbis.first.toUpperCase()
+                            : "ANDROID";
+                      }
+                    }
+                    // 3. Si hay un error crítico en el Future
+                    else if (snapshot.hasError) {
+                      version = "Error";
+                      archLabel = "Error";
+                    }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildBadge(context, version),
-        const SizedBox(width: 8),
-        _buildBadge(context, archLabel),
-      ],
-    );
-  },
-),
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildBadge(context, version),
+                        const SizedBox(width: 8),
+                        _buildBadge(context, archLabel),
+                      ],
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -200,18 +201,18 @@ class AboutScreen extends StatelessWidget {
           //SizedBox(
           //  width: double.infinity,
           //  child: FilledButton.icon(
-            //  style: FilledButton.styleFrom(
-            //    backgroundColor: const Color(0xFF8D5545), // Color café
-            //    padding: const EdgeInsets.symmetric(vertical: 16),
-            //    shape: RoundedRectangleBorder(
-              //    borderRadius: BorderRadius.circular(16),
-              //  ),
-              //),
-              //onPressed: () =>
-              //    _openUrl('https://www.buymeacoffee.com/estrin217'),
-            //  icon: const Icon(Icons.coffee),
-            //  label: const Text("Buy me a coffee!"),
-            //),
+          //  style: FilledButton.styleFrom(
+          //    backgroundColor: const Color(0xFF8D5545), // Color café
+          //    padding: const EdgeInsets.symmetric(vertical: 16),
+          //    shape: RoundedRectangleBorder(
+          //    borderRadius: BorderRadius.circular(16),
+          //  ),
+          //),
+          //onPressed: () =>
+          //    _openUrl('https://www.buymeacoffee.com/estrin217'),
+          //  icon: const Icon(Icons.coffee),
+          //  label: const Text("Buy me a coffee!"),
+          //),
           //),
         ],
       ),

@@ -51,60 +51,62 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  return Consumer<ThemeProvider>(
-    builder: (context, themeProvider, child) {
-      // 1. Definimos el TextTheme base (puedes ajustar el brillo según prefieras)
-      final textTheme = GoogleFonts.notoSansTextTheme(
-        Theme.of(context).textTheme,
-      );
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        // 1. Definimos el TextTheme base (puedes ajustar el brillo según prefieras)
+        final textTheme = GoogleFonts.notoSansTextTheme(
+          Theme.of(context).textTheme,
+        );
 
-      // 2. Instanciamos tu clase personalizada
-      final materialTheme = MaterialTheme(textTheme);
+        // 2. Instanciamos tu clase personalizada
+        final materialTheme = MaterialTheme(textTheme);
 
-      return DynamicColorBuilder(
-        builder: (lightDynamic, darkDynamic) {
-          ThemeData lightTheme;
-          ThemeData darkTheme;
+        return DynamicColorBuilder(
+          builder: (lightDynamic, darkDynamic) {
+            ThemeData lightTheme;
+            ThemeData darkTheme;
 
-          // 3. Lógica para colores dinámicos vs. esquema estático de tu archivo
-          if (themeProvider.useDynamicColors && lightDynamic != null && darkDynamic != null) {
-            // Usamos el método theme() de tu clase con los colores del sistema
-            lightTheme = materialTheme.theme(lightDynamic);
-            darkTheme = materialTheme.theme(darkDynamic);
-          } else {
-            // Usamos los esquemas definidos manualmente en tu theme.dart [cite: 6, 21]
-            lightTheme = materialTheme.light();
-            darkTheme = materialTheme.dark();
-          }
+            // 3. Lógica para colores dinámicos vs. esquema estático de tu archivo
+            if (themeProvider.useDynamicColors &&
+                lightDynamic != null &&
+                darkDynamic != null) {
+              // Usamos el método theme() de tu clase con los colores del sistema
+              lightTheme = materialTheme.theme(lightDynamic);
+              darkTheme = materialTheme.theme(darkDynamic);
+            } else {
+              // Usamos los esquemas definidos manualmente en tu theme.dart [cite: 6, 21]
+              lightTheme = materialTheme.light();
+              darkTheme = materialTheme.dark();
+            }
 
-          return MaterialApp(
-            title: 'Bloc de notas',
-            // 4. Asignamos los temas generados por tu clase
-            theme: lightTheme,
-            darkTheme: darkTheme,
-            themeMode: themeProvider.themeMode,
-            locale: themeProvider.locale,
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-              FlutterQuillLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('en'),
-              Locale('es'),
-              Locale('es', 'VE'),
-              Locale('pt'),
-              Locale('pt', 'BR'),
-            ],
-            home: const MyHomePage(),
-          );
-        },
-      );
-    },
-  );
-}
+            return MaterialApp(
+              title: 'Bloc de notas',
+              // 4. Asignamos los temas generados por tu clase
+              theme: lightTheme,
+              darkTheme: darkTheme,
+              themeMode: themeProvider.themeMode,
+              locale: themeProvider.locale,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+                FlutterQuillLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale('en'),
+                Locale('es'),
+                Locale('es', 'VE'),
+                Locale('pt'),
+                Locale('pt', 'BR'),
+              ],
+              home: const MyHomePage(),
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 class MyHomePage extends StatefulWidget {
@@ -126,7 +128,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _isLoading = true;
   // Definimos el canal de comunicación
   //static const platform = MethodChannel('com.estrin217.bloc_de_notas/settings');
-  bool _isTrashView = false; // Controla si estamos viendo el inicio o la papelera
+  bool _isTrashView =
+      false; // Controla si estamos viendo el inicio o la papelera
   late List<ListItem> _trashedItems;
   List<String> _availableTags = [];
   String? _selectedTagFilter;
@@ -168,10 +171,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       context.read<UpdaterProvider>().checkUpdateOnStartup();
     }
   }
+
   // NUEVO: Método unificado para cargar todo
   Future<void> _loadAllData() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     // Cargar Etiquetas
     setState(() {
       _availableTags = prefs.getStringList('available_tags') ?? [];
@@ -233,24 +237,26 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       _saveItems();
     }
     // --- Cargar Papelera ---
-      String? trashedContents;
-      if (kIsWeb) {
-        final prefs = await SharedPreferences.getInstance();
-        trashedContents = prefs.getString('trashed_notes');
-      } else {
-        final directory = await getApplicationDocumentsDirectory();
-        final file = File('${directory.path}/trashed_notes.json');
-        if (await file.exists()) {
-          trashedContents = await file.readAsString();
-        }
+    String? trashedContents;
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      trashedContents = prefs.getString('trashed_notes');
+    } else {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/trashed_notes.json');
+      if (await file.exists()) {
+        trashedContents = await file.readAsString();
       }
+    }
 
-      if (trashedContents != null && trashedContents.isNotEmpty) {
-        final List<dynamic> jsonList = jsonDecode(trashedContents);
-        setState(() {
-          _trashedItems = jsonList.map((json) => ListItem.fromJson(json)).toList();
-        });
-      }
+    if (trashedContents != null && trashedContents.isNotEmpty) {
+      final List<dynamic> jsonList = jsonDecode(trashedContents);
+      setState(() {
+        _trashedItems = jsonList
+            .map((json) => ListItem.fromJson(json))
+            .toList();
+      });
+    }
   }
 
   ListItem _createWelcomeNote() {
@@ -648,6 +654,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
     return exerciteNote;
   }
+
   // NUEVO: Guardar Etiquetas
   Future<void> _saveTags() async {
     final prefs = await SharedPreferences.getInstance();
@@ -675,18 +682,22 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   void _filterItems() {
     final query = _searchController.text.toLowerCase();
-    final sourceList = _isTrashView ? _trashedItems : _items; 
-    
+    final sourceList = _isTrashView ? _trashedItems : _items;
+
     setState(() {
       _filteredItems = sourceList.where((item) {
         // Criterio 1: Búsqueda de texto (título o contenido)
         final titleMatch = item.title.toLowerCase().contains(query);
-        final summaryMatch = item.document.toPlainText().toLowerCase().contains(query);
+        final summaryMatch = item.document.toPlainText().toLowerCase().contains(
+          query,
+        );
         final matchesSearch = titleMatch || summaryMatch;
-        
+
         // Criterio 2: Filtro por etiqueta seleccionada
         // Si no hay filtro (null), pasan todas. Si hay uno, la nota debe contenerlo.
-        final matchesTag = _selectedTagFilter == null || item.tags.contains(_selectedTagFilter);
+        final matchesTag =
+            _selectedTagFilter == null ||
+            item.tags.contains(_selectedTagFilter);
 
         return matchesSearch && matchesTag;
       }).toList();
@@ -730,7 +741,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           title: '',
           summary: '',
           lastModified: DateTime.now(),
-          tags: _selectedTagFilter != null ? [_selectedTagFilter!] : [], // Asigna la etiqueta actual si hay filtro
+          tags: _selectedTagFilter != null
+              ? [_selectedTagFilter!]
+              : [], // Asigna la etiqueta actual si hay filtro
         );
 
     final result = await Navigator.push(
@@ -740,7 +753,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     if (result == null) {
       _loadAllData(); // Recargamos por si editó etiquetas dentro del editor
-      return; 
+      return;
     }
 
     if (result == "DELETE") {
@@ -806,6 +819,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       _selectedItems.clear();
     });
   }
+
   // NUEVO: Diálogo para asignar etiquetas en modo selección
   void _showAssignTagDialog() {
     showDialog(
@@ -815,48 +829,60 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           title: const Text('Etiquetar notas'),
           content: SizedBox(
             width: double.maxFinite,
-            child: _availableTags.isEmpty 
-              ? const Text('No hay etiquetas creadas. Créalas desde el menú lateral.')
-              : ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _availableTags.length,
-                  itemBuilder: (context, index) {
-                    final tag = _availableTags[index];
-                    return ListTile(
-                      title: Text(tag),
-                      trailing: const Icon(Icons.add_circle_outline),
-                      onTap: () {
-                        setState(() {
-                          for (var item in _selectedItems) {
-                            final index = _items.indexWhere((i) => i.id == item.id);
-                            if (index != -1) {
-                              final updatedTags = List<String>.from(_items[index].tags);
-                              if (!updatedTags.contains(tag)) {
-                                updatedTags.add(tag);
-                                _items[index] = ListItem(
-                                  id: _items[index].id,
-                                  title: _items[index].title,
-                                  summary: _items[index].summary,
-                                  lastModified: DateTime.now(),
-                                  backgroundColor: _items[index].backgroundColor,
-                                  backgroundImagePath: _items[index].backgroundImagePath,
-                                  tags: updatedTags,
+            child: _availableTags.isEmpty
+                ? const Text(
+                    'No hay etiquetas creadas. Créalas desde el menú lateral.',
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _availableTags.length,
+                    itemBuilder: (context, index) {
+                      final tag = _availableTags[index];
+                      return ListTile(
+                        title: Text(tag),
+                        trailing: const Icon(Icons.add_circle_outline),
+                        onTap: () {
+                          setState(() {
+                            for (var item in _selectedItems) {
+                              final index = _items.indexWhere(
+                                (i) => i.id == item.id,
+                              );
+                              if (index != -1) {
+                                final updatedTags = List<String>.from(
+                                  _items[index].tags,
                                 );
+                                if (!updatedTags.contains(tag)) {
+                                  updatedTags.add(tag);
+                                  _items[index] = ListItem(
+                                    id: _items[index].id,
+                                    title: _items[index].title,
+                                    summary: _items[index].summary,
+                                    lastModified: DateTime.now(),
+                                    backgroundColor:
+                                        _items[index].backgroundColor,
+                                    backgroundImagePath:
+                                        _items[index].backgroundImagePath,
+                                    tags: updatedTags,
+                                  );
+                                }
                               }
                             }
-                          }
-                          _saveItems();
-                          _filterItems();
-                        });
-                        Navigator.pop(context);
-                        _exitSelectionMode();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Etiqueta "$tag" añadida a ${_selectedItems.length} notas')),
-                        );
-                      },
-                    );
-                  },
-                ),
+                            _saveItems();
+                            _filterItems();
+                          });
+                          Navigator.pop(context);
+                          _exitSelectionMode();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Etiqueta "$tag" añadida a ${_selectedItems.length} notas',
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
           ),
           actions: [
             TextButton(
@@ -865,210 +891,233 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ),
           ],
         );
-      }
+      },
     );
   }
+
   // NUEVO: Diálogo para gestionar/crear etiquetas desde el Drawer
   void _showManageTagsDialog() {
-  final TextEditingController tagController = TextEditingController();
+    final TextEditingController tagController = TextEditingController();
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setModalState) {
-          return AlertDialog(
-            title: const Text('Gestionar Etiquetas'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: tagController,
-                    decoration: InputDecoration(
-                      hintText: 'Nueva etiqueta...',
-                      // Icono para limpiar el texto (Equis)
-                      prefixIcon: IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          tagController.clear();
-                          setModalState(() {});
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return AlertDialog(
+              title: const Text('Gestionar Etiquetas'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: tagController,
+                      decoration: InputDecoration(
+                        hintText: 'Nueva etiqueta...',
+                        // Icono para limpiar el texto (Equis)
+                        prefixIcon: IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            tagController.clear();
+                            setModalState(() {});
+                          },
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () {
+                            final newTag = tagController.text.trim();
+
+                            // VALIDACIÓN: ¿Está vacía o ya existe?
+                            if (newTag.isEmpty) return;
+
+                            if (_availableTags.any(
+                              (t) => t.toLowerCase() == newTag.toLowerCase(),
+                            )) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Esta etiqueta ya existe'),
+                                ),
+                              );
+                              return;
+                            }
+
+                            setState(() {
+                              _availableTags.add(newTag);
+                              _saveTags();
+                            });
+                            setModalState(() {});
+                            tagController.clear();
+                          },
+                        ),
+                      ),
+                      onChanged: (text) => setModalState(() {}),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _availableTags.length,
+                        itemBuilder: (context, index) {
+                          final tag = _availableTags[index];
+                          return ListTile(
+                            // Icono de etiqueta al inicio
+                            leading: const Icon(Icons.label_outline),
+                            title: Text(tag),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Icono para editar
+                                IconButton(
+                                  icon: const Icon(Icons.edit_outlined),
+                                  onPressed: () {
+                                    // Aquí  llamas a una función para renombrar
+                                    _showRenameTagDialog(tag);
+                                  },
+                                ),
+                                // Icono para eliminar
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _availableTags.remove(tag);
+                                      if (_selectedTagFilter == tag) {
+                                        _selectedTagFilter = null;
+                                      }
+                                      _saveTags();
+                                      _filterItems();
+                                    });
+                                    setModalState(() {});
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
                         },
                       ),
-                      suffixIcon: IconButton(
-  icon: const Icon(Icons.add),
-  onPressed: () {
-    final newTag = tagController.text.trim();
-    
-    // VALIDACIÓN: ¿Está vacía o ya existe?
-    if (newTag.isEmpty) return;
-
-    if (_availableTags.any((t) => t.toLowerCase() == newTag.toLowerCase())) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Esta etiqueta ya existe')),
-      );
-      return;
-    }
-
-    setState(() {
-      _availableTags.add(newTag);
-      _saveTags();
-    });
-    setModalState(() {});
-    tagController.clear();
-  },
-),
-                    onChanged: (text) => setModalState(() {}),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _availableTags.length,
-                      itemBuilder: (context, index) {
-                        final tag = _availableTags[index];
-                        return ListTile(
-                          // Icono de etiqueta al inicio
-                          leading: const Icon(Icons.label_outline),
-                          title: Text(tag),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Icono para editar
-                              IconButton(
-                                icon: const Icon(Icons.edit_outlined),
-                                onPressed: () {
-                                  // Aquí  llamas a una función para renombrar
-                                 _showRenameTagDialog(tag);
-                                },
-                              ),
-                              // Icono para eliminar
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                onPressed: () {
-                                  setState(() {
-                                    _availableTags.remove(tag);
-                                    if (_selectedTagFilter == tag) _selectedTagFilter = null;
-                                    _saveTags();
-                                    _filterItems();
-                                  });
-                                  setModalState(() {});
-                                },
-                              ),
-                            ],
-                          ),
-                        );
-                      },
                     ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cerrar'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-  void _showRenameTagDialog(String oldTag) {
-  final TextEditingController renameController = TextEditingController(text: oldTag);
-  // Agregamos una variable para manejar el error localmente en el diálogo
-  String? errorText;
-
-  showDialog(
-    context: context,
-    builder: (context) {
-      return StatefulBuilder( // Necesario para mostrar el error dinámicamente
-        builder: (context, setDialogState) {
-          return AlertDialog(
-            title: const Text('Renombrar Etiqueta'),
-            content: TextField(
-              controller: renameController,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Nuevo nombre',
-                errorText: errorText, // Muestra el mensaje de error aquí
-                prefixIcon: const Icon(Icons.edit_outlined),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    renameController.clear();
-                    setDialogState(() => errorText = null);
-                  },
+                  ],
                 ),
               ),
-              onChanged: (value) {
-                if (errorText != null) setDialogState(() => errorText = null);
-              },
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cerrar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showRenameTagDialog(String oldTag) {
+    final TextEditingController renameController = TextEditingController(
+      text: oldTag,
+    );
+    // Agregamos una variable para manejar el error localmente en el diálogo
+    String? errorText;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          // Necesario para mostrar el error dinámicamente
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Renombrar Etiqueta'),
+              content: TextField(
+                controller: renameController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Nuevo nombre',
+                  errorText: errorText, // Muestra el mensaje de error aquí
+                  prefixIcon: const Icon(Icons.edit_outlined),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      renameController.clear();
+                      setDialogState(() => errorText = null);
+                    },
+                  ),
+                ),
+                onChanged: (value) {
+                  if (errorText != null) setDialogState(() => errorText = null);
+                },
               ),
-              FilledButton(
-                onPressed: () {
-                  final newTag = renameController.text.trim();
-                  
-                  // 1. Si no cambió nada, solo cerramos
-                  if (newTag == oldTag) {
-                    Navigator.pop(context);
-                    return;
-                  }
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final newTag = renameController.text.trim();
 
-                  // 2. Validación de duplicados
-                  bool exists = _availableTags.any(
-                    (t) => t.toLowerCase() == newTag.toLowerCase() && t != oldTag
-                  );
+                    // 1. Si no cambió nada, solo cerramos
+                    if (newTag == oldTag) {
+                      Navigator.pop(context);
+                      return;
+                    }
 
-                  if (exists) {
-                    setDialogState(() => errorText = 'Ya tienes una etiqueta con ese nombre');
-                    return;
-                  }
+                    // 2. Validación de duplicados
+                    bool exists = _availableTags.any(
+                      (t) =>
+                          t.toLowerCase() == newTag.toLowerCase() &&
+                          t != oldTag,
+                    );
 
-                  if (newTag.isNotEmpty) {
-                    setState(() {
-                      // Actualizar lista global
-                      int index = _availableTags.indexOf(oldTag);
-                      if (index != -1) _availableTags[index] = newTag;
+                    if (exists) {
+                      setDialogState(
+                        () =>
+                            errorText = 'Ya tienes una etiqueta con ese nombre',
+                      );
+                      return;
+                    }
 
-                      // Actualizar filtro activo
-                      if (_selectedTagFilter == oldTag) _selectedTagFilter = newTag;
+                    if (newTag.isNotEmpty) {
+                      setState(() {
+                        // Actualizar lista global
+                        int index = _availableTags.indexOf(oldTag);
+                        if (index != -1) _availableTags[index] = newTag;
 
-                      // Actualizar notas (Uso de map para mayor limpieza)
-                      void updateTags(List<NoteItem> list) {
-                        for (var item in list) {
-                          if (item.tags.contains(oldTag)) {
-                            item.tags.remove(oldTag);
-                            item.tags.add(newTag);
+                        // Actualizar filtro activo
+                        if (_selectedTagFilter == oldTag) {
+                          _selectedTagFilter = newTag;
+                        }
+
+                        // Actualizar notas (Uso de map para mayor limpieza)
+                        void updateTags(List<ListItem> list) {
+                          for (var item in list) {
+                            if (item.tags.contains(oldTag)) {
+                              item.tags.remove(oldTag);
+                              item.tags.add(newTag);
+                            }
                           }
                         }
-                      }
-                      updateTags(_items);
-                      updateTags(_trashedItems);
 
-                      _saveTags();
-                      _filterItems();
-                    });
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text('Guardar'),
-              ),
-            ],
-          );
-        }
-      );
-    },
-  );
-}
+                        updateTags(_items);
+                        updateTags(_trashedItems);
+
+                        _saveTags();
+                        _filterItems();
+                      });
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const Text('Guardar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   void _showUndoSnackbar(List<ListItem> deletedItems) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -1096,7 +1145,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   // Modifica _deleteSelectedItems para que maneje la papelera
   void _deleteSelectedItems() async {
     final itemsToDelete = List<ListItem>.from(_selectedItems);
-    
+
     setState(() {
       if (_isTrashView) {
         // Eliminación definitiva desde la papelera
@@ -1452,7 +1501,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         title: Text('${_selectedItems.length} seleccionados'),
         actions: [
           IconButton(
-            icon: Icon(Icons.label_outline, color: Theme.of(context).colorScheme.onSurface),
+            icon: Icon(
+              Icons.label_outline,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
             onPressed: _showAssignTagDialog,
             tooltip: 'Etiquetar',
           ),
@@ -1575,35 +1627,43 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             // NUEVA SECCIÓN: Etiquetas
             const Divider(),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('ETIQUETAS', style: Theme.of(context).textTheme.labelSmall),
+                  Text(
+                    'ETIQUETAS',
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
                   IconButton(
                     icon: const Icon(Icons.add, size: 20),
                     onPressed: () {
                       Navigator.pop(context);
                       _showManageTagsDialog();
                     },
-                  )
+                  ),
                 ],
               ),
             ),
-            ..._availableTags.map((tag) => ListTile(
-              leading: const Icon(Icons.label_outline),
-              title: Text(tag),
-              selected: _selectedTagFilter == tag && !_isTrashView,
-              onTap: () {
-                setState(() {
-                  _isTrashView = false;
-                  _selectedTagFilter = tag;
-                });
-                _filterItems();
-                Navigator.pop(context);
-              },
-            )),
-            
+            ..._availableTags.map(
+              (tag) => ListTile(
+                leading: const Icon(Icons.label_outline),
+                title: Text(tag),
+                selected: _selectedTagFilter == tag && !_isTrashView,
+                onTap: () {
+                  setState(() {
+                    _isTrashView = false;
+                    _selectedTagFilter = tag;
+                  });
+                  _filterItems();
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+
             const Divider(),
             ListTile(
               leading: const Icon(Icons.delete_outline),
@@ -1612,7 +1672,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               onTap: () {
                 setState(() {
                   _isTrashView = true;
-                  _selectedTagFilter = null; // Opcional: quitar filtro al ir a papelera
+                  _selectedTagFilter =
+                      null; // Opcional: quitar filtro al ir a papelera
                 });
                 _filterItems();
                 Navigator.pop(context);
@@ -1678,63 +1739,78 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             const Divider(),
             const UpdateAvailableWidget(isDrawerTile: true),
             ListTile(
-  enabled: false,
-  leading: const Icon(Icons.info_outline, size: 20),
-  title: FutureBuilder<List<dynamic>>(
-    future: Future.wait([
-      PackageInfo.fromPlatform(),
-      DeviceInfoPlugin().deviceInfo,
-    ]),
-    builder: (context, snapshot) {
-      // 1. Verificar si hubo un error (Crucial para depurar en Web/Codespaces)
-      if (snapshot.hasError) {
-        return Text(
-          'Error al cargar info',
-          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.error),
-        );
-      }
+              enabled: false,
+              leading: const Icon(Icons.info_outline, size: 20),
+              title: FutureBuilder<List<dynamic>>(
+                future: Future.wait([
+                  PackageInfo.fromPlatform(),
+                  DeviceInfoPlugin().deviceInfo,
+                ]),
+                builder: (context, snapshot) {
+                  // 1. Verificar si hubo un error (Crucial para depurar en Web/Codespaces)
+                  if (snapshot.hasError) {
+                    return Text(
+                      'Error al cargar info',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    );
+                  }
 
-      if (snapshot.hasData) {
-        try {
-          final PackageInfo packageInfo = snapshot.data![0];
-          final deviceData = snapshot.data![1];
-          
-          String platformDetail = "";
+                  if (snapshot.hasData) {
+                    try {
+                      final PackageInfo packageInfo = snapshot.data![0];
+                      final deviceData = snapshot.data![1];
 
-          if (kIsWeb) {
-            // Verificación segura para Web
-            if (deviceData is WebBrowserInfo) {
-              final browser = deviceData.browserName.name.toUpperCase();
-              // Usamos un fallback por si appVersion viene nulo o vacío
-              final version = (deviceData.appVersion ?? "").split(' ').first;
-              platformDetail = "$browser $version".trim();
-            } else {
-              platformDetail = "WEB";
-            }
-          } else {
-            // Verificación segura para Android
-            final androidInfo = deviceData as AndroidDeviceInfo;
-            platformDetail = androidInfo.supportedAbis.first.toUpperCase();
-          }
+                      String platformDetail = "";
 
-          return Text(
-            'Versión ${packageInfo.version} (${packageInfo.buildNumber}) • $platformDetail',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
-                ),
-          );
-        } catch (e) {
-          // Si el cast falla, mostramos un mensaje genérico en lugar de "Cargando..."
-          return const Text('Error de formato', style: TextStyle(fontSize: 12));
-        }
-      }
-      
-      return const Text('Cargando...', style: TextStyle(fontSize: 12));
-    },
-  ),
-),
+                      if (kIsWeb) {
+                        // Verificación segura para Web
+                        if (deviceData is WebBrowserInfo) {
+                          final browser = deviceData.browserName.name
+                              .toUpperCase();
+                          // Usamos un fallback por si appVersion viene nulo o vacío
+                          final version = (deviceData.appVersion ?? "")
+                              .split(' ')
+                              .first;
+                          platformDetail = "$browser $version".trim();
+                        } else {
+                          platformDetail = "WEB";
+                        }
+                      } else {
+                        // Verificación segura para Android
+                        final androidInfo = deviceData as AndroidDeviceInfo;
+                        platformDetail = androidInfo.supportedAbis.first
+                            .toUpperCase();
+                      }
+
+                      return Text(
+                        'Versión ${packageInfo.version} (${packageInfo.buildNumber}) • $platformDetail',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                        ),
+                      );
+                    } catch (e) {
+                      // Si el cast falla, mostramos un mensaje genérico en lugar de "Cargando..."
+                      return const Text(
+                        'Error de formato',
+                        style: TextStyle(fontSize: 12),
+                      );
+                    }
+                  }
+
+                  return const Text(
+                    'Cargando...',
+                    style: TextStyle(fontSize: 12),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -1926,26 +2002,35 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // En GridView, el Expanded tomará el espacio restante
                   child: ClipRect(child: richTextPreview),
                 ),
-                // NUEVO: Visualización de etiquetas al final de la tarjeta
+        // NUEVO: Visualización de etiquetas al final de la tarjeta
         if (item.tags.isNotEmpty) ...[
           const SizedBox(height: 8),
           Wrap(
             spacing: 4,
             runSpacing: 4,
-            children: item.tags.map((tag) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: dynamicTextColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: dynamicTextColor.withValues(alpha: 0.3)),
-              ),
-              child: Text(
-                tag,
-                style: TextStyle(fontSize: 10, color: dynamicTextColor),
-              ),
-            )).toList(),
+            children: item.tags
+                .map(
+                  (tag) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: dynamicTextColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: dynamicTextColor.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text(
+                      tag,
+                      style: TextStyle(fontSize: 10, color: dynamicTextColor),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
-        ]
+        ],
       ],
     );
     final Widget dragIcon = Padding(
@@ -2000,7 +2085,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   child: contentColumn,
                 ),
               ),
-             if (!_isSelectionMode) ...[
+              if (!_isSelectionMode) ...[
                 if (isListView) ...[
                   // En LISTA: Mostramos el icono de arrastre si el orden es personalizado
                   if (canReorder)
@@ -2058,70 +2143,69 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   Widget _buildGridView() {
-  final bool canReorder =
-      _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
-  final scrollController = ScrollController(); // Sincronización obligatoria
+    final bool canReorder =
+        _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
+    final scrollController = ScrollController(); // Sincronización obligatoria
 
-  if (canReorder) {
-    return ReorderableBuilder<ListItem>(
-      key: const Key('reorderable_grid'),
-      scrollController: scrollController,
-      longPressDelay: const Duration(milliseconds: 300), // UX recomendada
-      
-      // Configuración de animaciones y feedback visual
-      dragChildBoxDecoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 10, spreadRadius: 2),
-        ],
+    if (canReorder) {
+      return ReorderableBuilder<ListItem>(
+        key: const Key('reorderable_grid'),
+        scrollController: scrollController,
+        longPressDelay: const Duration(milliseconds: 300), // UX recomendada
+        // Configuración de animaciones y feedback visual
+        dragChildBoxDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(color: Colors.black26, blurRadius: 10, spreadRadius: 2),
+          ],
+        ),
+
+        // Uso del nuevo callback de reordenamiento de la v5.6.0
+        onReorder: (ReorderedListFunction<ListItem> reorderCallback) {
+          setState(() {
+            _items = reorderCallback(_items);
+            _filteredItems = List.from(_items);
+            _saveItems();
+          });
+        },
+
+        // Se generan las llaves únicas obligatorias para cada hijo
+        builder: (children) {
+          return GridView(
+            controller: scrollController, // El controlador debe ser el mismo
+            padding: const EdgeInsets.all(16.0),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 200,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 0.75,
+            ),
+            children: children,
+          );
+        },
+        children: _filteredItems.map((item) {
+          return Container(
+            key: ValueKey(item.id), // Clave única obligatoria
+            child: _buildItem(item, isListView: false),
+          );
+        }).toList(),
+      );
+    }
+
+    // Vista estática cuando no se puede reordenar
+    return GridView.builder(
+      padding: const EdgeInsets.all(16.0),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 200,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.75,
       ),
-      
-      // Uso del nuevo callback de reordenamiento de la v5.6.0
-      onReorder: (ReorderedListFunction<ListItem> reorderCallback) {
-        setState(() {
-          _items = reorderCallback(_items);
-          _filteredItems = List.from(_items);
-          _saveItems();
-        });
-      },
-      
-      // Se generan las llaves únicas obligatorias para cada hijo
-      builder: (children) {
-        return GridView(
-          controller: scrollController, // El controlador debe ser el mismo
-          padding: const EdgeInsets.all(16.0),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 200,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.75,
-          ),
-          children: children,
-        );
-      },
-      children: _filteredItems.map((item) {
-        return Container(
-          key: ValueKey(item.id), // Clave única obligatoria
-          child: _buildItem(item, isListView: false),
-        );
-      }).toList(),
+      itemCount: _filteredItems.length,
+      itemBuilder: (context, index) =>
+          _buildItem(_filteredItems[index], isListView: false),
     );
   }
-
-  // Vista estática cuando no se puede reordenar
-  return GridView.builder(
-    padding: const EdgeInsets.all(16.0),
-    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-      maxCrossAxisExtent: 200,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 0.75,
-    ),
-    itemCount: _filteredItems.length,
-    itemBuilder: (context, index) =>
-        _buildItem(_filteredItems[index], isListView: false),
-  );
-}
 
   Future<void> _cleanupImagesForItems(List<ListItem> itemsToClean) async {
     for (final item in itemsToClean) {
@@ -2158,6 +2242,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       }
     }
   }
+
   Future<void> _saveTrashedItems() async {
     try {
       final List<Map<String, dynamic>> jsonList = _trashedItems

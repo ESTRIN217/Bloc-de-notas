@@ -63,6 +63,7 @@ class _EditorScreenState extends State<EditorScreen> {
     _initTts();
     _loadGlobalTags();
   }
+
   // NUEVO: Cargar etiquetas globales para el modal
   Future<void> _loadGlobalTags() async {
     final prefs = await SharedPreferences.getInstance();
@@ -138,6 +139,7 @@ class _EditorScreenState extends State<EditorScreen> {
     );
     Navigator.pop(context, updatedItem);
   }
+
   // NUEVO: Diálogo para gestionar las etiquetas de la nota actual
   void _showTagsDialog() {
     final TextEditingController newTagController = TextEditingController();
@@ -179,7 +181,10 @@ class _EditorScreenState extends State<EditorScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Tus etiquetas:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Tus etiquetas:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 8),
                     // Lista de etiquetas con checkboxes (estilo Material 3)
                     Expanded(
@@ -189,7 +194,7 @@ class _EditorScreenState extends State<EditorScreen> {
                         itemBuilder: (context, index) {
                           final tag = _availableGlobalTags[index];
                           final isSelected = _currentTags.contains(tag);
-                          
+
                           return CheckboxListTile(
                             title: Text(tag),
                             value: isSelected,
@@ -217,9 +222,9 @@ class _EditorScreenState extends State<EditorScreen> {
                 ),
               ],
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 
@@ -466,7 +471,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
   void _deleteItem() async {
     if (!mounted) return;
-    // Quitamos la limpieza de imágenes (await _cleanupImages();) 
+    // Quitamos la limpieza de imágenes (await _cleanupImages();)
     // porque ahora la nota irá a la papelera primero.
     Navigator.pop(context, "DELETE");
   }
@@ -749,180 +754,208 @@ class _EditorScreenState extends State<EditorScreen> {
           body: Stack(
             children: [
               Column(
-            children: [
-              // NUEVO: Visualización de etiquetas justo encima o al lado del título
+                children: [
+                  // NUEVO: Visualización de etiquetas justo encima o al lado del título
                   if (_currentTags.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 4.0,
+                      ),
                       child: Wrap(
                         spacing: 6,
                         runSpacing: 6,
-                        children: _currentTags.map((tag) => ActionChip(
-                          label: Text(tag, style: TextStyle(color: dynamicTextColor, fontSize: 12)),
-                          backgroundColor: dynamicTextColor.withValues(alpha: 0.1),
-                          side: BorderSide.none,
-                          onPressed: _showTagsDialog, // Al tocarlas, abre el diálogo
-                        )).toList(),
+                        children: _currentTags
+                            .map(
+                              (tag) => ActionChip(
+                                label: Text(
+                                  tag,
+                                  style: TextStyle(
+                                    color: dynamicTextColor,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                backgroundColor: dynamicTextColor.withValues(
+                                  alpha: 0.1,
+                                ),
+                                side: BorderSide.none,
+                                onPressed:
+                                    _showTagsDialog, // Al tocarlas, abre el diálogo
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8.0,
-                ),
-                child: TextField(
-                  controller: _titleController,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: dynamicTextColor,
-                  ),
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Título',
-                    hintStyle: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: dynamicHintColor,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
+                    child: TextField(
+                      controller: _titleController,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: dynamicTextColor,
+                      ),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Título',
+                        hintStyle: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: dynamicHintColor,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
 
-                  // Envolvemos el editor en un Theme para forzar el color de todo el texto
-                  child: quill.QuillEditor.basic(
-                    controller: _contentController,
-                    config: quill.QuillEditorConfig(
-                      autoFocus: false,
-                      placeholder: 'Escribe algo increíble...',
-                      expands: false,
-                      padding: const EdgeInsets.only(bottom: 90),
+                      // Envolvemos el editor en un Theme para forzar el color de todo el texto
+                      child: quill.QuillEditor.basic(
+                        controller: _contentController,
+                        config: quill.QuillEditorConfig(
+                          autoFocus: false,
+                          placeholder: 'Escribe algo increíble...',
+                          expands: false,
+                          padding: const EdgeInsets.only(bottom: 90),
 
-                      customStyles: quill.DefaultStyles(
-                        // Estilo para texto normal
-                        paragraph: quill.DefaultTextBlockStyle(
-                          TextStyle(color: dynamicTextColor, fontSize: 16),
-                          const quill.HorizontalSpacing(0, 0),
-                          const quill.VerticalSpacing(0, 0),
-                          const quill.VerticalSpacing(0, 0),
-                          null,
-                        ),
-                        // Estilo para Títulos Grandes (H1)
-                        h1: quill.DefaultTextBlockStyle(
-                          TextStyle(
-                            color: dynamicTextColor,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          const quill.HorizontalSpacing(0, 0),
-                          const quill.VerticalSpacing(10, 0),
-                          const quill.VerticalSpacing(0, 0),
-                          null,
-                        ),
-                        // Estilo para Títulos Medianos (H2)
-                        h2: quill.DefaultTextBlockStyle(
-                          TextStyle(
-                            color: dynamicTextColor,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          const quill.HorizontalSpacing(0, 0),
-                          const quill.VerticalSpacing(8, 0),
-                          const quill.VerticalSpacing(0, 0),
-                          null,
-                        ),
-                        // Estilo para Listas (Bullets y Checkboxes)
-                        lists: quill.DefaultListBlockStyle(
-                          TextStyle(color: dynamicTextColor, fontSize: 16),
-                          const quill.HorizontalSpacing(0, 0),
-                          const quill.VerticalSpacing(0, 0),
-                          const quill.VerticalSpacing(0, 0),
-                          null,
-                          null, // Algunos versiones requieren un parámetro extra aquí para el checkbox
-                        ),
-                        // 1. Citas (Blockquotes) - La línea con la barra lateral
-                        quote: quill.DefaultTextBlockStyle(
-                          TextStyle(
-                            color: dynamicTextColor,
-                            fontSize: 16,
-                            fontStyle: FontStyle.italic,
-                          ),
-                          const quill.HorizontalSpacing(
-                            16,
-                            0,
-                          ), // Espacio para la barra
-                          const quill.VerticalSpacing(8, 8),
-                          const quill.VerticalSpacing(0, 0),
-                          // Esto es para que la barra lateral no sea blanca si no quieres
-                          BoxDecoration(
-                            border: Border(
-                              left: BorderSide(
-                                width: 4,
-                                color: dynamicTextColor.withValues(alpha: 0.3),
+                          customStyles: quill.DefaultStyles(
+                            // Estilo para texto normal
+                            paragraph: quill.DefaultTextBlockStyle(
+                              TextStyle(color: dynamicTextColor, fontSize: 16),
+                              const quill.HorizontalSpacing(0, 0),
+                              const quill.VerticalSpacing(0, 0),
+                              const quill.VerticalSpacing(0, 0),
+                              null,
+                            ),
+                            // Estilo para Títulos Grandes (H1)
+                            h1: quill.DefaultTextBlockStyle(
+                              TextStyle(
+                                color: dynamicTextColor,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              const quill.HorizontalSpacing(0, 0),
+                              const quill.VerticalSpacing(10, 0),
+                              const quill.VerticalSpacing(0, 0),
+                              null,
+                            ),
+                            // Estilo para Títulos Medianos (H2)
+                            h2: quill.DefaultTextBlockStyle(
+                              TextStyle(
+                                color: dynamicTextColor,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              const quill.HorizontalSpacing(0, 0),
+                              const quill.VerticalSpacing(8, 0),
+                              const quill.VerticalSpacing(0, 0),
+                              null,
+                            ),
+                            // Estilo para Listas (Bullets y Checkboxes)
+                            lists: quill.DefaultListBlockStyle(
+                              TextStyle(color: dynamicTextColor, fontSize: 16),
+                              const quill.HorizontalSpacing(0, 0),
+                              const quill.VerticalSpacing(0, 0),
+                              const quill.VerticalSpacing(0, 0),
+                              null,
+                              null, // Algunos versiones requieren un parámetro extra aquí para el checkbox
+                            ),
+                            // 1. Citas (Blockquotes) - La línea con la barra lateral
+                            quote: quill.DefaultTextBlockStyle(
+                              TextStyle(
+                                color: dynamicTextColor,
+                                fontSize: 16,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              const quill.HorizontalSpacing(
+                                16,
+                                0,
+                              ), // Espacio para la barra
+                              const quill.VerticalSpacing(8, 8),
+                              const quill.VerticalSpacing(0, 0),
+                              // Esto es para que la barra lateral no sea blanca si no quieres
+                              BoxDecoration(
+                                border: Border(
+                                  left: BorderSide(
+                                    width: 4,
+                                    color: dynamicTextColor.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
+
+                            // 2. Enlaces (Links)
+                            link: TextStyle(
+                              color: isDarkBackground
+                                  ? Colors.blue[300]
+                                  : Colors
+                                        .blue[700], // Azul legible según fondo
+                              decoration: TextDecoration.underline,
+                            ),
+
+                            // 4. Marcadores de listas (Los puntitos o números)
+                            indent: quill.DefaultTextBlockStyle(
+                              TextStyle(color: dynamicTextColor),
+                              const quill.HorizontalSpacing(0, 0),
+                              const quill.VerticalSpacing(0, 0),
+                              const quill.VerticalSpacing(0, 0),
+                              null,
+                            ),
+
+                            // 5. Estilo "Leading" (Para asegurar que el checkbox/bullet use el color)
+                            leading: quill.DefaultTextBlockStyle(
+                              TextStyle(color: dynamicTextColor),
+                              const quill.HorizontalSpacing(0, 0),
+                              const quill.VerticalSpacing(0, 0),
+                              const quill.VerticalSpacing(0, 0),
+                              null,
+                            ),
+                            // Estilo para el texto pequeño
+                            small: TextStyle(
+                              color: dynamicTextColor,
+                              fontSize: 12,
+                            ),
                           ),
-                        ),
 
-                        // 2. Enlaces (Links)
-                        link: TextStyle(
-                          color: isDarkBackground
-                              ? Colors.blue[300]
-                              : Colors.blue[700], // Azul legible según fondo
-                          decoration: TextDecoration.underline,
-                        ),
+                          embedBuilders: [
+                            // 1. Builders personalizados primero
+                            AudioEmbedBuilder(),
+                            DrawingEmbedBuilder(),
 
-                        // 4. Marcadores de listas (Los puntitos o números)
-                        indent: quill.DefaultTextBlockStyle(
-                          TextStyle(color: dynamicTextColor),
-                          const quill.HorizontalSpacing(0, 0),
-                          const quill.VerticalSpacing(0, 0),
-                          const quill.VerticalSpacing(0, 0),
-                          null,
+                            // 2. Builders de la librería según la plataforma
+                            if (kIsWeb)
+                              ...FlutterQuillEmbeds.editorWebBuilders()
+                            else
+                              ...FlutterQuillEmbeds.editorBuilders(),
+                          ],
                         ),
-
-                        // 5. Estilo "Leading" (Para asegurar que el checkbox/bullet use el color)
-                        leading: quill.DefaultTextBlockStyle(
-                          TextStyle(color: dynamicTextColor),
-                          const quill.HorizontalSpacing(0, 0),
-                          const quill.VerticalSpacing(0, 0),
-                          const quill.VerticalSpacing(0, 0),
-                          null,
-                        ),
-                        // Estilo para el texto pequeño
-                        small: TextStyle(color: dynamicTextColor, fontSize: 12),
                       ),
-
-                      embedBuilders: [
-                        // 1. Builders personalizados primero
-                        AudioEmbedBuilder(),
-                        DrawingEmbedBuilder(),
-
-                        // 2. Builders de la librería según la plataforma
-                        if (kIsWeb)
-                          ...FlutterQuillEmbeds.editorWebBuilders()
-                        else
-                          ...FlutterQuillEmbeds.editorBuilders(),
-                      ],
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-          Align(
+              Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
                   // Solo padding inferior, la separación visual por encima del teclado
-                  padding: const EdgeInsets.only(bottom: 16.0), 
+                  padding: const EdgeInsets.only(bottom: 16.0),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       // Usamos withValues(alpha: 0.9) como dicta la sintaxis actual de Flutter
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.9), 
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
@@ -933,11 +966,15 @@ class _EditorScreenState extends State<EditorScreen> {
                       ],
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly, 
-                      mainAxisSize: MainAxisSize.min, // Evita que se estire a los bordes
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisSize:
+                          MainAxisSize.min, // Evita que se estire a los bordes
                       children: [
                         IconButton.outlined(
-                          icon: Icon(Icons.palette_outlined, color: dynamicIconColor),
+                          icon: Icon(
+                            Icons.palette_outlined,
+                            color: dynamicIconColor,
+                          ),
                           onPressed: _showBackgroundSheet,
                         ),
                         IconButton.outlined(
@@ -946,13 +983,18 @@ class _EditorScreenState extends State<EditorScreen> {
                         ),
                         IconButton.outlined(
                           icon: Icon(
-                            _ttsState == TtsState.playing ? Icons.stop : Icons.volume_up,
+                            _ttsState == TtsState.playing
+                                ? Icons.stop
+                                : Icons.volume_up,
                             color: dynamicIconColor,
                           ),
                           onPressed: _toggleSpeak,
                         ),
                         IconButton.outlined(
-                          icon: Icon(Icons.fiber_manual_record, color: dynamicIconColor),
+                          icon: Icon(
+                            Icons.fiber_manual_record,
+                            color: dynamicIconColor,
+                          ),
                           onPressed: _showAudioMenu,
                         ),
                         IconButton.outlined(

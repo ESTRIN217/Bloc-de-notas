@@ -91,27 +91,43 @@ class AboutScreen extends StatelessWidget {
   future: Future.wait([
     PackageInfo.fromPlatform(),
     DeviceInfoPlugin().deviceInfo,
-  ]),
+  ]).catchError((e) {
+    // Si falla la carga, devolvemos valores por defecto para no bloquear la UI
+    return [null, null];
+  }),
   builder: (context, snapshot) {
-    // Manejo de estados de carga/error
-    final version = snapshot.data?[0].version ?? "...";
+    // 1. Valores por defecto iniciales
+    String version = "...";
     String archLabel = "...";
 
-    if (snapshot.hasData) {
+    // 2. Si hay datos (y no son nulos por el catchError)
+    if (snapshot.hasData && snapshot.data![0] != null) {
+      final PackageInfo? packageInfo = snapshot.data![0];
       final deviceData = snapshot.data![1];
 
+      version = packageInfo?.version ?? "...";
+
       if (kIsWeb) {
-        final webInfo = deviceData as WebBrowserInfo;
-        // Muestra el navegador (ej: CHROME o FIREFOX)
-        archLabel = webInfo.browserName.name.toUpperCase();
-      } else {
-        // En Android, toma la arquitectura (ej: ARM64-V8A)
-        final androidInfo = deviceData as AndroidDeviceInfo;
-        archLabel = androidInfo.supportedAbis.first.toUpperCase();
+        // Validación segura sin forzar el cast con "as"
+        if (deviceData is WebBrowserInfo) {
+          archLabel = deviceData.browserName.name.toUpperCase();
+        } else {
+          archLabel = "WEB";
+        }
+      } else if (deviceData is AndroidDeviceInfo) {
+        archLabel = deviceData.supportedAbis.isNotEmpty 
+            ? deviceData.supportedAbis.first.toUpperCase() 
+            : "ANDROID";
       }
+    } 
+    // 3. Si hay un error crítico en el Future
+    else if (snapshot.hasError) {
+      version = "Error";
+      archLabel = "Error";
     }
 
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         _buildBadge(context, version),
         const SizedBox(width: 8),

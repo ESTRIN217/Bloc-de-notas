@@ -673,17 +673,19 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  // MODIFICADO: Lógica de filtro para incluir etiquetas
   void _filterItems() {
     final query = _searchController.text.toLowerCase();
     final sourceList = _isTrashView ? _trashedItems : _items; 
     
     setState(() {
       _filteredItems = sourceList.where((item) {
+        // Criterio 1: Búsqueda de texto (título o contenido)
         final titleMatch = item.title.toLowerCase().contains(query);
         final summaryMatch = item.document.toPlainText().toLowerCase().contains(query);
         final matchesSearch = titleMatch || summaryMatch;
         
+        // Criterio 2: Filtro por etiqueta seleccionada
+        // Si no hay filtro (null), pasan todas. Si hay uno, la nota debe contenerlo.
         final matchesTag = _selectedTagFilter == null || item.tags.contains(_selectedTagFilter);
 
         return matchesSearch && matchesTag;
@@ -868,80 +870,205 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
   // NUEVO: Diálogo para gestionar/crear etiquetas desde el Drawer
   void _showManageTagsDialog() {
-    final TextEditingController tagController = TextEditingController();
-    
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return AlertDialog(
-              title: const Text('Gestionar Etiquetas'),
-              content: SizedBox(
-                width: double.maxFinite,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: tagController,
-                      decoration: InputDecoration(
-                        hintText: 'Nueva etiqueta...',
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed: () {
-                            final newTag = tagController.text.trim();
-                            if (newTag.isNotEmpty && !_availableTags.contains(newTag)) {
-                              setState(() {
-                                _availableTags.add(newTag);
-                                _saveTags();
-                              });
-                              setModalState(() {});
-                              tagController.clear();
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: _availableTags.length,
-                        itemBuilder: (context, index) {
-                          final tag = _availableTags[index];
-                          return ListTile(
-                            title: Text(tag),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.red),
-                              onPressed: () {
-                                setState(() {
-                                  _availableTags.remove(tag);
-                                  if (_selectedTagFilter == tag) _selectedTagFilter = null;
-                                  _saveTags();
-                                  _filterItems(); // Refrescar vista
-                                });
-                                setModalState(() {});
-                              },
-                            ),
-                          );
+  final TextEditingController tagController = TextEditingController();
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setModalState) {
+          return AlertDialog(
+            title: const Text('Gestionar Etiquetas'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: tagController,
+                    decoration: InputDecoration(
+                      hintText: 'Nueva etiqueta...',
+                      // Icono para limpiar el texto (Equis)
+                      prefixIcon: IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          tagController.clear();
+                          setModalState(() {});
                         },
                       ),
+                      suffixIcon: IconButton(
+  icon: const Icon(Icons.add),
+  onPressed: () {
+    final newTag = tagController.text.trim();
+    
+    // VALIDACIÓN: ¿Está vacía o ya existe?
+    if (newTag.isEmpty) return;
+
+    if (_availableTags.any((t) => t.toLowerCase() == newTag.toLowerCase())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Esta etiqueta ya existe')),
+      );
+      return;
+    }
+
+    setState(() {
+      _availableTags.add(newTag);
+      _saveTags();
+    });
+    setModalState(() {});
+    tagController.clear();
+  },
+),
+                    onChanged: (text) => setModalState(() {}),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _availableTags.length,
+                      itemBuilder: (context, index) {
+                        final tag = _availableTags[index];
+                        return ListTile(
+                          // Icono de etiqueta al inicio
+                          leading: const Icon(Icons.label_outline),
+                          title: Text(tag),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Icono para editar
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined),
+                                onPressed: () {
+                                  // Aquí  llamas a una función para renombrar
+                                 _showRenameTagDialog(tag);
+                                },
+                              ),
+                              // Icono para eliminar
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                onPressed: () {
+                                  setState(() {
+                                    _availableTags.remove(tag);
+                                    if (_selectedTagFilter == tag) _selectedTagFilter = null;
+                                    _saveTags();
+                                    _filterItems();
+                                  });
+                                  setModalState(() {});
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                  ],
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cerrar'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+  void _showRenameTagDialog(String oldTag) {
+  final TextEditingController renameController = TextEditingController(text: oldTag);
+  // Agregamos una variable para manejar el error localmente en el diálogo
+  String? errorText;
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder( // Necesario para mostrar el error dinámicamente
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('Renombrar Etiqueta'),
+            content: TextField(
+              controller: renameController,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: 'Nuevo nombre',
+                errorText: errorText, // Muestra el mensaje de error aquí
+                prefixIcon: const Icon(Icons.edit_outlined),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    renameController.clear();
+                    setDialogState(() => errorText = null);
+                  },
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cerrar'),
-                ),
-              ],
-            );
-          }
-        );
-      }
-    );
-  }
+              onChanged: (value) {
+                if (errorText != null) setDialogState(() => errorText = null);
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final newTag = renameController.text.trim();
+                  
+                  // 1. Si no cambió nada, solo cerramos
+                  if (newTag == oldTag) {
+                    Navigator.pop(context);
+                    return;
+                  }
+
+                  // 2. Validación de duplicados
+                  bool exists = _availableTags.any(
+                    (t) => t.toLowerCase() == newTag.toLowerCase() && t != oldTag
+                  );
+
+                  if (exists) {
+                    setDialogState(() => errorText = 'Ya tienes una etiqueta con ese nombre');
+                    return;
+                  }
+
+                  if (newTag.isNotEmpty) {
+                    setState(() {
+                      // Actualizar lista global
+                      int index = _availableTags.indexOf(oldTag);
+                      if (index != -1) _availableTags[index] = newTag;
+
+                      // Actualizar filtro activo
+                      if (_selectedTagFilter == oldTag) _selectedTagFilter = newTag;
+
+                      // Actualizar notas (Uso de map para mayor limpieza)
+                      void updateTags(List<NoteItem> list) {
+                        for (var item in list) {
+                          if (item.tags.contains(oldTag)) {
+                            item.tags.remove(oldTag);
+                            item.tags.add(newTag);
+                          }
+                        }
+                      }
+                      updateTags(_items);
+                      updateTags(_trashedItems);
+
+                      _saveTags();
+                      _filterItems();
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('Guardar'),
+              ),
+            ],
+          );
+        }
+      );
+    },
+  );
+}
 
   void _showUndoSnackbar(List<ListItem> deletedItems) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -1434,9 +1561,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ListTile(
               leading: const Icon(Icons.home),
               title: Text(AppLocalizations.of(context)!.home),
-              selected: !_isTrashView,
+              // Está seleccionado si NO estamos en papelera Y NO hay filtro de etiqueta
+              selected: !_isTrashView && _selectedTagFilter == null,
               onTap: () {
-                setState(() => _isTrashView = false);
+                setState(() {
+                  _isTrashView = false;
+                  _selectedTagFilter = null; // Reset de etiquetas
+                });
                 _filterItems();
                 Navigator.pop(context);
               },
@@ -1479,7 +1610,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               title: const Text('Papelera'),
               selected: _isTrashView,
               onTap: () {
-                setState(() => _isTrashView = true);
+                setState(() {
+                  _isTrashView = true;
+                  _selectedTagFilter = null; // Opcional: quitar filtro al ir a papelera
+                });
                 _filterItems();
                 Navigator.pop(context);
               },
@@ -1549,34 +1683,52 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   title: FutureBuilder<List<dynamic>>(
     future: Future.wait([
       PackageInfo.fromPlatform(),
-      DeviceInfoPlugin().deviceInfo, // Usamos .deviceInfo para que sea genérico
+      DeviceInfoPlugin().deviceInfo,
     ]),
     builder: (context, snapshot) {
-      if (snapshot.hasData) {
-        final PackageInfo packageInfo = snapshot.data![0];
-        final deviceData = snapshot.data![1];
-        
-        String platformDetail = "";
-
-        if (kIsWeb) {
-          // Extraemos el nombre del navegador y la versión (ej. Chrome 124)
-          final webInfo = deviceData as WebBrowserInfo;
-          platformDetail = "${webInfo.browserName.name.toUpperCase()} ${webInfo.appVersion?.split(' ').first}";
-        } else if (Platform.isAndroid) {
-          final androidInfo = deviceData as AndroidDeviceInfo;
-          platformDetail = androidInfo.supportedAbis.first.toUpperCase();
-        } else {
-          platformDetail = "NATIVE";
-        }
-
+      // 1. Verificar si hubo un error (Crucial para depurar en Web/Codespaces)
+      if (snapshot.hasError) {
         return Text(
-          'Versión ${packageInfo.version} (${packageInfo.buildNumber}) • $platformDetail',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-              ),
+          'Error al cargar info',
+          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.error),
         );
+      }
+
+      if (snapshot.hasData) {
+        try {
+          final PackageInfo packageInfo = snapshot.data![0];
+          final deviceData = snapshot.data![1];
+          
+          String platformDetail = "";
+
+          if (kIsWeb) {
+            // Verificación segura para Web
+            if (deviceData is WebBrowserInfo) {
+              final browser = deviceData.browserName.name.toUpperCase();
+              // Usamos un fallback por si appVersion viene nulo o vacío
+              final version = (deviceData.appVersion ?? "").split(' ').first;
+              platformDetail = "$browser $version".trim();
+            } else {
+              platformDetail = "WEB";
+            }
+          } else {
+            // Verificación segura para Android
+            final androidInfo = deviceData as AndroidDeviceInfo;
+            platformDetail = androidInfo.supportedAbis.first.toUpperCase();
+          }
+
+          return Text(
+            'Versión ${packageInfo.version} (${packageInfo.buildNumber}) • $platformDetail',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                ),
+          );
+        } catch (e) {
+          // Si el cast falla, mostramos un mensaje genérico en lugar de "Cargando..."
+          return const Text('Error de formato', style: TextStyle(fontSize: 12));
+        }
       }
       
       return const Text('Cargando...', style: TextStyle(fontSize: 12));

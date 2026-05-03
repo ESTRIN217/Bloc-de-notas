@@ -165,7 +165,7 @@ class _EditorScreenState extends State<EditorScreen> {
                         prefixIcon: IconButton(
                           icon: const Icon(Icons.clear),
                           onPressed: () {
-                            tagController.clear();
+                            newTagController.clear();
                             setModalState(() {});
                           },
                         ),

@@ -194,7 +194,7 @@ class _EditorScreenState extends State<EditorScreen> {
                         prefixIcon: IconButton(
                           icon: const Icon(Icons.clear),
                           onPressed: () {
-                            newtagController.clear();
+                            newTagController.clear();
                             setModalState(() {});
                           },
                         ),
@@ -1028,7 +1028,7 @@ class _EditorScreenState extends State<EditorScreen> {
   // Icono que se muestra cuando isSelected es true
   selectedIcon: Icon(Icons.stop, color: dynamicIconColor), 
   onPressed: _toggleSpeak,
-)
+),
 
                         IconButton.outlined(
                           icon: Icon(

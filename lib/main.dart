@@ -6,6 +6,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 // Solo se usa si !kIsWeb
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
@@ -1599,7 +1600,7 @@ void _filterItems() {
           ),
           onPressed: _exitSelectionMode,
         ),
-        title: Text(${_selectedItems.length}),
+        title: Text('${_selectedItems.length}'),
         actions: [
           IconButton(
             icon: Icon(
@@ -1766,6 +1767,7 @@ Widget _buildFilterChips() {
             label: Text(tag),
             selected: _selectedTagFilter == tag,
             onSelected: (selected) {
+              _onTagSelected(tag);
               setState(() => _selectedTagFilter = selected ? tag : null);
               _filterItems();
             },

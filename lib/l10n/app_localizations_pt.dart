@@ -168,6 +168,15 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get system_default => 'Padrão (Sistema)';
+
+  @override
+  String get etiquetas => 'Rótulos';
+
+  @override
+  String get archivados => 'Arquivado';
+
+  @override
+  String get papelera => 'Lixeira';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -334,4 +343,13 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get system_default => 'Padrão (Sistema)';
+
+  @override
+  String get etiquetas => 'Rótulos';
+
+  @override
+  String get archivados => 'Arquivado';
+
+  @override
+  String get papelera => 'Lixeira';
 }

@@ -1112,7 +1112,7 @@ if (result is ListItem) {
                                     color: Colors.red,
                                   ),
                                   onPressed: () {
-                                   _confirmDeleteTa(tag),
+                                   _confirmDeleteTag(tag);
                                   },
                                 ),
                               ],
@@ -1767,7 +1767,7 @@ Widget _buildFilterChips() {
       children: [
         // Chip de "Archivadas"
         FilterChip(
-          label: Text(AppLocalizations.of(context)!.Archivados),
+          label: Text(AppLocalizations.of(context)!.archivados),
           selected: _isArchiveView,
           onSelected: (selected) {
             setState(() {
@@ -1861,7 +1861,7 @@ Widget _buildFilterChips() {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(AppLocalizations.of(context)!.ETIQUETAS,
+                  Text(AppLocalizations.of(context)!.etiquetas,
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                   IconButton(
@@ -1895,7 +1895,7 @@ Widget _buildFilterChips() {
             // NUEVO: Ítem de Archivados
           ListTile(
             leading: const Icon(Icons.archive_outlined),
-            title: Text(AppLocalizations.of(context)!.Archivados),
+            title: Text(AppLocalizations.of(context)!.archivados),
             selected: _isArchiveView,
             onTap: () {
               setState(() {
@@ -1909,7 +1909,7 @@ Widget _buildFilterChips() {
           ),
             ListTile(
               leading: const Icon(Icons.delete_outline),
-              title: Text(AppLocalizations.of(context)!.Papelera),
+              title: Text(AppLocalizations.of(context)!.papelera),
               selected: _isTrashView,
               onTap: () {
                 setState(() {
@@ -1928,7 +1928,7 @@ Widget _buildFilterChips() {
                 isLabelVisible: context.watch<UpdaterProvider>().hasUpdate,
                 backgroundColor: Colors.red,
                 smallSize: 10,
-                child: const Icon(Icons.settings_outline),
+                child: const Icon(Icons.settings_outlined),
               ),
               title: Text(AppLocalizations.of(context)!.settings),
               onTap: () async {

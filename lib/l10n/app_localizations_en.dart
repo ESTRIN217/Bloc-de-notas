@@ -168,4 +168,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get system_default => 'Default (System)';
+
+  @override
+  String get etiquetas => 'Labels';
+
+  @override
+  String get archivados => 'Archived';
+
+  @override
+  String get papelera => 'Bin';
 }

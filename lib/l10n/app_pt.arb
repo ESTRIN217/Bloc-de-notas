@@ -53,7 +53,7 @@
   "buscar_actualizaciones": "Buscar atualizaçoes",
   "json_crudo": "JSON bruto",
   "system_default": "Padrão (Sistema)",
-  "ETIQUETAS": "RÓTULOS",
-  "Archivados": "Arquivado",
-  "Papelera": "Lixeira"
+  "etiquetas": "Rótulos",
+  "archivados": "Arquivado",
+  "papelera": "Lixeira"
 }

@@ -413,6 +413,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Default (System)'**
   String get system_default;
+
+  /// No description provided for @etiquetas.
+  ///
+  /// In en, this message translates to:
+  /// **'Labels'**
+  String get etiquetas;
+
+  /// No description provided for @archivados.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived'**
+  String get archivados;
+
+  /// No description provided for @papelera.
+  ///
+  /// In en, this message translates to:
+  /// **'Bin'**
+  String get papelera;
 }
 
 class _AppLocalizationsDelegate

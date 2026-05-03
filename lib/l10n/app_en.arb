@@ -108,10 +108,10 @@
   "@json_crudo": {},
   "system_default": "Default (System)",
   "@system_default": {},
-  "ETIQUETAS": "LABELS",
-  "@ETIQUETAS": {},
-  "Archivados": "Archived",
-  "@Archivados": {},
-  "Papelera": "Bin",
-  "@Papelera": {},
+  "etiquetas": "Labels",
+  "@etiquetas": {},
+  "archivados": "Archived",
+  "@archivados": {},
+  "papelera": "Bin",
+  "@papelera": {}
 }

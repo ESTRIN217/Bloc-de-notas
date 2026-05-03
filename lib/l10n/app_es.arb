@@ -62,7 +62,7 @@
   "buscar_actualizaciones": "Buscar actualizaciones",
   "json_crudo": "JSON sin formato",
   "system_default": "Predeterminado (Sistema)",
-  "ETIQUETAS": "ETIQUETAS",
-  "Archivados": "Archivadas",
-  "Papelera": "Papelera"
+  "etiquetas": "Etiquetas",
+  "archivados": "Archivadas",
+  "papelera": "Papelera"
 }

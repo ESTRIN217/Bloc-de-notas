@@ -168,6 +168,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get system_default => 'Predeterminado (Sistema)';
+
+  @override
+  String get etiquetas => 'Etiquetas';
+
+  @override
+  String get archivados => 'Archivadas';
+
+  @override
+  String get papelera => 'Papelera';
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
@@ -334,4 +343,13 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
 
   @override
   String get system_default => 'Predeterminado (Sistema)';
+
+  @override
+  String get etiquetas => 'Etiquetas';
+
+  @override
+  String get archivados => 'Archivadas';
+
+  @override
+  String get papelera => 'Papelera';
 }

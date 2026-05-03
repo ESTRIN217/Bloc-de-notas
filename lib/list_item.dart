@@ -11,6 +11,7 @@ class ListItem {
   final int? backgroundColor;
   final String? backgroundImagePath;
   final List<String> tags;
+  final bool isArchived;
 
   ListItem({
     required this.id,
@@ -20,6 +21,7 @@ class ListItem {
     this.backgroundColor,
     this.backgroundImagePath,
     this.tags = const [],
+    this.isArchived = false,
   });
 
   factory ListItem.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,7 @@ class ListItem {
       backgroundColor: json['backgroundColor'],
       backgroundImagePath: json['backgroundImagePath'],
       tags: List<String>.from(json['tags'] ?? []), // <-- NUEVO
+      isArchived: json['isArchived'],
     );
   }
 
@@ -43,6 +46,7 @@ class ListItem {
       'backgroundColor': backgroundColor,
       'backgroundImagePath': backgroundImagePath,
       'tags': tags,
+      'isArchived': isArchived,
     };
   }
 

@@ -34,6 +34,10 @@ import 'update_widget.dart';
 import 'theme.dart';
 
 void main() {
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark, // Ajusta según tu tema
+  ));
   runApp(
     MultiProvider(
       providers: [
@@ -136,6 +140,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   // NUEVO: Variables para Archivo
   late List<ListItem> _archivedItems;
   bool _isArchiveView = false;
+  int? _selectedColorFilter;
 
   @override
   void initState() {
@@ -722,42 +727,47 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  // ACTUALIZADO: Filtrar según la vista actual (Inicio, Archivo o Papelera)
-  void _filterItems() {
-    final query = _searchController.text.toLowerCase();
-    
-    // Determinamos de qué lista sacar los datos
-    List<ListItem> sourceList;
-    if (_isTrashView) {
-      sourceList = _trashedItems;
-    } else if (_isArchiveView) {
-      sourceList = _archivedItems;
-    } else {
-      sourceList = _items;
-    }
-
-    setState(() {
-      _filteredItems = sourceList.where((item) {
-        final titleMatch = item.title.toLowerCase().contains(query);
-        final summaryMatch = item.document.toPlainText().toLowerCase().contains(query);
-        final matchesSearch = titleMatch || summaryMatch;
-        final matchesTag = _selectedTagFilter == null || item.tags.contains(_selectedTagFilter);
-        return matchesSearch && matchesTag;
-      }).toList();
-      _sortFilteredItems();
-    });
+void _filterItems() {
+  final query = _searchController.text.toLowerCase();
+  
+  List<ListItem> sourceList;
+  if (_isTrashView) {
+    sourceList = _trashedItems;
+  } else if (_isArchiveView) {
+    sourceList = _archivedItems;
+  } else {
+    sourceList = _items;
   }
-  // NUEVO: Lógica para archivar/desarchivar seleccionados
+
+  setState(() {
+    _filteredItems = sourceList.where((item) {
+      final titleMatch = item.title.toLowerCase().contains(query);
+      final summaryMatch = item.document.toPlainText().toLowerCase().contains(query);
+      final matchesSearch = titleMatch || summaryMatch;
+      
+      // Filtro de Etiquetas
+      final matchesTag = _selectedTagFilter == null || item.tags.contains(_selectedTagFilter);
+      
+      // NUEVO: Filtro de Color
+      final matchesColor = _selectedColorFilter == null || item.backgroundColor == _selectedColorFilter;
+      
+      return matchesSearch && matchesTag && matchesColor;
+    }).toList();
+    _sortFilteredItems();
+  });
+}
   void _archiveSelectedItems() async {
+    // 1. Guardamos una copia de los elementos y el estado de la vista para el "Deshacer"
     final itemsToMove = List<ListItem>.from(_selectedItems);
+    final wasInArchiveView = _isArchiveView;
 
     setState(() {
-      if (_isArchiveView) {
-        // Sacar del archivo al inicio
+      if (wasInArchiveView) {
+        // Sacar del archivo y volver al inicio
         _archivedItems.removeWhere((item) => itemsToMove.contains(item));
         _items.addAll(itemsToMove);
       } else {
-        // Enviar al archivo
+        // Enviar al archivo desde el inicio
         _items.removeWhere((item) => itemsToMove.contains(item));
         _archivedItems.addAll(itemsToMove);
       }
@@ -769,8 +779,28 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_isArchiveView ? 'Notas restauradas' : 'Notas archivadas'),
+        content: Text(wasInArchiveView ? 'Notas restauradas' : 'Notas archivadas'),
         behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'Deshacer',
+          onPressed: () {
+            // 2. Lógica inversa para revertir el movimiento
+            setState(() {
+              if (wasInArchiveView) {
+                // Revertir restauración: de vuelta al archivo
+                _items.removeWhere((item) => itemsToMove.contains(item));
+                _archivedItems.addAll(itemsToMove);
+              } else {
+                // Revertir archivado: de vuelta a la lista principal
+                _archivedItems.removeWhere((item) => itemsToMove.contains(item));
+                _items.addAll(itemsToMove);
+              }
+              _saveItems();
+              _saveArchivedItems();
+              _filterItems();
+            });
+          },
+        ),
       ),
     );
   }
@@ -1569,7 +1599,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           ),
           onPressed: _exitSelectionMode,
         ),
-        title: Text('${_selectedItems.length} seleccionados'),
+        title: Text(${_selectedItems.length}),
         actions: [
           IconButton(
             icon: Icon(
@@ -1606,64 +1636,159 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         ],
       );
     }
+        // Título dinámico según la vista
+    Widget titleWidget;
+    List<Widget> actions = [];
+
+    if (_isTrashView) {
+      // PAPELERA: Ocultar búsqueda y opciones, mostrar botón vaciar
+      titleWidget = const Text('Papelera');
+      actions = [
+        IconButton(
+          icon: const Icon(Icons.delete_sweep_outlined),
+          onPressed: _emptyTrash,
+          tooltip: 'Vaciar papelera',
+        ),
+      ];
+    } else {
+      // VISTA NORMAL, ARCHIVO O ETIQUETAS
+      titleWidget = SearchBar(
+        controller: _searchController,
+        hintText: AppLocalizations.of(context)!.search,
+        leading: const Icon(Icons.search),
+        elevation: WidgetStateProperty.all(0),
+        backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.surfaceContainerHigh),
+        constraints: const BoxConstraints(minHeight: 48, maxHeight: 48),
+      );
+
+      actions = [
+        IconButton(
+          isSelected: !_isListView,
+          icon: const Icon(Icons.view_agenda_rounded),
+          selectedIcon: const Icon(Icons.grid_view),
+          onPressed: _toggleView,
+        ),
+        if (_selectedTagFilter == null) 
+    // Si NO hay etiqueta seleccionada, mostrar icono de importación (ordenar)
+    IconButton(
+      icon: const Icon(Icons.import_export),
+      onPressed: _showSortOptions,
+      tooltip: 'Ordenar',
+    )
+  else 
+    // Si HAY una etiqueta seleccionada, mostrar menú de opciones de etiqueta
+    PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert),
+      onSelected: (value) {
+        if (value == 'rename') {
+          _showRenameTagDialog(_selectedTagFilter!);
+        } else if (value == 'delete') {
+          _confirmDeleteTag(_selectedTagFilter!);
+        }
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 'rename',
+          child: Row(
+            children: [
+              Icon(Icons.edit_outlined, size: 20),
+              SizedBox(width: 12),
+              Text('Renombrar etiqueta'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(Icons.delete_outline, color: Colors.red, size: 20),
+              SizedBox(width: 12),
+              Text('Eliminar etiqueta', style: TextStyle(color: Colors.red)),
+            ],
+          ),
+        ),
+      ],
+    ),
+      ];
+    }
 
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
       leading: Builder(
         builder: (context) => IconButton(
-          icon: Icon(
-            Icons.menu,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
+          icon: const Icon(Icons.menu),
           onPressed: () => Scaffold.of(context).openDrawer(),
         ),
       ),
-      title: Container(
-        height: 48, // Altura estándar de la barra de búsqueda en Google
-        decoration: BoxDecoration(
-          // surfaceContainerHigh es el color oficial de Google para cajas de búsqueda
-          color: Theme.of(context).colorScheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(24.0),
-        ),
-        child: TextField(
-          controller: _searchController,
-          decoration: InputDecoration(
-            hintText: AppLocalizations.of(context)!.search,
-            prefixIcon: Icon(
-              Icons.search,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            border: InputBorder
-                .none, // Quitamos el borde para usar el del Container
-            contentPadding: const EdgeInsets.symmetric(
-              vertical: 12, // Centra el texto verticalmente
-              horizontal: 20,
-            ),
-          ),
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-        ),
+      title: titleWidget,
+      actions: actions,
+      bottom: _isTrashView ? null : PreferredSize(
+        preferredSize: const Size.fromHeight(56),
+        child: _buildFilterChips(),
       ),
-      actions: [
-        IconButton(
-          icon: Icon(
-            _isListView ? Icons.grid_view : Icons.view_list,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          onPressed: _toggleView,
-          tooltip: AppLocalizations.of(context)!.toggleView,
-        ),
-        IconButton(
-          icon: Icon(
-            Icons.import_export,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          onPressed: _showSortOptions,
-          tooltip: AppLocalizations.of(context)!.sort,
-        ),
-      ],
     );
   }
+
+// Widget auxiliar para los chips de filtro
+Widget _buildFilterChips() {
+  // Obtenemos los colores únicos presentes en las notas actuales
+  final uniqueColors = [..._items, ..._archivedItems]
+      .where((item) => item.backgroundColor != null)
+      .map((item) => item.backgroundColor!)
+      .toSet()
+      .toList();
+
+  return SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: Row(
+      children: [
+        // Chip de "Archivadas"
+        FilterChip(
+          label: const Text('Archivadas'),
+          selected: _isArchiveView,
+          onSelected: (selected) {
+            setState(() {
+              _isArchiveView = selected;
+              _isTrashView = false;
+              _selectedTagFilter = null; // Opcional: resetear otros filtros
+            });
+            _filterItems();
+          },
+        ),
+        const SizedBox(width: 8),
+        
+        // Chips de Etiquetas
+        ..._availableTags.map((tag) => Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: FilterChip(
+            label: Text(tag),
+            selected: _selectedTagFilter == tag,
+            onSelected: (selected) {
+              setState(() => _selectedTagFilter = selected ? tag : null);
+              _filterItems();
+            },
+          ),
+        )),
+
+        // Chips de Colores
+        ...uniqueColors.map((colorValue) => Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: FilterChip(
+            avatar: CircleAvatar(backgroundColor: Color(colorValue), radius: 10),
+            label: const Text("Color"),
+            selected: _selectedColorFilter == colorValue,
+            onSelected: (selected) {
+              setState(() => _selectedColorFilter = selected ? colorValue : null);
+              _filterItems();
+            },
+          ),
+        )),
+      ],
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -1693,7 +1818,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               leading: const Icon(Icons.home),
               title: Text(AppLocalizations.of(context)!.home),
               // Está seleccionado si NO estamos en papelera Y NO hay filtro de etiqueta
-              selected: !_isTrashView && _selectedTagFilter == null,
+              selected: !_isTrashView && _selectedTagFilter == null && !_isArchiveView,
               onTap: () {
                 setState(() {
                   _isTrashView = false;
@@ -2155,8 +2280,52 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         ),
       ),
       child: InkWell(
-        onTap: () =>
-            _isSelectionMode ? _toggleSelection(item) : _navigateToEditor(item),
+        onTap: () {
+    if (_isSelectionMode) {
+      _toggleSelection(item);
+    } else if (_isTrashView) {
+      // MOSTRAR DIÁLOGO EN PAPELERA
+      showModalBottomSheet(
+        context: context,
+        builder: (context) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.restore),
+                title: const Text('Restablecer nota'),
+                onTap: () {
+                  setState(() {
+                    _trashedItems.remove(item);
+                    _items.add(item);
+                    _saveItems();
+                    _saveTrashedItems();
+                    _filterItems();
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_forever, color: Colors.red),
+                title: const Text('Borrar definitivamente'),
+                onTap: () {
+                  setState(() {
+                    _cleanupImagesForItems([item]);
+                    _trashedItems.remove(item);
+                    _saveTrashedItems();
+                    _filterItems();
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      _navigateToEditor(item);
+    }
+  },
         onLongPress: () => !_isSelectionMode ? _startSelectionMode(item) : null,
         child: Ink(
           // Usar Ink para que la decoración no tape el efecto visual
@@ -2358,4 +2527,66 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       debugPrint("Error guardando papelera: $e");
     }
   }
+  void _emptyTrash() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Vaciar papelera?'),
+        content: const Text('Se eliminarán permanentemente todas las notas en la papelera.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          FilledButton(
+            onPressed: () {
+              setState(() {
+                _cleanupImagesForItems(_trashedItems);
+                _trashedItems.clear();
+                _saveTrashedItems();
+                _filterItems();
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Vaciar'),
+          ),
+        ],
+      ),
+    );
+  }
+  // Ejemplo de la función que maneja el cambio de filtro
+void _onTagSelected(String? tag) {
+  setState(() {
+    _isTrashView = false;
+    _isArchiveView = false;
+    // Si se toca la misma etiqueta, se deselecciona (vuelve el icono import)
+    // Si se toca una nueva, se activa el filtro (aparecen los tres puntos)
+    _selectedTagFilter = (_selectedTagFilter == tag) ? null : tag;
+    _filterItems();
+  });
+}
+  void _confirmDeleteTag(String tag) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('¿Eliminar "$tag"?'),
+      content: const Text('La etiqueta se quitará de todas las notas, pero las notas no se borrarán.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _availableTags.remove(tag);
+              _selectedTagFilter = null; // Volvemos a la vista general
+              _saveTags();
+              _filterItems();
+            });
+            Navigator.pop(context);
+          },
+          child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
+}
 }

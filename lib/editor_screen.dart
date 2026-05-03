@@ -48,6 +48,7 @@ class _EditorScreenState extends State<EditorScreen> {
   // NUEVO: Estado de etiquetas
   List<String> _currentTags = [];
   List<String> _availableGlobalTags = [];
+  bool _isArchived = false; // NUEVO: Estado de archivo
 
   @override
   void initState() {
@@ -60,6 +61,7 @@ class _EditorScreenState extends State<EditorScreen> {
     _backgroundColorValue = widget.item.backgroundColor;
     _backgroundImagePath = widget.item.backgroundImagePath;
     _currentTags = List.from(widget.item.tags); // Inicializamos las etiquetas
+    _isArchived = widget.item.isArchived; // Cargar estado inicial
     _initTts();
     _loadGlobalTags();
   }
@@ -79,6 +81,32 @@ class _EditorScreenState extends State<EditorScreen> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList('available_tags', _availableGlobalTags);
     }
+  }
+  // ACTUALIZADO: Método para archivar/desarchivar con opción de deshacer
+  void _toggleArchive() {
+    setState(() {
+      _isArchived = !_isArchived; // Cambiar el estado actual
+    });
+
+    // Limpiamos cualquier snackbar previo para evitar acumulación
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_isArchived ? 'Nota archivada' : 'Nota desarchivada'),
+        duration: const Duration(seconds: 4), // Damos tiempo suficiente para reaccionar
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'Deshacer',
+          // Si el usuario presiona "Deshacer", revertimos el cambio de estado
+          onPressed: () {
+            setState(() {
+              _isArchived = !_isArchived;
+            });
+          },
+        ),
+      ),
+    );
   }
 
   void _initTts() {
@@ -136,6 +164,7 @@ class _EditorScreenState extends State<EditorScreen> {
       backgroundColor: _backgroundColorValue,
       backgroundImagePath: _backgroundImagePath,
       tags: _currentTags, // NUEVO: Pasamos las etiquetas al guardar
+      isArchived: _isArchived, // NUEVO: Guardar el estado de archivo
     );
     Navigator.pop(context, updatedItem);
   }
@@ -165,7 +194,7 @@ class _EditorScreenState extends State<EditorScreen> {
                         prefixIcon: IconButton(
                           icon: const Icon(Icons.clear),
                           onPressed: () {
-                            newTagController.clear();
+                            newtagController.clear();
                             setModalState(() {});
                           },
                         ),
@@ -753,6 +782,14 @@ class _EditorScreenState extends State<EditorScreen> {
             title: null,
             actions: [
               IconButton(
+                icon: Icon(
+                  _isArchived ? Icons.unarchive_outlined : Icons.archive_outlined,
+                  color: dynamicIconColor,
+                ),
+                tooltip: _isArchived ? 'Desarchivar' : 'Archivar',
+                onPressed: _toggleArchive,
+              ),
+              IconButton(
                 icon: Icon(Icons.more_vert, color: dynamicIconColor),
                 onPressed: _showEditorMenu,
               ),
@@ -958,11 +995,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      // Usamos withValues(alpha: 0.9) como dicta la sintaxis actual de Flutter
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest
-                          .withValues(alpha: 0.9),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
@@ -989,14 +1022,14 @@ class _EditorScreenState extends State<EditorScreen> {
                           onPressed: _showTextTools,
                         ),
                         IconButton.outlined(
-                          icon: Icon(
-                            _ttsState == TtsState.playing
-                                ? Icons.stop
-                                : Icons.volume_up,
-                            color: dynamicIconColor,
-                          ),
-                          onPressed: _toggleSpeak,
-                        ),
+                          isSelected: _ttsState == TtsState.playing,
+  // Icono por defecto (cuando NO está seleccionado)
+  icon: Icon(Icons.volume_up, color: dynamicIconColor), 
+  // Icono que se muestra cuando isSelected es true
+  selectedIcon: Icon(Icons.stop, color: dynamicIconColor), 
+  onPressed: _toggleSpeak,
+)
+
                         IconButton.outlined(
                           icon: Icon(
                             Icons.fiber_manual_record,

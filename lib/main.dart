@@ -133,6 +133,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   late List<ListItem> _trashedItems;
   List<String> _availableTags = [];
   String? _selectedTagFilter;
+  // NUEVO: Variables para Archivo
+  late List<ListItem> _archivedItems;
+  bool _isArchiveView = false;
 
   @override
   void initState() {
@@ -141,6 +144,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _items = [];
     _filteredItems = [];
     _trashedItems = [];
+    _archivedItems = [];
     _searchController.addListener(_filterItems);
     _loadAllData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -225,17 +229,25 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         });
         _saveItems(); // Guardamos una sola vez con ambas notas ya en la lista
       }
-    } catch (e) {
-      debugPrint("Error loading items: $e");
+          // --- Cargar Archivados ---
+      String? archivedContents;
+      if (kIsWeb) {
+        final prefs = await SharedPreferences.getInstance();
+        archivedContents = prefs.getString('archived_notes');
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/archived_notes.json');
+        if (await file.exists()) {
+          archivedContents = await file.readAsString();
+        }
+      }
 
-      // Manejo de error: también cargamos ambas notas
-      setState(() {
-        _items = [_createWelcomeNote(), _createExerciteNote()];
-        _filteredItems = _items;
-        _isLoading = false;
-      });
-      _saveItems();
-    }
+      if (archivedContents != null && archivedContents.isNotEmpty) {
+        final List<dynamic> jsonList = jsonDecode(archivedContents);
+        setState(() {
+          _archivedItems = jsonList.map((json) => ListItem.fromJson(json)).toList();
+        });
+      }
     // --- Cargar Papelera ---
     String? trashedContents;
     if (kIsWeb) {
@@ -256,6 +268,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             .map((json) => ListItem.fromJson(json))
             .toList();
       });
+    }
+    } catch (e) {
+      debugPrint("Error loading items: $e");
+
+      // Manejo de error: también cargamos ambas notas
+      setState(() {
+        _items = [_createWelcomeNote(), _createExerciteNote()];
+        _filteredItems = _items;
+        _isLoading = false;
+      });
+      _saveItems();
     }
   }
 
@@ -679,30 +702,77 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       debugPrint("Error saving items: $e");
     }
   }
+  // NUEVO: Guardar Archivados
+  Future<void> _saveArchivedItems() async {
+    try {
+      final List<Map<String, dynamic>> jsonList = _archivedItems
+          .map((item) => item.toJson())
+          .toList();
+      final contents = jsonEncode(jsonList);
+      if (kIsWeb) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('archived_notes', contents);
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/archived_notes.json');
+        await file.writeAsString(contents);
+      }
+    } catch (e) {
+      debugPrint("Error saving archived items: $e");
+    }
+  }
 
+  // ACTUALIZADO: Filtrar según la vista actual (Inicio, Archivo o Papelera)
   void _filterItems() {
     final query = _searchController.text.toLowerCase();
-    final sourceList = _isTrashView ? _trashedItems : _items;
+    
+    // Determinamos de qué lista sacar los datos
+    List<ListItem> sourceList;
+    if (_isTrashView) {
+      sourceList = _trashedItems;
+    } else if (_isArchiveView) {
+      sourceList = _archivedItems;
+    } else {
+      sourceList = _items;
+    }
 
     setState(() {
       _filteredItems = sourceList.where((item) {
-        // Criterio 1: Búsqueda de texto (título o contenido)
         final titleMatch = item.title.toLowerCase().contains(query);
-        final summaryMatch = item.document.toPlainText().toLowerCase().contains(
-          query,
-        );
+        final summaryMatch = item.document.toPlainText().toLowerCase().contains(query);
         final matchesSearch = titleMatch || summaryMatch;
-
-        // Criterio 2: Filtro por etiqueta seleccionada
-        // Si no hay filtro (null), pasan todas. Si hay uno, la nota debe contenerlo.
-        final matchesTag =
-            _selectedTagFilter == null ||
-            item.tags.contains(_selectedTagFilter);
-
+        final matchesTag = _selectedTagFilter == null || item.tags.contains(_selectedTagFilter);
         return matchesSearch && matchesTag;
       }).toList();
       _sortFilteredItems();
     });
+  }
+  // NUEVO: Lógica para archivar/desarchivar seleccionados
+  void _archiveSelectedItems() async {
+    final itemsToMove = List<ListItem>.from(_selectedItems);
+
+    setState(() {
+      if (_isArchiveView) {
+        // Sacar del archivo al inicio
+        _archivedItems.removeWhere((item) => itemsToMove.contains(item));
+        _items.addAll(itemsToMove);
+      } else {
+        // Enviar al archivo
+        _items.removeWhere((item) => itemsToMove.contains(item));
+        _archivedItems.addAll(itemsToMove);
+      }
+      _saveItems();
+      _saveArchivedItems();
+      _exitSelectionMode();
+      _filterItems();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_isArchiveView ? 'Notas restauradas' : 'Notas archivadas'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   void _sortFilteredItems() {
@@ -839,6 +909,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     itemBuilder: (context, index) {
                       final tag = _availableTags[index];
                       return ListTile(
+                        leading: const Icon(Icons.label_outline),
                         title: Text(tag),
                         trailing: const Icon(Icons.add_circle_outline),
                         onTap: () {
@@ -1502,6 +1573,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         actions: [
           IconButton(
             icon: Icon(
+              _isArchiveView ? Icons.unarchive_outlined : Icons.archive_outlined,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            onPressed: _archiveSelectedItems,
+            tooltip: _isArchiveView ? 'Desarchivar' : 'Archivar',
+          ),
+          IconButton(
+            icon: Icon(
               Icons.label_outline,
               color: Theme.of(context).colorScheme.onSurface,
             ),
@@ -1618,6 +1697,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               onTap: () {
                 setState(() {
                   _isTrashView = false;
+                  _isArchiveView = false;
                   _selectedTagFilter = null; // Reset de etiquetas
                 });
                 _filterItems();
@@ -1656,6 +1736,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 onTap: () {
                   setState(() {
                     _isTrashView = false;
+                    _isArchiveView = false;
                     _selectedTagFilter = tag;
                   });
                   _filterItems();
@@ -1665,6 +1746,21 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ),
 
             const Divider(),
+            // NUEVO: Ítem de Archivados
+          ListTile(
+            leading: const Icon(Icons.archive_outlined),
+            title: const Text('Archivados'),
+            selected: _isArchiveView,
+            onTap: () {
+              setState(() {
+                _isArchiveView = true;
+                _isTrashView = false;
+                _selectedTagFilter = null;
+              });
+              _filterItems();
+              Navigator.pop(context);
+            },
+          ),
             ListTile(
               leading: const Icon(Icons.delete_outline),
               title: const Text('Papelera'),
@@ -1672,6 +1768,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               onTap: () {
                 setState(() {
                   _isTrashView = true;
+                  _isArchiveView = false;
                   _selectedTagFilter =
                       null; // Opcional: quitar filtro al ir a papelera
                 });
@@ -1817,7 +1914,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : (_isListView ? _buildListView() : _buildGridView()),
-      floatingActionButton: (_isSelectionMode || _isTrashView)
+      floatingActionButton: (_isSelectionMode || _isTrashView || _isArchiveView)
           ? null
           : FloatingActionButton(
               onPressed: () => _navigateToEditor(),

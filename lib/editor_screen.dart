@@ -162,6 +162,13 @@ class _EditorScreenState extends State<EditorScreen> {
                       controller: newTagController,
                       decoration: InputDecoration(
                         hintText: 'Crear nueva etiqueta...',
+                        prefixIcon: IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            tagController.clear();
+                            setModalState(() {});
+                          },
+                        ),
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.add),
                           onPressed: () {

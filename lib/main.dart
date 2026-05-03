@@ -891,6 +891,34 @@ void _filterItems() {
       });
       _loadAllData(); // Recargamos las etiquetas globales por si se crearon nuevas
     }
+if (result is ListItem) {
+  setState(() {
+    // 1. Eliminamos el item de ambas listas para evitar duplicados al moverlo
+    _items.removeWhere((i) => i.id == result.id);
+    _archivedItems.removeWhere((i) => i.id == result.id);
+
+    // 2. Si la nota quedó vacía, no la guardamos en ninguna lista
+    if (result.title.trim().isEmpty && result.document.length <= 1) {
+      _filterItems();
+      _saveItems();
+      _saveArchivedItems();
+      return;
+    }
+
+    // 3. Insertamos el resultado en la lista correcta según su estado
+    if (result.isArchived) {
+      _archivedItems.insert(0, result);
+    } else {
+      _items.insert(0, result);
+    }
+
+    // 4. Aplicamos filtros y guardamos ambos archivos JSON
+    _filterItems();
+    _saveItems();
+    _saveArchivedItems();
+  });
+  _loadAllData(); // Recarga etiquetas globales si se crearon nuevas
+}
   }
 
   void _startSelectionMode(ListItem item) {
@@ -1084,15 +1112,7 @@ void _filterItems() {
                                     color: Colors.red,
                                   ),
                                   onPressed: () {
-                                    setState(() {
-                                      _availableTags.remove(tag);
-                                      if (_selectedTagFilter == tag) {
-                                        _selectedTagFilter = null;
-                                      }
-                                      _saveTags();
-                                      _filterItems();
-                                    });
-                                    setModalState(() {});
+                                   _confirmDeleteTa(tag),
                                   },
                                 ),
                               ],
@@ -1628,7 +1648,7 @@ void _filterItems() {
           ),
           IconButton(
             icon: Icon(
-              Icons.delete,
+              Icons.delete_outline,
               color: Theme.of(context).colorScheme.onSurface,
             ),
             onPressed: _deleteSelectedItems,
@@ -1747,7 +1767,7 @@ Widget _buildFilterChips() {
       children: [
         // Chip de "Archivadas"
         FilterChip(
-          label: const Text('Archivadas'),
+          label: Text(AppLocalizations.of(context)!.Archivados),
           selected: _isArchiveView,
           onSelected: (selected) {
             setState(() {
@@ -1841,8 +1861,7 @@ Widget _buildFilterChips() {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'ETIQUETAS',
+                  Text(AppLocalizations.of(context)!.ETIQUETAS,
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                   IconButton(
@@ -1876,7 +1895,7 @@ Widget _buildFilterChips() {
             // NUEVO: Ítem de Archivados
           ListTile(
             leading: const Icon(Icons.archive_outlined),
-            title: const Text('Archivados'),
+            title: Text(AppLocalizations.of(context)!.Archivados),
             selected: _isArchiveView,
             onTap: () {
               setState(() {
@@ -1890,7 +1909,7 @@ Widget _buildFilterChips() {
           ),
             ListTile(
               leading: const Icon(Icons.delete_outline),
-              title: const Text('Papelera'),
+              title: Text(AppLocalizations.of(context)!.Papelera),
               selected: _isTrashView,
               onTap: () {
                 setState(() {
@@ -1909,7 +1928,7 @@ Widget _buildFilterChips() {
                 isLabelVisible: context.watch<UpdaterProvider>().hasUpdate,
                 backgroundColor: Colors.red,
                 smallSize: 10,
-                child: const Icon(Icons.settings),
+                child: const Icon(Icons.settings_outline),
               ),
               title: Text(AppLocalizations.of(context)!.settings),
               onTap: () async {
@@ -2121,6 +2140,17 @@ Widget _buildFilterChips() {
               const quill.VerticalSpacing(0, 0),
               null,
             ),
+            h3: quill.DefaultTextBlockStyle(
+              TextStyle(
+                color: dynamicTextColor,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+              const quill.HorizontalSpacing(0, 0),
+              const quill.VerticalSpacing(8, 0),
+              const quill.VerticalSpacing(0, 0),
+              null,
+            ),
             // Estilo para Listas (Bullets y Checkboxes)
             lists: quill.DefaultListBlockStyle(
               TextStyle(color: dynamicTextColor, fontSize: 16),
@@ -2240,7 +2270,9 @@ Widget _buildFilterChips() {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: dynamicTextColor.withValues(alpha: 0.1),
+                      color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: dynamicTextColor.withValues(alpha: 0.3),

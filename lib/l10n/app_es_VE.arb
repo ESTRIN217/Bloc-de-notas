@@ -52,5 +52,8 @@
   "habilitar_notificaciones_de_actualizacion": "Habilitar notificaciones de actualización",
   "buscar_actualizaciones": "Buscar actualizaciones",
   "json_crudo": "JSON sin formato",
-  "system_default": "Predeterminado (Sistema)"
+  "system_default": "Predeterminado (Sistema)",
+  "ETIQUETAS": "ETIQUETAS",
+  "Archivados": "Archivadas",
+  "Papelera": "Papelera"
 }

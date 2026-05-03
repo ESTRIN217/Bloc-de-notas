@@ -107,5 +107,11 @@
   "json_crudo": "Raw JSON",
   "@json_crudo": {},
   "system_default": "Default (System)",
-  "@system_default": {}
+  "@system_default": {},
+  "ETIQUETAS": "LABELS",
+  "@ETIQUETAS": {},
+  "Archivados": "Archived",
+  "@Archivados": {},
+  "Papelera": "Bin",
+  "@Papelera": {},
 }

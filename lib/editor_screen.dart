@@ -782,13 +782,13 @@ class _EditorScreenState extends State<EditorScreen> {
             title: null,
             actions: [
               IconButton(
-                icon: Icon(
-                  _isArchived ? Icons.unarchive_outlined : Icons.archive_outlined,
-                  color: dynamicIconColor,
-                ),
-                tooltip: _isArchived ? 'Desarchivar' : 'Archivar',
-                onPressed: _toggleArchive,
-              ),
+  isSelected: _isArchived,
+  icon: const Icon(Icons.archive_outlined), // Icono por defecto (sin seleccionar)
+  selectedIcon: const Icon(Icons.unarchive_outlined), // Icono cuando isSelected es true
+  color: dynamicIconColor,
+  tooltip: _isArchived ? 'Desarchivar' : 'Archivar',
+  onPressed: _toggleArchive,
+),
               IconButton(
                 icon: Icon(Icons.more_vert, color: dynamicIconColor),
                 onPressed: _showEditorMenu,
@@ -819,9 +819,9 @@ class _EditorScreenState extends State<EditorScreen> {
                                     fontSize: 12,
                                   ),
                                 ),
-                                backgroundColor: dynamicTextColor.withValues(
-                                  alpha: 0.1,
-                                ),
+                                backgroundColor: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
                                 side: BorderSide.none,
                                 onPressed:
                                     _showTagsDialog, // Al tocarlas, abre el diálogo
@@ -995,7 +995,9 @@ class _EditorScreenState extends State<EditorScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(

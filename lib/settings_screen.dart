@@ -49,7 +49,7 @@ class SettingsScreen extends StatelessWidget {
                           // Aplicamos el fondo al icono de la paleta
                           secondary: _buildIconContainer(
                             context,
-                            Icons.palette,
+                            Icons.palette_outlined,
                           ),
                           value: themeProvider.useDynamicColors,
                           onChanged: (value) {
@@ -72,7 +72,7 @@ class SettingsScreen extends StatelessWidget {
                     children: [
                       ListTile(
                         // Aplicamos el fondo al icono del modo oscuro
-                        leading: _buildIconContainer(context, Icons.dark_mode),
+                        leading: _buildIconContainer(context, Icons.dark_mode_outlined),
                         title: Text(AppLocalizations.of(context)!.themeMode),
                       ),
                       Padding(
@@ -82,17 +82,17 @@ class SettingsScreen extends StatelessWidget {
                             ButtonSegment<ThemeMode>(
                               value: ThemeMode.system,
                               label: Text(AppLocalizations.of(context)!.system),
-                              icon: const Icon(Icons.brightness_auto),
+                              icon: const Icon(Icons.brightness_auto_outlined),
                             ),
                             ButtonSegment<ThemeMode>(
                               value: ThemeMode.light,
                               label: Text(AppLocalizations.of(context)!.light),
-                              icon: const Icon(Icons.light_mode),
+                              icon: const Icon(Icons.light_mode_outlined),
                             ),
                             ButtonSegment<ThemeMode>(
                               value: ThemeMode.dark,
                               label: Text(AppLocalizations.of(context)!.dark),
-                              icon: const Icon(Icons.dark_mode),
+                              icon: const Icon(Icons.dark_mode_outlined),
                             ),
                           ],
                           selected: {themeProvider.themeMode},
@@ -167,9 +167,9 @@ class SettingsScreen extends StatelessWidget {
                     children: [
                       ListTile(
                         // Aplicamos el fondo al icono de GitHub (FontAwesome también funciona con IconData)
-                        leading: _buildFaIconContainer(
+                        leading: _buildIconContainer(
                           context,
-                          FontAwesomeIcons.github,
+                          Icons.verified,
                         ),
                         title: Text(
                           AppLocalizations.of(context)!.registro_de_cambio,
@@ -320,7 +320,7 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 // OPCIÓN PREDETERMINADO
                 ListTile(
-                  leading: const Text('🌐'),
+                  leading: const Icon(Icons.language),
                   title: Text(
                     AppLocalizations.of(context)!.system_default,
                   ), // Usa la clave del ARB

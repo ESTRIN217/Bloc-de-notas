@@ -171,7 +171,7 @@ class _DrawingWidgetState extends State<_DrawingWidget> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         borderRadius: BorderRadius.circular(8.0),
         color: Theme.of(context).scaffoldBackgroundColor,
       ),
@@ -188,32 +188,32 @@ class _DrawingWidgetState extends State<_DrawingWidget> {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.edit),
+                  icon: const Icon(Icons.edit_outlined),
                   color: (!_isEraser && _currentWidth == 3.0) ? Colors.blue : null,
                   onPressed: () => setState(() {
                     _isEraser = false;
                     _currentWidth = 3.0;
                   }),
-                  tooltip: 'Lápiz',
+                  tooltip: AppLocalizations.of(context)!.lapiz,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.brush),
+                  icon: const Icon(Icons.brush_outlined),
                   color: (!_isEraser && _currentWidth == 15.0) ? Colors.yellow.shade700 : null,
                   onPressed: () => setState(() {
                     _isEraser = false;
                     _currentWidth = 15.0;
                     _currentColor = Colors.yellow.withAlpha(150);
                   }),
-                  tooltip: 'Resaltador',
+                  tooltip: AppLocalizations.of(context)!.resaltador,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.cleaning_services),
+                  icon: const Icon(Icons.auto_fix_normal_outlined),
                   color: _isEraser ? Colors.red : null,
                   onPressed: () => setState(() {
                     _isEraser = true;
                     _currentWidth = 20.0;
                   }),
-                  tooltip: 'Borrador',
+                  tooltip: AppLocalizations.of(context)!.borrador,
                 ),
                 const SizedBox(width: 8),
                 ..._colors.map((color) => GestureDetector(
@@ -240,9 +240,9 @@ class _DrawingWidgetState extends State<_DrawingWidget> {
                     )),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
+                  icon: const Icon(Icons.delete_outline, color: Colors.red),
                   onPressed: _deleteEmbed,
-                  tooltip: 'Eliminar dibujo',
+                  tooltip:  AppLocalizations.of(context)!.eliminar_dibujo,
                 ),
               ],
             ),

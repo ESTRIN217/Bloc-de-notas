@@ -556,12 +556,12 @@ class _EditorScreenState extends State<EditorScreen> {
             ),
             const Divider(height: 1), // Una línea separadora visual
             ListTile(
-              leading: const Icon(Icons.share),
+              leading: const Icon(Icons.share_outlined),
               title: Text(AppLocalizations.of(context)!.share),
               onTap: () => _showShareMenu(context),
             ),
             ListTile(
-              leading: const Icon(Icons.delete),
+              leading: const Icon(Icons.delete_outline),
               title: Text(AppLocalizations.of(context)!.delete),
               onTap: () {
                 Navigator.pop(ctx);
@@ -821,7 +821,7 @@ class _EditorScreenState extends State<EditorScreen> {
                                 ),
                                 backgroundColor: Theme.of(
           context,
-        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        ).colorScheme.primaryContainer,
                                 side: BorderSide.none,
                                 onPressed:
                                     _showTagsDialog, // Al tocarlas, abre el diálogo
@@ -997,7 +997,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     decoration: BoxDecoration(
                       color: Theme.of(
           context,
-        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        ).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(

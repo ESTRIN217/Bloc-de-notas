@@ -762,15 +762,31 @@ void _filterItems() {
     final itemsToMove = List<ListItem>.from(_selectedItems);
     final wasInArchiveView = _isArchiveView;
 
+    // Función auxiliar para generar copias de los items con el estado isArchived actualizado
+    List<ListItem> getUpdatedItems(bool targetStatus) {
+      return itemsToMove.map((item) => ListItem(
+        id: item.id,
+        title: item.title,
+        summary: item.summary,
+        lastModified: item.lastModified,
+        backgroundColor: item.backgroundColor,
+        backgroundImagePath: item.backgroundImagePath,
+        tags: item.tags,
+        isArchived: targetStatus, // Actualizamos la variable según el destino
+      )).toList();
+    }
+
     setState(() {
       if (wasInArchiveView) {
-        // Sacar del archivo y volver al inicio
-        _archivedItems.removeWhere((item) => itemsToMove.contains(item));
-        _items.addAll(itemsToMove);
+        // Desarchivar: Quitar de archivados y mover a principal con isArchived = false
+        final restoredItems = getUpdatedItems(false);
+        _archivedItems.removeWhere((item) => itemsToMove.any((m) => m.id == item.id));
+        _items.addAll(restoredItems);
       } else {
-        // Enviar al archivo desde el inicio
-        _items.removeWhere((item) => itemsToMove.contains(item));
-        _archivedItems.addAll(itemsToMove);
+        // Archivar: Quitar de principal y mover a archivados con isArchived = true
+        final archivedItems = getUpdatedItems(true);
+        _items.removeWhere((item) => itemsToMove.any((m) => m.id == item.id));
+        _archivedItems.addAll(archivedItems);
       }
       _saveItems();
       _saveArchivedItems();
@@ -780,21 +796,22 @@ void _filterItems() {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(wasInArchiveView ? 'Notas restauradas' : 'Notas archivadas'),
+        content: Text(wasInArchiveView ? AppLocalizations.of(context)!.notesRestored : AppLocalizations.of(context)!.notesArchived),
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
-          label: 'Deshacer',
+          label: AppLocalizations.of(context)!.undo,
           onPressed: () {
-            // 2. Lógica inversa para revertir el movimiento
             setState(() {
               if (wasInArchiveView) {
-                // Revertir restauración: de vuelta al archivo
-                _items.removeWhere((item) => itemsToMove.contains(item));
-                _archivedItems.addAll(itemsToMove);
+                // Revertir restauración: de vuelta al archivo (isArchived = true)
+                final reverted = getUpdatedItems(true);
+                _items.removeWhere((item) => itemsToMove.any((m) => m.id == item.id));
+                _archivedItems.addAll(reverted);
               } else {
-                // Revertir archivado: de vuelta a la lista principal
-                _archivedItems.removeWhere((item) => itemsToMove.contains(item));
-                _items.addAll(itemsToMove);
+                // Revertir archivado: de vuelta a la lista principal (isArchived = false)
+                final reverted = getUpdatedItems(false);
+                _archivedItems.removeWhere((item) => itemsToMove.any((m) => m.id == item.id));
+                _items.addAll(reverted);
               }
               _saveItems();
               _saveArchivedItems();
@@ -955,12 +972,12 @@ if (result is ListItem) {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Etiquetar notas'),
+          title: const Text(AppLocalizations.of(context)!.tagNotesTitle),
           content: SizedBox(
             width: double.maxFinite,
             child: _availableTags.isEmpty
-                ? const Text(
-                    'No hay etiquetas creadas. Créalas desde el menú lateral.',
+                ? const Text(AppLocalizations.of(context)!.noTagsCreated
+                  ,
                   )
                 : ListView.builder(
                     shrinkWrap: true,
@@ -993,6 +1010,7 @@ if (result is ListItem) {
                                     backgroundImagePath:
                                         _items[index].backgroundImagePath,
                                     tags: updatedTags,
+                                    isArchived: _items[index].isArchived,
                                   );
                                 }
                               }
@@ -1017,7 +1035,7 @@ if (result is ListItem) {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
+              child: const Text(AppLocalizations.of(context)!.cancel),
             ),
           ],
         );
@@ -1035,7 +1053,7 @@ if (result is ListItem) {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return AlertDialog(
-              title: const Text('Gestionar Etiquetas'),
+              title: const Text(AppLocalizations.of(context)!.manageTags),
               content: SizedBox(
                 width: double.maxFinite,
                 child: Column(
@@ -1044,7 +1062,7 @@ if (result is ListItem) {
                     TextField(
                       controller: tagController,
                       decoration: InputDecoration(
-                        hintText: 'Nueva etiqueta...',
+                        hintText: AppLocalizations.of(context)!.newTagHint,
                         // Icono para limpiar el texto (Equis)
                         prefixIcon: IconButton(
                           icon: const Icon(Icons.clear),
@@ -1066,7 +1084,7 @@ if (result is ListItem) {
                             )) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Esta etiqueta ya existe'),
+                                  content: Text(AppLocalizations.of(context)!.tagExistsError),
                                 ),
                               );
                               return;
@@ -1127,7 +1145,7 @@ if (result is ListItem) {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cerrar'),
+                  child: const Text(AppLocalizations.of(context)!.close),
                 ),
               ],
             );
@@ -1151,12 +1169,12 @@ if (result is ListItem) {
           // Necesario para mostrar el error dinámicamente
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Renombrar Etiqueta'),
+              title: const Text(AppLocalizations.of(context)!.renameTag),
               content: TextField(
                 controller: renameController,
                 autofocus: true,
                 decoration: InputDecoration(
-                  labelText: 'Nuevo nombre',
+                  labelText: AppLocalizations.of(context)!.renameTagLabel,
                   errorText: errorText, // Muestra el mensaje de error aquí
                   prefixIcon: const Icon(Icons.edit_outlined),
                   suffixIcon: IconButton(
@@ -1174,7 +1192,7 @@ if (result is ListItem) {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancelar'),
+                  child: const Text(AppLocalizations.of(context)!.cancel),
                 ),
                 FilledButton(
                   onPressed: () {
@@ -1196,7 +1214,7 @@ if (result is ListItem) {
                     if (exists) {
                       setDialogState(
                         () =>
-                            errorText = 'Ya tienes una etiqueta con ese nombre',
+                            errorText = AppLocalizations.of(context)!.tagExistsError,
                       );
                       return;
                     }
@@ -1231,7 +1249,7 @@ if (result is ListItem) {
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text('Guardar'),
+                  child: const Text(AppLocalizations.of(context)!.save),
                 ),
               ],
             );
@@ -1246,10 +1264,10 @@ if (result is ListItem) {
     scaffoldMessenger.clearSnackBars();
     scaffoldMessenger.showSnackBar(
       SnackBar(
-        content: const Text('Movido a la papelera'),
+        content: const Text(AppLocalizations.of(context)!.movedToTrash),
         behavior: SnackBarBehavior.floating, // Estilo flotante de Material 3
         action: SnackBarAction(
-          label: 'Deshacer',
+          label: AppLocalizations.of(context)!.undo,
           onPressed: () {
             setState(() {
               _trashedItems.removeWhere((item) => deletedItems.contains(item));
@@ -1310,7 +1328,7 @@ if (result is ListItem) {
                 ),
               ),
               ListTile(
-                leading: const Icon(Icons.text_snippet),
+                leading: const Icon(Icons.text_snippet_outlined),
                 title: Text(AppLocalizations.of(context)!.texto_plano),
                 onTap: () {
                   Navigator.pop(context);
@@ -1345,7 +1363,7 @@ if (result is ListItem) {
                 leading: const Icon(Icons.code_rounded, color: Colors.blue),
                 title: Text(AppLocalizations.of(context)!.json_crudo),
                 subtitle: const Text(
-                  "Formato crudo para respaldo",
+                  AppLocalizations.of(context)!.json_subtitle,
                 ), // Opcional, para aclarar el formato
                 onTap: () {
                   Navigator.pop(context);
@@ -1397,9 +1415,10 @@ if (result is ListItem) {
 
   Future<void> _shareAsPdf() async {
     final pdf = pw.Document();
+    final header = AppLocalizations.of(context)!.misNotasExportadas
 
     List<pw.Widget> pdfContent = [
-      pw.Header(level: 0, child: pw.Text("Mis Notas Exportadas")),
+      pw.Header(level: 0, child: pw.Text(header)),
     ];
 
     for (var item in _selectedItems) {
@@ -1423,7 +1442,7 @@ if (result is ListItem) {
       pdfContent.add(pw.SizedBox(height: 15));
       pdfContent.add(
         pw.Text(
-          item.title.isEmpty ? "Sin título" : item.title,
+          item.title.isEmpty ? AppLocalizations.of(context)!.untitled : item.title,
           style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18),
         ),
       );
@@ -1473,6 +1492,7 @@ if (result is ListItem) {
 
         // 3. Agregamos el título como H1 y el contenido al string combinado, separando con una línea <hr>
         combinedHtmlContent += '<h1>${item.title}</h1>\n$htmlContent\n<hr>\n';
+        title += AppLocalizations.of(context)!.titleHtml
       }
 
       // 4. Crear el documento HTML completo
@@ -1483,7 +1503,7 @@ if (result is ListItem) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notas Exportadas</title>
+  <title>$title</title>
   <style>
     body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; max-width: 800px; margin: auto; }
     blockquote { border-left: 4px solid #007bff; padding-left: 16px; font-style: italic; color: #555; background: #f9f9f9; padding: 10px 10px 10px 16px;}
@@ -1512,7 +1532,7 @@ if (result is ListItem) {
       // 7. Compartir el archivo usando la sintaxis correcta de SharePlus
       await SharePlus.instance.share(
         ShareParams(
-          text: 'Te comparto mis notas en formato Web',
+          text: AppLocalizations.of(context)!.shareHtmlMessage,
           files: [XFile(file.path)],
         ),
       );
@@ -1623,12 +1643,15 @@ if (result is ListItem) {
         title: Text('${_selectedItems.length}'),
         actions: [
           IconButton(
+            isSelected: !_isArchiveView,
             icon: Icon(
-              _isArchiveView ? Icons.unarchive_outlined : Icons.archive_outlined,
+              Icons.unarchive_outlined,
               color: Theme.of(context).colorScheme.onSurface,
             ),
+            selectedIcon: Icon(Icons.archive_outlined,
+              color: Theme.of(context).colorScheme.onSurface,),
             onPressed: _archiveSelectedItems,
-            tooltip: _isArchiveView ? 'Desarchivar' : 'Archivar',
+            tooltip: _isArchiveView ? AppLocalizations.of(context)!.unarchiveTooltip : AppLocalizations.of(context)!.archiveTooltip,
           ),
           IconButton(
             icon: Icon(
@@ -1636,11 +1659,11 @@ if (result is ListItem) {
               color: Theme.of(context).colorScheme.onSurface,
             ),
             onPressed: _showAssignTagDialog,
-            tooltip: 'Etiquetar',
+            tooltip: AppLocalizations.of(context)!.tagTooltip,
           ),
           IconButton(
             icon: Icon(
-              Icons.share,
+              Icons.share_outlined,
               color: Theme.of(context).colorScheme.onSurface,
             ),
             onPressed: () => _showShareMenu(context),
@@ -1663,12 +1686,12 @@ if (result is ListItem) {
 
     if (_isTrashView) {
       // PAPELERA: Ocultar búsqueda y opciones, mostrar botón vaciar
-      titleWidget = const Text('Papelera');
+      titleWidget = const Text(AppLocalizations.of(context)!.papelera);
       actions = [
         IconButton(
           icon: const Icon(Icons.delete_sweep_outlined),
           onPressed: _emptyTrash,
-          tooltip: 'Vaciar papelera',
+          tooltip: AppLocalizations.of(context)!.emptyTrashTitle,
         ),
       ];
     } else {
@@ -1676,7 +1699,7 @@ if (result is ListItem) {
       titleWidget = SearchBar(
         controller: _searchController,
         hintText: AppLocalizations.of(context)!.search,
-        leading: const Icon(Icons.search),
+        leading: const Icon(Icons.search_outlined),
         elevation: WidgetStateProperty.all(0),
         backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.surfaceContainerHigh),
         constraints: const BoxConstraints(minHeight: 48, maxHeight: 48),
@@ -1685,7 +1708,7 @@ if (result is ListItem) {
       actions = [
         IconButton(
           isSelected: !_isListView,
-          icon: const Icon(Icons.view_agenda_rounded),
+          icon: const Icon(Icons.view_agenda_outlined),
           selectedIcon: const Icon(Icons.grid_view),
           onPressed: _toggleView,
         ),
@@ -1714,7 +1737,7 @@ if (result is ListItem) {
             children: [
               Icon(Icons.edit_outlined, size: 20),
               SizedBox(width: 12),
-              Text('Renombrar etiqueta'),
+              Text(AppLocalizations.of(context)!.renameTag),
             ],
           ),
         ),
@@ -1738,7 +1761,7 @@ if (result is ListItem) {
       elevation: 0,
       leading: Builder(
         builder: (context) => IconButton(
-          icon: const Icon(Icons.menu),
+          icon: const Icon(Icons.menu_open),
           onPressed: () => Scaffold.of(context).openDrawer(),
         ),
       ),
@@ -1799,7 +1822,7 @@ Widget _buildFilterChips() {
           padding: const EdgeInsets.only(right: 8),
           child: FilterChip(
             avatar: CircleAvatar(backgroundColor: Color(colorValue), radius: 10),
-            label: const Text("Color"),
+            label: const Text(AppLocalizations.of(context)!.colorFilterLabel),
             selected: _selectedColorFilter == colorValue,
             onSelected: (selected) {
               setState(() => _selectedColorFilter = selected ? colorValue : null);
@@ -1824,20 +1847,29 @@ Widget _buildFilterChips() {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-              ),
-              child: Text(
-                AppLocalizations.of(context)!.menu,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  fontSize: 24,
-                ),
-              ),
+            Container(
+        // Usamos el color que pediste
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        child: ListTile(
+          // Ajustamos el padding para que no se vea apretado
+          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          leading: Image.asset(
+            'assets/icon/notas.png',
+            width: 40, // Ajustado para que quepa bien en una línea
+            height: 40,
+          ),
+          title: Text(
+            AppLocalizations.of(context)!.flutterNotes,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 20, // Un poco más pequeño para que parezca un ítem
+              fontWeight: FontWeight.bold,
             ),
+          ),
+        ),
+      ),
             ListTile(
-              leading: const Icon(Icons.home),
+              leading: const Icon(Icons.home_outlined),
               title: Text(AppLocalizations.of(context)!.home),
               // Está seleccionado si NO estamos en papelera Y NO hay filtro de etiqueta
               selected: !_isTrashView && _selectedTagFilter == null && !_isArchiveView,
@@ -1993,7 +2025,7 @@ Widget _buildFilterChips() {
                   // 1. Verificar si hubo un error (Crucial para depurar en Web/Codespaces)
                   if (snapshot.hasError) {
                     return Text(
-                      'Error al cargar info',
+                      AppLocalizations.of(context)!.errorLoadingInfo,
                       style: TextStyle(
                         fontSize: 12,
                         color: Theme.of(context).colorScheme.error,
@@ -2029,7 +2061,11 @@ Widget _buildFilterChips() {
                       }
 
                       return Text(
-                        'Versión ${packageInfo.version} (${packageInfo.buildNumber}) • $platformDetail',
+                        AppLocalizations.of(context)!.appVersionFull(
+    packageInfo.version,
+    packageInfo.buildNumber,
+    platformDetail,
+  ),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
@@ -2041,14 +2077,14 @@ Widget _buildFilterChips() {
                     } catch (e) {
                       // Si el cast falla, mostramos un mensaje genérico en lugar de "Cargando..."
                       return const Text(
-                        'Error de formato',
+                        AppLocalizations.of(context)!.formatError,
                         style: TextStyle(fontSize: 12),
                       );
                     }
                   }
 
                   return const Text(
-                    'Cargando...',
+                    AppLocalizations.of(context)!.loading,
                     style: TextStyle(fontSize: 12),
                   );
                 },
@@ -2272,7 +2308,7 @@ Widget _buildFilterChips() {
                     decoration: BoxDecoration(
                       color: Theme.of(
           context,
-        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        ).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: dynamicTextColor.withValues(alpha: 0.3),
@@ -2327,7 +2363,7 @@ Widget _buildFilterChips() {
             children: [
               ListTile(
                 leading: const Icon(Icons.restore),
-                title: const Text('Restablecer nota'),
+                title: const Text(AppLocalizations.of(context)!.restoreNote),
                 onTap: () {
                   setState(() {
                     _trashedItems.remove(item);
@@ -2341,7 +2377,7 @@ Widget _buildFilterChips() {
               ),
               ListTile(
                 leading: const Icon(Icons.delete_forever, color: Colors.red),
-                title: const Text('Borrar definitivamente'),
+                title: const Text(AppLocalizations.of(context)!.deleteForever),
                 onTap: () {
                   setState(() {
                     _cleanupImagesForItems([item]);
@@ -2565,10 +2601,10 @@ Widget _buildFilterChips() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('¿Vaciar papelera?'),
-        content: const Text('Se eliminarán permanentemente todas las notas en la papelera.'),
+        title: const Text(AppLocalizations.of(context)!.emptyTrashTitle),
+        content: const Text(AppLocalizations.of(context)!.emptyTrashMessage),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text(AppLocalizations.of(context)!.cancel)),
           FilledButton(
             onPressed: () {
               setState(() {
@@ -2579,7 +2615,7 @@ Widget _buildFilterChips() {
               });
               Navigator.pop(context);
             },
-            child: const Text('Vaciar'),
+            child: const Text(AppLocalizations.of(context)!.emptyTrashAction),
           ),
         ],
       ),
@@ -2600,24 +2636,46 @@ void _onTagSelected(String? tag) {
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text('¿Eliminar "$tag"?'),
-      content: const Text('La etiqueta se quitará de todas las notas, pero las notas no se borrarán.'),
+      title: Text(AppLocalizations.of(context)!.deleteTagTitle(tag)),
+      content: const Text(AppLocalizations.of(context)!.deleteTagMessage),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: const Text(AppLocalizations.of(context)!.cancel),
         ),
         TextButton(
           onPressed: () {
             setState(() {
+              // 1. Eliminar de la lista global de etiquetas
               _availableTags.remove(tag);
               _selectedTagFilter = null; // Volvemos a la vista general
+
+              // 2. Función interna para limpiar la etiqueta de cualquier lista de notas
+              void removeTagFromList(List<ListItem> list) {
+                for (var item in list) {
+                  // Si el ítem contiene la etiqueta, la removemos
+                  if (item.tags.contains(tag)) {
+                    item.tags.remove(tag);
+                  }
+                }
+              }
+
+              // 3. Aplicar la limpieza a todas tus fuentes de datos[cite: 1]
+              removeTagFromList(_items);
+              removeTagFromList(_archivedItems);
+              removeTagFromList(_trashedItems);
+
+              // 4. Persistir todos los cambios en SharedPreferences y archivos JSON[cite: 1]
               _saveTags();
-              _filterItems();
+              _saveItems();
+              _saveArchivedItems();
+              _saveTrashedItems();
+              
+              _filterItems(); // Refrescar la UI[cite: 1]
             });
             Navigator.pop(context);
           },
-          child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+          child: const Text(AppLocalizations.of(context)!.delete, style: TextStyle(color: Colors.red)),
         ),
       ],
     ),

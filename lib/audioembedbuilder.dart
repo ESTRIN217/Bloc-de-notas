@@ -172,9 +172,9 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(
-              _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
-            ),
+            isSelected: !_isPlaying,
+            icon: Icon(Icons.pause_circle_outline,),
+            selectedIcon: Icon(Icons.play_circle_outline),
             iconSize: 36,
             color: Theme.of(context).colorScheme.primary, 
             onPressed: () async {
@@ -229,7 +229,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
           if (!widget.readOnly)
             IconButton(
               icon: const Icon(Icons.delete_outline),
-              color: Colors.redAccent,
+              color: Theme.of(context).colorScheme.error,
               onPressed: _deleteAudioPermanently,
             ), 
         ],

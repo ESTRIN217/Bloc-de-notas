@@ -12,11 +12,10 @@ class UpdateAvailableWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(14),
       ),
+      // Se usan iconos outlined según la preferencia guardada
       child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
     );
   }
@@ -27,24 +26,34 @@ class UpdateAvailableWidget extends StatelessWidget {
 
     if (!updater.hasUpdate) return const SizedBox.shrink();
 
-    return ListTile(
-      leading: Badge(
-        backgroundColor: Colors.red,
-        smallSize: 12,
-        child: _buildIconContainer(context, Icons.system_update_alt_rounded),
+    return Padding(
+      // Si es para el drawer, añadimos el margen horizontal típico de MD3
+      padding: isDrawerTile 
+          ? const EdgeInsets.symmetric(horizontal: 12, vertical: 4) 
+          : EdgeInsets.zero,
+      child: ListTile(
+        // Aplicamos bordes redondeados si está en el drawer para que parezca un botón
+        shape: isDrawerTile 
+            ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)) 
+            : null,
+        leading: Badge(
+          backgroundColor: Colors.red,
+          smallSize: 12,
+          child: isDrawerTile ? Icon(Icons.system_update_alt_outlined) :_buildIconContainer(context, Icons.system_update_alt_outlined),
+        ),
+        title: const Text(AppLocalizations.of(context)!.nueva_version_disponible,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(AppLocalizations.of(context)!.appVersion(updater.latestVersion)
+),
+        onTap: () {
+          if (isDrawerTile) Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const UpdaterScreen()),
+          );
+        },
       ),
-      title: const Text(
-        'Nueva versión disponible',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      subtitle: Text('Versión ${updater.latestVersion}'),
-      onTap: () {
-        if (isDrawerTile) Navigator.pop(context); // Cierra el drawer
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const UpdaterScreen()),
-        );
-      },
     );
   }
-}
+} 

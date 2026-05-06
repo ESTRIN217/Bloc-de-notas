@@ -57,7 +57,7 @@
   "archivados": "Archivadas",
   "papelera": "Papelera",
   "nueva_version_disponible": "Nueva versión disponible",
-  "appVersion": "Versión {version}",
+  "appVersion": "Versión: {version}",
   "lapiz": "Lápiz",
   "resaltado": "Resaltado",
   "borrador": "Borrador",

@@ -116,7 +116,7 @@
   "@papelera": {},
   "nueva_version_disponible": "New version available",
   "@nueva_version_disponible": {},
-  "appVersion": "Version {version}",
+  "appVersion": "Version: {version}",
   "@appVersion": {
   "placeholders": {
     "version": {

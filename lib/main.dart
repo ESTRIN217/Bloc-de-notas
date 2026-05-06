@@ -1058,7 +1058,7 @@ if (result is ListItem) {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.settings_ethernet_rounded),
+                leading: const Icon(Icons.settings_ethernet_outlined),
                 title: Text(AppLocalizations.of(context)!.markdown),
                 onTap: () {
                   Navigator.pop(context);
@@ -1066,7 +1066,7 @@ if (result is ListItem) {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
+                leading: const Icon(Icons.picture_as_pdf_outlined, color: Colors.red),
                 title: Text(AppLocalizations.of(context)!.archivo_pdf),
                 onTap: () {
                   Navigator.pop(context);
@@ -1082,7 +1082,7 @@ if (result is ListItem) {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.code_rounded, color: Colors.blue),
+                leading: const Icon(Icons.code_outlined, color: Colors.blue),
                 title: Text(AppLocalizations.of(context)!.json_crudo),
                 subtitle:  Text(
                   AppLocalizations.of(context)!.json_subtitle,

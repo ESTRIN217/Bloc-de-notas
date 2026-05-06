@@ -199,14 +199,14 @@ class _EditorScreenState extends State<EditorScreen> {
                       decoration: InputDecoration(
                         hintText: AppLocalizations.of(context)!.newTagHint,
                         prefixIcon: IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: const Icon(Icons.clear_outlined),
                           onPressed: () {
                             newTagController.clear();
                             setModalState(() {});
                           },
                         ),
                         suffixIcon: IconButton(
-                          icon: const Icon(Icons.add),
+                          icon: const Icon(Icons.add_outlined),
                           onPressed: () {
                             final tag = newTagController.text.trim();
                             if (tag.isNotEmpty) {
@@ -302,7 +302,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.settings_ethernet_rounded),
+                leading: const Icon(Icons.settings_ethernet_outlined),
                 title: Text(AppLocalizations.of(context)!.markdown),
                 onTap: () {
                   Navigator.pop(context);
@@ -310,7 +310,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
+                leading: const Icon(Icons.picture_as_pdf_outlined, color: Colors.red),
                 title: Text(AppLocalizations.of(context)!.archivo_pdf),
                 onTap: () {
                   Navigator.pop(context);
@@ -326,7 +326,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.code_rounded, color: Colors.blue),
+                leading: const Icon(Icons.code_outlined, color: Colors.blue),
                 title: Text(AppLocalizations.of(context)!.json_crudo),
                 subtitle: Text(AppLocalizations.of(context)!.json_subtitle),
                 onTap: () {
@@ -626,7 +626,7 @@ class _EditorScreenState extends State<EditorScreen> {
                         ),
                       ),
                       child: colorValue == null
-                          ? const Icon(Icons.format_color_reset)
+                          ? const Icon(Icons.format_color_reset_outlined)
                           : null,
                     ),
                   );
@@ -780,7 +780,7 @@ class _EditorScreenState extends State<EditorScreen> {
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: dynamicIconColor),
+              icon: Icon(Icons.arrow_back_outlined, color: dynamicIconColor),
               onPressed: _saveAndExit,
             ),
             backgroundColor: Colors.transparent,
@@ -1030,16 +1030,16 @@ class _EditorScreenState extends State<EditorScreen> {
                           onPressed: _showBackgroundSheet,
                         ),
                         IconButton.outlined(
-                          icon: Icon(Icons.tune, color: dynamicIconColor),
+                          icon: Icon(Icons.tune_outlined, color: dynamicIconColor),
                           onPressed: _showTextTools,
                         ),
                         IconButton.outlined(
                           isSelected: _ttsState == TtsState.playing,
                           // Icono por defecto (cuando NO está seleccionado)
-                          icon: Icon(Icons.volume_up, color: dynamicIconColor),
+                          icon: Icon(Icons.volume_up_outlined, color: dynamicIconColor),
                           // Icono que se muestra cuando isSelected es true
                           selectedIcon: Icon(
-                            Icons.stop,
+                            Icons.stop_outlined,
                             color: dynamicIconColor,
                           ),
                           onPressed: _toggleSpeak,
@@ -1047,7 +1047,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
                         IconButton.outlined(
                           icon: Icon(
-                            Icons.fiber_manual_record,
+                            Icons.fiber_manual_record_outlined,
                             color: dynamicIconColor,
                           ),
                           onPressed: _showAudioMenu,
@@ -1182,7 +1182,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   children: [
                     ListTile(
                       leading: Icon(
-                        _isRecording ? Icons.stop_circle : Icons.mic,
+                        _isRecording ? Icons.stop_circle_outlined : Icons.mic_outlined,
                         color: _isRecording
                             ? Colors.red
                             : Theme.of(context).colorScheme.primary,
@@ -1216,7 +1216,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     if (!_isRecording) ...[
                       const Divider(),
                       ListTile(
-                        leading: const Icon(Icons.audio_file),
+                        leading: const Icon(Icons.audio_file_outlined),
                         title: Text(
                           AppLocalizations.of(context)!.selectAudioFile,
                         ),

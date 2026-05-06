@@ -294,7 +294,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 ),
               ),
               ListTile(
-                leading: const Icon(Icons.text_snippet),
+                leading: const Icon(Icons.text_snippet_outlined),
                 title: Text(AppLocalizations.of(context)!.texto_plano),
                 onTap: () {
                   Navigator.pop(context);

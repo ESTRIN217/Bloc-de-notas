@@ -93,11 +93,11 @@ class _EditorScreenState extends State<EditorScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_isArchived ? 'Nota archivada' : 'Nota desarchivada'),
+        content: Text(_isArchived ? AppLocalizations.of(context)!.noteArchived : AppLocalizations.of(context)!.noteUnarchived),
         duration: const Duration(seconds: 4), // Damos tiempo suficiente para reaccionar
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
-          label: 'Deshacer',
+          label: AppLocalizations.of(context)!.undo,
           // Si el usuario presiona "Deshacer", revertimos el cambio de estado
           onPressed: () {
             setState(() {
@@ -179,7 +179,7 @@ class _EditorScreenState extends State<EditorScreen> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return AlertDialog(
-              title: const Text('Etiquetas de la nota'),
+              title: const Text(AppLocalizations.of(context)!.noteTagsTitle),
               content: SizedBox(
                 width: double.maxFinite,
                 child: Column(
@@ -190,7 +190,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     TextField(
                       controller: newTagController,
                       decoration: InputDecoration(
-                        hintText: 'Crear nueva etiqueta...',
+                        hintText: AppLocalizations.of(context)!.newTagHint,
                         prefixIcon: IconButton(
                           icon: const Icon(Icons.clear),
                           onPressed: () {
@@ -218,7 +218,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     ),
                     const SizedBox(height: 16),
                     const Text(
-                      'Tus etiquetas:',
+                      AppLocalizations.of(context)!.yourTags,
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
@@ -254,7 +254,7 @@ class _EditorScreenState extends State<EditorScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Listo'),
+                  child: const Text(AppLocalizations.of(context)!.done),
                 ),
               ],
             );
@@ -321,7 +321,7 @@ class _EditorScreenState extends State<EditorScreen> {
               ListTile(
                 leading: const Icon(Icons.code_rounded, color: Colors.blue),
                 title: Text(AppLocalizations.of(context)!.json_crudo),
-                subtitle: const Text("Formato crudo para respaldo"),
+                subtitle: const Text(AppLocalizations.of(context)!.json_subtitle),
                 onTap: () {
                   Navigator.pop(context); // Cerramos el menú/modal
                   _shareAsJson(); // Ejecutamos la función
@@ -383,14 +383,14 @@ class _EditorScreenState extends State<EditorScreen> {
         build: (pw.Context context) => [
           pw.Header(
             level: 0,
-            child: pw.Text("Exportación desde Bloc de notas"),
+            child: pw.Text(AppLocalizations.of(context)!.pdfExportHeader),
           ),
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               pw.SizedBox(height: 15),
               pw.Text(
-                title.isEmpty ? "Sin título" : title,
+                title.isEmpty ? AppLocalizations.of(context)!.untitled : title,
                 style: pw.TextStyle(
                   fontWeight: pw.FontWeight.bold,
                   fontSize: 18,
@@ -417,7 +417,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
     await SharePlus.instance.share(
       ShareParams(
-        text: 'Te comparto mi nota: $title',
+        text: AppLocalizations.of(context)!.shareNoteMessage(title),
         files: [XFile(file.path)],
       ),
     );
@@ -545,7 +545,7 @@ class _EditorScreenState extends State<EditorScreen> {
               child: Center(
                 // Center ayuda a que el texto quede centrado en el menú
                 child: Text(
-                  'Modificado el: $fechaFormateada',
+                  AppLocalizations.of(context)!.modifiedAt(fechaFormateada),
                   style: const TextStyle(
                     color: Colors
                         .grey, // Un color gris para que parezca información secundaria
@@ -844,7 +844,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       ),
                       decoration: InputDecoration(
                         border: InputBorder.none,
-                        hintText: 'Título',
+                        hintText: AppLocalizations.of(context)!.titleHint,
                         hintStyle: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -862,7 +862,7 @@ class _EditorScreenState extends State<EditorScreen> {
                         controller: _contentController,
                         config: quill.QuillEditorConfig(
                           autoFocus: false,
-                          placeholder: 'Escribe algo increíble...',
+                          placeholder: AppLocalizations.of(context)!.editorPlaceholder,
                           expands: false,
                           padding: const EdgeInsets.only(bottom: 90),
 
@@ -1177,8 +1177,8 @@ class _EditorScreenState extends State<EditorScreen> {
                       ),
                       title: Text(
                         _isRecording
-                            ? 'Detener grabación'
-                            : 'Grabar nota de voz',
+                            ? AppLocalizations.of(context)!.stopRecording
+                            : AppLocalizations.of(context)!.recordVoiceNote,
                         style: TextStyle(
                           color: _isRecording ? Colors.red : null,
                           fontWeight: _isRecording ? FontWeight.bold : null,
@@ -1204,7 +1204,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       const Divider(),
                       ListTile(
                         leading: const Icon(Icons.audio_file),
-                        title: const Text('Seleccionar archivo de audio'),
+                        title: const Text(AppLocalizations.of(context)!.selectAudioFile),
                         onTap: () {
                           Navigator.pop(context);
                           _pickAudioFile();

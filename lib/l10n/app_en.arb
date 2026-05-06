@@ -213,5 +213,39 @@
   "formatError": "Format error",
   "@formatError": {},
   "loading": "Loading...",
-  "@loading": {}
+  "@loading": {},
+  "noteTagsTitle": "Note tags",
+  "@noteTagsTitle": {},
+  "yourTags": "Your tags:",
+  "@yourTags": {},
+  "done": "Done",
+  "@done": {},
+  "noteArchived": "Archived note",
+  "@noteArchived": {},
+  "noteUnarchived": "Unarchived note",
+  "@noteUnarchived": {},
+  "pdfExportHeader": "Exporting from Notepad",
+  "@pdfExportHeader": {},
+  "shareNoteMessage": "I'm sharing my note with you: {title}",
+  "@shareNoteMessage": {
+  "placeholders": {
+  "title": { "type": "String" }
+  }
+  },
+  "titleHint": "Title",
+  "@titleHint": {},
+  "editorPlaceholder": "Write something amazing...",
+  "@editorPlaceholder": {},
+  "modifiedAt": "Modified on: {date}",
+  "@modifiedAt": {
+  "placeholders": {
+  "date": { "type": "String" }
+  }
+  },
+  "stopRecording": "Stop recording",
+  "@stopRecording": {},
+  "recordVoiceNote": "Record voice note",
+  "@recordVoiceNote": {},
+  "selectAudioFile": "Select Audio File",
+  "@selectAudioFile": {}
 }

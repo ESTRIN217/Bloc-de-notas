@@ -97,5 +97,18 @@
   "colorFilterLabel": "Color",
   "errorLoadingInfo": "Error al cargar info",
   "formatError": "Error de formato",
-  "loading": "Cargando..."
+  "loading": "Cargando...",
+  "noteTagsTitle": "Etiquetas de la nota",
+  "yourTags": "Tus etiquetas:",
+  "done": "Listo",
+  "noteArchived": "Nota archivada",
+  "noteUnarchived": "Nota desarchivada",
+  "pdfExportHeader": "Exportación desde Bloc de notas",
+  "shareNoteMessage": "Te comparto mi nota: {title}",
+  "titleHint": "Titulo",
+  "editorPlaceholder": "Escribe algo increíble...",
+  "modifiedAt": "Modificado el: {date}",
+  "stopRecording": "Detener grabación",
+  "recordVoiceNote": "Grabar nota de voz",
+  "selectAudioFile": "Seleccionar archivo de audio"
 }

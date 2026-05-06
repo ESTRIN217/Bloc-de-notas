@@ -177,6 +177,184 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get papelera => 'Papelera';
+
+  @override
+  String get nueva_version_disponible => 'Nueva versión disponible';
+
+  @override
+  String appVersion(String version) {
+    return 'Versión $version';
+  }
+
+  @override
+  String get lapiz => 'Lápiz';
+
+  @override
+  String get resaltado => 'Resaltado';
+
+  @override
+  String get borrador => 'Borrador';
+
+  @override
+  String get eliminar_dibujo => 'Eliminar dibujo';
+
+  @override
+  String appVersionFull(String version, String buildNumber, String platform) {
+    return 'Versión $version ($buildNumber) • $platform';
+  }
+
+  @override
+  String get notesRestored => 'Notas restauradas';
+
+  @override
+  String get notesArchived => 'Notas archivadas';
+
+  @override
+  String get undo => 'Deshacer';
+
+  @override
+  String get welcomeNoteTitle => '¡Bienvenido a Bloc de notas!';
+
+  @override
+  String get exerciseNoteTitle => '¡Rutina de ejercicios!';
+
+  @override
+  String get tagNotesTitle => 'Etiquetar notas';
+
+  @override
+  String get noTagsCreated =>
+      'No hay etiquetas creadas. Créalas desde el menú lateral.';
+
+  @override
+  String get manageTags => 'Gestionar Etiquetas';
+
+  @override
+  String get newTagHint => 'Nueva etiqueta...';
+
+  @override
+  String get tagExistsError => 'Esta etiqueta ya existe';
+
+  @override
+  String get renameTag => 'Renombrar Etiqueta';
+
+  @override
+  String get renameTagLabel => 'Nuevo nombre';
+
+  @override
+  String get movedToTrash => 'Movido a la papelera';
+
+  @override
+  String get emptyTrashTitle => '¿Vaciar papelera?';
+
+  @override
+  String get emptyTrashMessage =>
+      'Se eliminarán permanentemente todas las notas en la papelera.';
+
+  @override
+  String get deleteForever => 'Borrar definitivamente';
+
+  @override
+  String get restoreNote => 'Restablecer nota';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get save => 'Guardar';
+
+  @override
+  String get close => 'Cerrar';
+
+  @override
+  String get emptyTrashAction => 'Vaciar';
+
+  @override
+  String get unarchiveTooltip => 'Desarchivar';
+
+  @override
+  String get archiveTooltip => 'Archivar';
+
+  @override
+  String get tagTooltip => 'Etiquetar';
+
+  @override
+  String deleteTagTitle(String tag) {
+    return 'Eliminar $tag';
+  }
+
+  @override
+  String get deleteTagMessage =>
+      'La etiqueta se quitará de todas las notas, pero las notas no se borrarán.';
+
+  @override
+  String get json_subtitle => 'Formato crudo para respaldo';
+
+  @override
+  String get misNotasExportadas => 'Mis Notas Exportadas';
+
+  @override
+  String get untitled => 'Sin título';
+
+  @override
+  String get titleHtml => 'Notas Exportadas';
+
+  @override
+  String get shareHtmlMessage => 'Te comparto mis notas en formato Web';
+
+  @override
+  String get colorFilterLabel => 'Color';
+
+  @override
+  String get errorLoadingInfo => 'Error al cargar info';
+
+  @override
+  String get formatError => 'Error de formato';
+
+  @override
+  String get loading => 'Cargando...';
+
+  @override
+  String get noteTagsTitle => 'Etiquetas de la nota';
+
+  @override
+  String get yourTags => 'Tus etiquetas:';
+
+  @override
+  String get done => 'Listo';
+
+  @override
+  String get noteArchived => 'Nota archivada';
+
+  @override
+  String get noteUnarchived => 'Nota desarchivada';
+
+  @override
+  String get pdfExportHeader => 'Exportación desde Bloc de notas';
+
+  @override
+  String shareNoteMessage(String title) {
+    return 'Te comparto mi nota: $title';
+  }
+
+  @override
+  String get titleHint => 'Titulo';
+
+  @override
+  String get editorPlaceholder => 'Escribe algo increíble...';
+
+  @override
+  String modifiedAt(String date) {
+    return 'Modificado el: $date';
+  }
+
+  @override
+  String get stopRecording => 'Detener grabación';
+
+  @override
+  String get recordVoiceNote => 'Grabar nota de voz';
+
+  @override
+  String get selectAudioFile => 'Seleccionar archivo de audio';
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
@@ -190,7 +368,7 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
   String get flutterNotes => 'BLOC DE NOTAS';
 
   @override
-  String get search => 'Buscar...';
+  String get search => 'Busca algo...';
 
   @override
   String get toggleView => 'Cambiar vista';
@@ -205,7 +383,7 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
   String get home => 'Inicio';
 
   @override
-  String get settings => 'Configuración';
+  String get settings => 'Ajustes';
 
   @override
   String get addItem => 'Añadir nota';
@@ -352,4 +530,182 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
 
   @override
   String get papelera => 'Papelera';
+
+  @override
+  String get nueva_version_disponible => 'Nueva versión disponible';
+
+  @override
+  String appVersion(String version) {
+    return 'Versión $version';
+  }
+
+  @override
+  String get lapiz => 'Lápiz';
+
+  @override
+  String get resaltado => 'Resaltado';
+
+  @override
+  String get borrador => 'Borrador';
+
+  @override
+  String get eliminar_dibujo => 'Eliminar dibujo';
+
+  @override
+  String appVersionFull(String version, String buildNumber, String platform) {
+    return 'Versión $version ($buildNumber) • $platform';
+  }
+
+  @override
+  String get notesRestored => 'Notas restauradas';
+
+  @override
+  String get notesArchived => 'Notas archivadas';
+
+  @override
+  String get undo => 'Echar para atrás';
+
+  @override
+  String get welcomeNoteTitle => '¡Bienvenido a Bloc de notas!';
+
+  @override
+  String get exerciseNoteTitle => '¡Rutina de ejercicios!';
+
+  @override
+  String get tagNotesTitle => 'Etiquetar notas';
+
+  @override
+  String get noTagsCreated =>
+      'No hay etiquetas creadas. Créalas desde el menú lateral.';
+
+  @override
+  String get manageTags => 'Gestionar Etiquetas';
+
+  @override
+  String get newTagHint => 'Nueva etiqueta...';
+
+  @override
+  String get tagExistsError => 'Esa etiqueta ya la tienes';
+
+  @override
+  String get renameTag => 'Renombrar Etiqueta';
+
+  @override
+  String get renameTagLabel => 'Nuevo nombre';
+
+  @override
+  String get movedToTrash => 'Se fue a la papelera';
+
+  @override
+  String get emptyTrashTitle => '¿Vas a vaciar la papelera?';
+
+  @override
+  String get emptyTrashMessage =>
+      'Se eliminarán permanentemente todas las notas en la papelera.';
+
+  @override
+  String get deleteForever => 'Borrar definitivamente';
+
+  @override
+  String get restoreNote => 'Restablecer nota';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get save => 'Guardar';
+
+  @override
+  String get close => 'Cerrar';
+
+  @override
+  String get emptyTrashAction => 'Vaciar';
+
+  @override
+  String get unarchiveTooltip => 'Desarchivar';
+
+  @override
+  String get archiveTooltip => 'Archivar';
+
+  @override
+  String get tagTooltip => 'Etiquetar';
+
+  @override
+  String deleteTagTitle(String tag) {
+    return 'Eliminar $tag';
+  }
+
+  @override
+  String get deleteTagMessage =>
+      'La etiqueta se quitará de todas las notas, pero las notas no se borrarán.';
+
+  @override
+  String get json_subtitle => 'Formato crudo para respaldo';
+
+  @override
+  String get misNotasExportadas => 'Mis Notas Exportadas';
+
+  @override
+  String get untitled => 'Sin título';
+
+  @override
+  String get titleHtml => 'Notas Exportadas';
+
+  @override
+  String get shareHtmlMessage => 'Te comparto mis notas en formato Web';
+
+  @override
+  String get colorFilterLabel => 'Color';
+
+  @override
+  String get errorLoadingInfo => 'Error al cargar info';
+
+  @override
+  String get formatError => 'Error de formato';
+
+  @override
+  String get loading => 'Cargando...';
+
+  @override
+  String get noteTagsTitle => 'Etiquetas de la nota';
+
+  @override
+  String get yourTags => 'Tus etiquetas:';
+
+  @override
+  String get done => 'Listo';
+
+  @override
+  String get noteArchived => 'Nota archivada';
+
+  @override
+  String get noteUnarchived => 'Nota desarchivada';
+
+  @override
+  String get pdfExportHeader => 'Exportación desde Bloc de notas';
+
+  @override
+  String shareNoteMessage(String title) {
+    return 'Te comparto mi nota: $title';
+  }
+
+  @override
+  String get titleHint => 'Titulo';
+
+  @override
+  String get editorPlaceholder => 'Escribe algo increíble...';
+
+  @override
+  String modifiedAt(String date) {
+    return 'Modificado el: $date';
+  }
+
+  @override
+  String get stopRecording => 'Detener grabación';
+
+  @override
+  String get recordVoiceNote => 'Grabar nota de voz';
+
+  @override
+  String get selectAudioFile => 'Seleccionar archivo de audio';
 }

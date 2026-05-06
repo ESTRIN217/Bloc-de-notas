@@ -289,21 +289,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFaIconContainer(BuildContext context, FaIconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: FaIcon(
-        icon,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
-    );
-  }
+  
 
   void _showLanguageDialog(BuildContext context, ThemeProvider themeProvider) {
     showModalBottomSheet(

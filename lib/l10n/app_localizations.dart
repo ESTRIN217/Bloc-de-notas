@@ -431,6 +431,336 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Bin'**
   String get papelera;
+
+  /// No description provided for @nueva_version_disponible.
+  ///
+  /// In en, this message translates to:
+  /// **'New version available'**
+  String get nueva_version_disponible;
+
+  /// No description provided for @appVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String appVersion(String version);
+
+  /// No description provided for @lapiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Pencil'**
+  String get lapiz;
+
+  /// No description provided for @resaltado.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlighted'**
+  String get resaltado;
+
+  /// No description provided for @borrador.
+  ///
+  /// In en, this message translates to:
+  /// **'Eraser'**
+  String get borrador;
+
+  /// No description provided for @eliminar_dibujo.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete drawing'**
+  String get eliminar_dibujo;
+
+  /// No description provided for @appVersionFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} ({buildNumber}) • {platform}'**
+  String appVersionFull(String version, String buildNumber, String platform);
+
+  /// No description provided for @notesRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes restored'**
+  String get notesRestored;
+
+  /// No description provided for @notesArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes archived'**
+  String get notesArchived;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @welcomeNoteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Notepad!'**
+  String get welcomeNoteTitle;
+
+  /// No description provided for @exerciseNoteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout Routine!'**
+  String get exerciseNoteTitle;
+
+  /// No description provided for @tagNotesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag notes'**
+  String get tagNotesTitle;
+
+  /// No description provided for @noTagsCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags created. Create them from the side menu.'**
+  String get noTagsCreated;
+
+  /// No description provided for @manageTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Tags'**
+  String get manageTags;
+
+  /// No description provided for @newTagHint.
+  ///
+  /// In en, this message translates to:
+  /// **'New tag...'**
+  String get newTagHint;
+
+  /// No description provided for @tagExistsError.
+  ///
+  /// In en, this message translates to:
+  /// **'This tag already exists'**
+  String get tagExistsError;
+
+  /// No description provided for @renameTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename Tag'**
+  String get renameTag;
+
+  /// No description provided for @renameTagLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New name'**
+  String get renameTagLabel;
+
+  /// No description provided for @movedToTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved to trash'**
+  String get movedToTrash;
+
+  /// No description provided for @emptyTrashTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty trash?'**
+  String get emptyTrashTitle;
+
+  /// No description provided for @emptyTrashMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'All notes in the trash will be permanently deleted.'**
+  String get emptyTrashMessage;
+
+  /// No description provided for @deleteForever.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get deleteForever;
+
+  /// No description provided for @restoreNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore note'**
+  String get restoreNote;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @emptyTrashAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty'**
+  String get emptyTrashAction;
+
+  /// No description provided for @unarchiveTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Unarchive'**
+  String get unarchiveTooltip;
+
+  /// No description provided for @archiveTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive'**
+  String get archiveTooltip;
+
+  /// No description provided for @tagTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Label'**
+  String get tagTooltip;
+
+  /// No description provided for @deleteTagTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {tag}'**
+  String deleteTagTitle(String tag);
+
+  /// No description provided for @deleteTagMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The label will be removed from all notes, but the notes will not be deleted.'**
+  String get deleteTagMessage;
+
+  /// No description provided for @json_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw format for backup'**
+  String get json_subtitle;
+
+  /// No description provided for @misNotasExportadas.
+  ///
+  /// In en, this message translates to:
+  /// **'My Exported Notes'**
+  String get misNotasExportadas;
+
+  /// No description provided for @untitled.
+  ///
+  /// In en, this message translates to:
+  /// **'WITHOUT TITLE'**
+  String get untitled;
+
+  /// No description provided for @titleHtml.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported notes'**
+  String get titleHtml;
+
+  /// No description provided for @shareHtmlMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'I share my notes in web format'**
+  String get shareHtmlMessage;
+
+  /// No description provided for @colorFilterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'color'**
+  String get colorFilterLabel;
+
+  /// No description provided for @errorLoadingInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading info'**
+  String get errorLoadingInfo;
+
+  /// No description provided for @formatError.
+  ///
+  /// In en, this message translates to:
+  /// **'Format error'**
+  String get formatError;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loading;
+
+  /// No description provided for @noteTagsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Note tags'**
+  String get noteTagsTitle;
+
+  /// No description provided for @yourTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Your tags:'**
+  String get yourTags;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// No description provided for @noteArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived note'**
+  String get noteArchived;
+
+  /// No description provided for @noteUnarchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Unarchived note'**
+  String get noteUnarchived;
+
+  /// No description provided for @pdfExportHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Exporting from Notepad'**
+  String get pdfExportHeader;
+
+  /// No description provided for @shareNoteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m sharing my note with you: {title}'**
+  String shareNoteMessage(String title);
+
+  /// No description provided for @titleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get titleHint;
+
+  /// No description provided for @editorPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Write something amazing...'**
+  String get editorPlaceholder;
+
+  /// No description provided for @modifiedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Modified on: {date}'**
+  String modifiedAt(String date);
+
+  /// No description provided for @stopRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop recording'**
+  String get stopRecording;
+
+  /// No description provided for @recordVoiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Record voice note'**
+  String get recordVoiceNote;
+
+  /// No description provided for @selectAudioFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Audio File'**
+  String get selectAudioFile;
 }
 
 class _AppLocalizationsDelegate

@@ -972,11 +972,11 @@ if (result is ListItem) {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text(AppLocalizations.of(context)!.tagNotesTitle),
+          title:  Text(AppLocalizations.of(context)!.tagNotesTitle),
           content: SizedBox(
             width: double.maxFinite,
             child: _availableTags.isEmpty
-                ? const Text(AppLocalizations.of(context)!.noTagsCreated
+                ?  Text(AppLocalizations.of(context)!.noTagsCreated
                   ,
                   )
                 : ListView.builder(
@@ -1035,7 +1035,7 @@ if (result is ListItem) {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(AppLocalizations.of(context)!.cancel),
+              child:  Text(AppLocalizations.of(context)!.cancel),
             ),
           ],
         );
@@ -1053,7 +1053,7 @@ if (result is ListItem) {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return AlertDialog(
-              title: const Text(AppLocalizations.of(context)!.manageTags),
+              title:  Text(AppLocalizations.of(context)!.manageTags),
               content: SizedBox(
                 width: double.maxFinite,
                 child: Column(
@@ -1083,7 +1083,7 @@ if (result is ListItem) {
                               (t) => t.toLowerCase() == newTag.toLowerCase(),
                             )) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
+                                 SnackBar(
                                   content: Text(AppLocalizations.of(context)!.tagExistsError),
                                 ),
                               );
@@ -1145,7 +1145,7 @@ if (result is ListItem) {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(AppLocalizations.of(context)!.close),
+                  child:  Text(AppLocalizations.of(context)!.close),
                 ),
               ],
             );
@@ -1169,7 +1169,7 @@ if (result is ListItem) {
           // Necesario para mostrar el error dinámicamente
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text(AppLocalizations.of(context)!.renameTag),
+              title:  Text(AppLocalizations.of(context)!.renameTag),
               content: TextField(
                 controller: renameController,
                 autofocus: true,
@@ -1192,7 +1192,7 @@ if (result is ListItem) {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(AppLocalizations.of(context)!.cancel),
+                  child:  Text(AppLocalizations.of(context)!.cancel),
                 ),
                 FilledButton(
                   onPressed: () {
@@ -1249,7 +1249,7 @@ if (result is ListItem) {
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text(AppLocalizations.of(context)!.save),
+                  child:  Text(AppLocalizations.of(context)!.save),
                 ),
               ],
             );
@@ -1264,7 +1264,7 @@ if (result is ListItem) {
     scaffoldMessenger.clearSnackBars();
     scaffoldMessenger.showSnackBar(
       SnackBar(
-        content: const Text(AppLocalizations.of(context)!.movedToTrash),
+        content:  Text(AppLocalizations.of(context)!.movedToTrash),
         behavior: SnackBarBehavior.floating, // Estilo flotante de Material 3
         action: SnackBarAction(
           label: AppLocalizations.of(context)!.undo,
@@ -1362,7 +1362,7 @@ if (result is ListItem) {
               ListTile(
                 leading: const Icon(Icons.code_rounded, color: Colors.blue),
                 title: Text(AppLocalizations.of(context)!.json_crudo),
-                subtitle: const Text(
+                subtitle:  Text(
                   AppLocalizations.of(context)!.json_subtitle,
                 ), // Opcional, para aclarar el formato
                 onTap: () {
@@ -1415,7 +1415,8 @@ if (result is ListItem) {
 
   Future<void> _shareAsPdf() async {
     final pdf = pw.Document();
-    final header = AppLocalizations.of(context)!.misNotasExportadas
+    final header = AppLocalizations.of(context)!.misNotasExportadas;
+    final untitledText = AppLocalizations.of(context)!.untitled;
 
     List<pw.Widget> pdfContent = [
       pw.Header(level: 0, child: pw.Text(header)),
@@ -1442,7 +1443,7 @@ if (result is ListItem) {
       pdfContent.add(pw.SizedBox(height: 15));
       pdfContent.add(
         pw.Text(
-          item.title.isEmpty ? AppLocalizations.of(context)!.untitled : item.title,
+          item.title.isEmpty ? untitledText : item.title,
           style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18),
         ),
       );
@@ -1472,8 +1473,10 @@ if (result is ListItem) {
   }
 
   Future<void> _shareAsHtml() async {
+    final String shareHtmlMessage = AppLocalizations.of(context)!.shareHtmlMessage;
     try {
       String combinedHtmlContent = '';
+      String titlehtml = '';
 
       // Iteramos sobre todas las notas seleccionadas
       for (var item in _selectedItems) {
@@ -1492,7 +1495,7 @@ if (result is ListItem) {
 
         // 3. Agregamos el título como H1 y el contenido al string combinado, separando con una línea <hr>
         combinedHtmlContent += '<h1>${item.title}</h1>\n$htmlContent\n<hr>\n';
-        title += AppLocalizations.of(context)!.titleHtml
+        titlehtml += AppLocalizations.of(context)!.titleHtml;
       }
 
       // 4. Crear el documento HTML completo
@@ -1503,7 +1506,7 @@ if (result is ListItem) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>$title</title>
+  <title>$titlehtml</title>
   <style>
     body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; max-width: 800px; margin: auto; }
     blockquote { border-left: 4px solid #007bff; padding-left: 16px; font-style: italic; color: #555; background: #f9f9f9; padding: 10px 10px 10px 16px;}
@@ -1532,7 +1535,7 @@ if (result is ListItem) {
       // 7. Compartir el archivo usando la sintaxis correcta de SharePlus
       await SharePlus.instance.share(
         ShareParams(
-          text: AppLocalizations.of(context)!.shareHtmlMessage,
+          text: shareHtmlMessage,
           files: [XFile(file.path)],
         ),
       );
@@ -1686,7 +1689,7 @@ if (result is ListItem) {
 
     if (_isTrashView) {
       // PAPELERA: Ocultar búsqueda y opciones, mostrar botón vaciar
-      titleWidget = const Text(AppLocalizations.of(context)!.papelera);
+      titleWidget =  Text(AppLocalizations.of(context)!.papelera);
       actions = [
         IconButton(
           icon: const Icon(Icons.delete_sweep_outlined),
@@ -1731,7 +1734,7 @@ if (result is ListItem) {
         }
       },
       itemBuilder: (context) => [
-        const PopupMenuItem(
+         PopupMenuItem(
           value: 'rename',
           child: Row(
             children: [
@@ -1822,7 +1825,7 @@ Widget _buildFilterChips() {
           padding: const EdgeInsets.only(right: 8),
           child: FilterChip(
             avatar: CircleAvatar(backgroundColor: Color(colorValue), radius: 10),
-            label: const Text(AppLocalizations.of(context)!.colorFilterLabel),
+            label:  Text(AppLocalizations.of(context)!.colorFilterLabel),
             selected: _selectedColorFilter == colorValue,
             onSelected: (selected) {
               setState(() => _selectedColorFilter = selected ? colorValue : null);
@@ -2076,14 +2079,14 @@ Widget _buildFilterChips() {
                       );
                     } catch (e) {
                       // Si el cast falla, mostramos un mensaje genérico en lugar de "Cargando..."
-                      return const Text(
+                      return  Text(
                         AppLocalizations.of(context)!.formatError,
                         style: TextStyle(fontSize: 12),
                       );
                     }
                   }
 
-                  return const Text(
+                  return  Text(
                     AppLocalizations.of(context)!.loading,
                     style: TextStyle(fontSize: 12),
                   );
@@ -2363,7 +2366,7 @@ Widget _buildFilterChips() {
             children: [
               ListTile(
                 leading: const Icon(Icons.restore),
-                title: const Text(AppLocalizations.of(context)!.restoreNote),
+                title:  Text(AppLocalizations.of(context)!.restoreNote),
                 onTap: () {
                   setState(() {
                     _trashedItems.remove(item);
@@ -2377,7 +2380,7 @@ Widget _buildFilterChips() {
               ),
               ListTile(
                 leading: const Icon(Icons.delete_forever, color: Colors.red),
-                title: const Text(AppLocalizations.of(context)!.deleteForever),
+                title:  Text(AppLocalizations.of(context)!.deleteForever),
                 onTap: () {
                   setState(() {
                     _cleanupImagesForItems([item]);
@@ -2601,10 +2604,10 @@ Widget _buildFilterChips() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(AppLocalizations.of(context)!.emptyTrashTitle),
-        content: const Text(AppLocalizations.of(context)!.emptyTrashMessage),
+        title:  Text(AppLocalizations.of(context)!.emptyTrashTitle),
+        content:  Text(AppLocalizations.of(context)!.emptyTrashMessage),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text(AppLocalizations.of(context)!.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context), child:  Text(AppLocalizations.of(context)!.cancel)),
           FilledButton(
             onPressed: () {
               setState(() {
@@ -2615,7 +2618,7 @@ Widget _buildFilterChips() {
               });
               Navigator.pop(context);
             },
-            child: const Text(AppLocalizations.of(context)!.emptyTrashAction),
+            child:  Text(AppLocalizations.of(context)!.emptyTrashAction),
           ),
         ],
       ),
@@ -2637,11 +2640,11 @@ void _onTagSelected(String? tag) {
     context: context,
     builder: (context) => AlertDialog(
       title: Text(AppLocalizations.of(context)!.deleteTagTitle(tag)),
-      content: const Text(AppLocalizations.of(context)!.deleteTagMessage),
+      content:  Text(AppLocalizations.of(context)!.deleteTagMessage),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text(AppLocalizations.of(context)!.cancel),
+          child:  Text(AppLocalizations.of(context)!.cancel),
         ),
         TextButton(
           onPressed: () {
@@ -2675,7 +2678,7 @@ void _onTagSelected(String? tag) {
             });
             Navigator.pop(context);
           },
-          child: const Text(AppLocalizations.of(context)!.delete, style: TextStyle(color: Colors.red)),
+          child:  Text(AppLocalizations.of(context)!.delete, style: TextStyle(color: Colors.red)),
         ),
       ],
     ),

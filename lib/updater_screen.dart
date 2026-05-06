@@ -135,7 +135,7 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                     updater.isChecking
                         ? Icons.hourglass_empty
                         : (updater.hasUpdate
-                              ? Icons.download_rounded_outlined
+                              ? Icons.download_outlined
                               : Icons.refresh_rounded),
                   ),
                   title: Text(

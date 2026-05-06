@@ -82,9 +82,9 @@
 "cancel": "Cancelar",
 "save": "Salvar",
 "close": "Fechar",
-"emptyTrashAction": "Esvaziar"
+"emptyTrashAction": "Esvaziar",
   "renameTagLabel": "Novo nome",
-  "unarchiveTooltip": "Desarquivar"
+  "unarchiveTooltip": "Desarquivar",
   "archiveTooltip": "Arquivar",
   "tagTooltip": "Rótulo",
   "deleteTagTitle": "Remover {tag}",
@@ -95,7 +95,7 @@
   "titleHtml": "Notas exportadas",
   "shareHtmlMessage": "Eu compartilho minhas notas em formato web",
   "colorFilterLabel": "cor",
-  "errorLoadingInfo": "Informações de carregamento de erros"
+  "errorLoadingInfo": "Informações de carregamento de erros",
   "formatError": "Erro de formato",
   "loading": "carregando...",
   "noteTagsTitle": "Etiquetas de notas",

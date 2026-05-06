@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'updater_provider.dart';
 import 'updater_screen.dart';
+import 'l10n/app_localizations.dart';
 
 class UpdateAvailableWidget extends StatelessWidget {
   final bool isDrawerTile;
@@ -41,11 +42,11 @@ class UpdateAvailableWidget extends StatelessWidget {
           smallSize: 12,
           child: isDrawerTile ? Icon(Icons.system_update_alt_outlined) :_buildIconContainer(context, Icons.system_update_alt_outlined),
         ),
-        title: const Text(AppLocalizations.of(context)!.nueva_version_disponible,
+        title:  Text(AppLocalizations.of(context)!.nueva_version_disponible,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text(AppLocalizations.of(context)!.appVersion(updater.latestVersion)
-),
+        subtitle: Text(AppLocalizations.of(context)!.appVersion(updater.latestVersion ?? ''),
+        ),
         onTap: () {
           if (isDrawerTile) Navigator.pop(context);
           Navigator.push(

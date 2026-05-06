@@ -139,7 +139,7 @@
     "buildNumber": { "type": "String" },
     "platform": { "type": "String" }
   }
-  }
+  },
   "notesRestored": "Notes restored",
   "@notesRestored": {},
   "notesArchived": "Notes archived",
@@ -200,7 +200,7 @@
   "@json_subtitle": {},
   "misNotasExportadas": "My Exported Notes",
   "@misNotasExportadas": {},
-  "untitled": "WITHOUT TITLE"
+  "untitled": "WITHOUT TITLE",
   "@untitled": {},
   "titleHtml": "Exported notes",
   "@titleHtml": {},

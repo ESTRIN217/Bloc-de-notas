@@ -82,6 +82,7 @@ class _EditorScreenState extends State<EditorScreen> {
       await prefs.setStringList('available_tags', _availableGlobalTags);
     }
   }
+
   // ACTUALIZADO: Método para archivar/desarchivar con opción de deshacer
   void _toggleArchive() {
     setState(() {
@@ -93,8 +94,14 @@ class _EditorScreenState extends State<EditorScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_isArchived ? AppLocalizations.of(context)!.noteArchived : AppLocalizations.of(context)!.noteUnarchived),
-        duration: const Duration(seconds: 4), // Damos tiempo suficiente para reaccionar
+        content: Text(
+          _isArchived
+              ? AppLocalizations.of(context)!.noteArchived
+              : AppLocalizations.of(context)!.noteUnarchived,
+        ),
+        duration: const Duration(
+          seconds: 4,
+        ), // Damos tiempo suficiente para reaccionar
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
           label: AppLocalizations.of(context)!.undo,
@@ -179,7 +186,7 @@ class _EditorScreenState extends State<EditorScreen> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return AlertDialog(
-              title: const Text(AppLocalizations.of(context)!.noteTagsTitle),
+              title: Text(AppLocalizations.of(context)!.noteTagsTitle),
               content: SizedBox(
                 width: double.maxFinite,
                 child: Column(
@@ -217,7 +224,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       AppLocalizations.of(context)!.yourTags,
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
@@ -254,7 +261,7 @@ class _EditorScreenState extends State<EditorScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(AppLocalizations.of(context)!.done),
+                  child: Text(AppLocalizations.of(context)!.done),
                 ),
               ],
             );
@@ -321,7 +328,7 @@ class _EditorScreenState extends State<EditorScreen> {
               ListTile(
                 leading: const Icon(Icons.code_rounded, color: Colors.blue),
                 title: Text(AppLocalizations.of(context)!.json_crudo),
-                subtitle: const Text(AppLocalizations.of(context)!.json_subtitle),
+                subtitle: Text(AppLocalizations.of(context)!.json_subtitle),
                 onTap: () {
                   Navigator.pop(context); // Cerramos el menú/modal
                   _shareAsJson(); // Ejecutamos la función
@@ -357,9 +364,14 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   Future<void> _shareAsPdf() async {
-    final pdf = pw.Document();
     final title = _titleController.text;
+    final pdfExportHeader = AppLocalizations.of(context)!.pdfExportHeader;
+    final untitledText = AppLocalizations.of(context)!.untitled;
+    final shareNoteMessage = AppLocalizations.of(
+      context,
+    )!.shareNoteMessage(title);
 
+    final pdf = pw.Document();
     final delta = _contentController.document.toDelta();
 
     final converter = PDFConverter(
@@ -380,17 +392,14 @@ class _EditorScreenState extends State<EditorScreen> {
 
     pdf.addPage(
       pw.MultiPage(
-        build: (pw.Context context) => [
-          pw.Header(
-            level: 0,
-            child: pw.Text(AppLocalizations.of(context)!.pdfExportHeader),
-          ),
+        build: (pw.Context pwContext) => [
+          pw.Header(level: 0, child: pw.Text(pdfExportHeader)),
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               pw.SizedBox(height: 15),
               pw.Text(
-                title.isEmpty ? AppLocalizations.of(context)!.untitled : title,
+                title.isEmpty ? untitledText : title,
                 style: pw.TextStyle(
                   fontWeight: pw.FontWeight.bold,
                   fontSize: 18,
@@ -416,10 +425,7 @@ class _EditorScreenState extends State<EditorScreen> {
     await file.writeAsBytes(await pdf.save());
 
     await SharePlus.instance.share(
-      ShareParams(
-        text: AppLocalizations.of(context)!.shareNoteMessage(title),
-        files: [XFile(file.path)],
-      ),
+      ShareParams(text: shareNoteMessage, files: [XFile(file.path)]),
     );
   }
 
@@ -782,13 +788,17 @@ class _EditorScreenState extends State<EditorScreen> {
             title: null,
             actions: [
               IconButton(
-  isSelected: _isArchived,
-  icon: const Icon(Icons.archive_outlined), // Icono por defecto (sin seleccionar)
-  selectedIcon: const Icon(Icons.unarchive_outlined), // Icono cuando isSelected es true
-  color: dynamicIconColor,
-  tooltip: _isArchived ? 'Desarchivar' : 'Archivar',
-  onPressed: _toggleArchive,
-),
+                isSelected: _isArchived,
+                icon: const Icon(
+                  Icons.archive_outlined,
+                ), // Icono por defecto (sin seleccionar)
+                selectedIcon: const Icon(
+                  Icons.unarchive_outlined,
+                ), // Icono cuando isSelected es true
+                color: dynamicIconColor,
+                tooltip: _isArchived ? 'Desarchivar' : 'Archivar',
+                onPressed: _toggleArchive,
+              ),
               IconButton(
                 icon: Icon(Icons.more_vert, color: dynamicIconColor),
                 onPressed: _showEditorMenu,
@@ -820,8 +830,8 @@ class _EditorScreenState extends State<EditorScreen> {
                                   ),
                                 ),
                                 backgroundColor: Theme.of(
-          context,
-        ).colorScheme.primaryContainer,
+                                  context,
+                                ).colorScheme.primaryContainer,
                                 side: BorderSide.none,
                                 onPressed:
                                     _showTagsDialog, // Al tocarlas, abre el diálogo
@@ -862,7 +872,9 @@ class _EditorScreenState extends State<EditorScreen> {
                         controller: _contentController,
                         config: quill.QuillEditorConfig(
                           autoFocus: false,
-                          placeholder: AppLocalizations.of(context)!.editorPlaceholder,
+                          placeholder: AppLocalizations.of(
+                            context,
+                          )!.editorPlaceholder,
                           expands: false,
                           padding: const EdgeInsets.only(bottom: 90),
 
@@ -995,9 +1007,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Theme.of(
-          context,
-        ).colorScheme.primaryContainer,
+                      color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
@@ -1025,12 +1035,15 @@ class _EditorScreenState extends State<EditorScreen> {
                         ),
                         IconButton.outlined(
                           isSelected: _ttsState == TtsState.playing,
-  // Icono por defecto (cuando NO está seleccionado)
-  icon: Icon(Icons.volume_up, color: dynamicIconColor), 
-  // Icono que se muestra cuando isSelected es true
-  selectedIcon: Icon(Icons.stop, color: dynamicIconColor), 
-  onPressed: _toggleSpeak,
-),
+                          // Icono por defecto (cuando NO está seleccionado)
+                          icon: Icon(Icons.volume_up, color: dynamicIconColor),
+                          // Icono que se muestra cuando isSelected es true
+                          selectedIcon: Icon(
+                            Icons.stop,
+                            color: dynamicIconColor,
+                          ),
+                          onPressed: _toggleSpeak,
+                        ),
 
                         IconButton.outlined(
                           icon: Icon(
@@ -1204,7 +1217,9 @@ class _EditorScreenState extends State<EditorScreen> {
                       const Divider(),
                       ListTile(
                         leading: const Icon(Icons.audio_file),
-                        title: const Text(AppLocalizations.of(context)!.selectAudioFile),
+                        title: Text(
+                          AppLocalizations.of(context)!.selectAudioFile,
+                        ),
                         onTap: () {
                           Navigator.pop(context);
                           _pickAudioFile();

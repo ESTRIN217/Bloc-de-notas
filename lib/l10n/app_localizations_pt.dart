@@ -177,6 +177,184 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get papelera => 'Lixeira';
+
+  @override
+  String get nueva_version_disponible => 'Nova versão disponível';
+
+  @override
+  String appVersion(String version) {
+    return 'Versão $version';
+  }
+
+  @override
+  String get lapiz => 'Lápis';
+
+  @override
+  String get resaltado => 'Destacado';
+
+  @override
+  String get borrador => 'Rascunho';
+
+  @override
+  String get eliminar_dibujo => 'Apagar desenho';
+
+  @override
+  String appVersionFull(String version, String buildNumber, String platform) {
+    return 'Versão $version ($buildNumber) • $platform';
+  }
+
+  @override
+  String get notesRestored => 'Notas restauradas';
+
+  @override
+  String get notesArchived => 'Notas arquivadas';
+
+  @override
+  String get undo => 'Desfazer';
+
+  @override
+  String get welcomeNoteTitle => 'Bem-vindo ao Bloco de Notas!';
+
+  @override
+  String get exerciseNoteTitle => 'Rotina de exercícios!';
+
+  @override
+  String get tagNotesTitle => 'Etiquetar notas';
+
+  @override
+  String get noTagsCreated =>
+      'Nenhuma etiqueta criada. Crie-as no menu lateral.';
+
+  @override
+  String get manageTags => 'Gerenciar Etiquetas';
+
+  @override
+  String get newTagHint => 'Nova etiqueta...';
+
+  @override
+  String get tagExistsError => 'Esta etiqueta já existe';
+
+  @override
+  String get renameTag => 'Renomear Etiqueta';
+
+  @override
+  String get renameTagLabel => 'Novo nome';
+
+  @override
+  String get movedToTrash => 'Movido para a lixeira';
+
+  @override
+  String get emptyTrashTitle => 'Esvaziar lixeira?';
+
+  @override
+  String get emptyTrashMessage =>
+      'Todas as notas na lixeira serão excluídas permanentemente.';
+
+  @override
+  String get deleteForever => 'Excluir permanentemente';
+
+  @override
+  String get restoreNote => 'Restaurar nota';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get save => 'Salvar';
+
+  @override
+  String get close => 'Fechar';
+
+  @override
+  String get emptyTrashAction => 'Esvaziar';
+
+  @override
+  String get unarchiveTooltip => 'Desarquivar';
+
+  @override
+  String get archiveTooltip => 'Arquivar';
+
+  @override
+  String get tagTooltip => 'Rótulo';
+
+  @override
+  String deleteTagTitle(String tag) {
+    return 'Remover $tag';
+  }
+
+  @override
+  String get deleteTagMessage =>
+      'O rótulo será removido de todas as notas, mas as notas não serão excluídas.';
+
+  @override
+  String get json_subtitle => 'Formato bruto para backup';
+
+  @override
+  String get misNotasExportadas => 'Minhas notas exportadas';
+
+  @override
+  String get untitled => 'sem título';
+
+  @override
+  String get titleHtml => 'Notas exportadas';
+
+  @override
+  String get shareHtmlMessage => 'Eu compartilho minhas notas em formato web';
+
+  @override
+  String get colorFilterLabel => 'cor';
+
+  @override
+  String get errorLoadingInfo => 'Informações de carregamento de erros';
+
+  @override
+  String get formatError => 'Erro de formato';
+
+  @override
+  String get loading => 'carregando...';
+
+  @override
+  String get noteTagsTitle => 'Etiquetas de notas';
+
+  @override
+  String get yourTags => 'Suas tags:';
+
+  @override
+  String get done => 'Preparar';
+
+  @override
+  String get noteArchived => 'Nota arquivada';
+
+  @override
+  String get noteUnarchived => 'Nota não arquivada';
+
+  @override
+  String get pdfExportHeader => 'Exportando do Bloco de Notas';
+
+  @override
+  String shareNoteMessage(String title) {
+    return 'Estou compartilhando minha mensagem com você: $title';
+  }
+
+  @override
+  String get titleHint => 'Título';
+
+  @override
+  String get editorPlaceholder => 'Escreva algo incrível...';
+
+  @override
+  String modifiedAt(String date) {
+    return 'Modificado em: $date';
+  }
+
+  @override
+  String get stopRecording => 'Parar gravação';
+
+  @override
+  String get recordVoiceNote => 'Gravar nota de voz';
+
+  @override
+  String get selectAudioFile => 'Selecionar arquivo de áudio';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -352,4 +530,182 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get papelera => 'Lixeira';
+
+  @override
+  String get nueva_version_disponible => 'Nova versão disponível';
+
+  @override
+  String appVersion(String version) {
+    return 'Versão $version';
+  }
+
+  @override
+  String get lapiz => 'Lápis';
+
+  @override
+  String get resaltado => 'Destacado';
+
+  @override
+  String get borrador => 'Rascunho';
+
+  @override
+  String get eliminar_dibujo => 'Apagar desenho';
+
+  @override
+  String appVersionFull(String version, String buildNumber, String platform) {
+    return 'Versão $version ($buildNumber) • $platform';
+  }
+
+  @override
+  String get notesRestored => 'notas restauradas';
+
+  @override
+  String get notesArchived => 'Notas arquivadas';
+
+  @override
+  String get undo => 'Desfazer';
+
+  @override
+  String get welcomeNoteTitle => 'Bem-vindo ao Bloco de Notas!';
+
+  @override
+  String get exerciseNoteTitle => 'Rotina de exercícios!';
+
+  @override
+  String get tagNotesTitle => 'Etiquetar notas';
+
+  @override
+  String get noTagsCreated =>
+      'Nenhuma etiqueta criada. Crie-as no menu lateral.';
+
+  @override
+  String get manageTags => 'Gerenciar Etiquetas';
+
+  @override
+  String get newTagHint => 'Nova etiqueta...';
+
+  @override
+  String get tagExistsError => 'Esta etiqueta já existe';
+
+  @override
+  String get renameTag => 'Renomear Etiqueta';
+
+  @override
+  String get renameTagLabel => 'Novo nome';
+
+  @override
+  String get movedToTrash => 'Movido para a lixeira';
+
+  @override
+  String get emptyTrashTitle => 'Esvaziar lixeira?';
+
+  @override
+  String get emptyTrashMessage =>
+      'Todas as notas na lixeira serão excluídas permanentemente.';
+
+  @override
+  String get deleteForever => 'Excluir permanentemente';
+
+  @override
+  String get restoreNote => 'Restaurar nota';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get save => 'Salvar';
+
+  @override
+  String get close => 'Fechar';
+
+  @override
+  String get emptyTrashAction => 'Esvaziar';
+
+  @override
+  String get unarchiveTooltip => 'Desarquivar';
+
+  @override
+  String get archiveTooltip => 'Arquivar';
+
+  @override
+  String get tagTooltip => 'Rótulo';
+
+  @override
+  String deleteTagTitle(String tag) {
+    return 'Remover $tag';
+  }
+
+  @override
+  String get deleteTagMessage =>
+      'O rótulo será removido de todas as notas, mas as notas não serão excluídas.';
+
+  @override
+  String get json_subtitle => 'Formato bruto para backup';
+
+  @override
+  String get misNotasExportadas => 'Minhas notas exportadas';
+
+  @override
+  String get untitled => 'sem título';
+
+  @override
+  String get titleHtml => 'Notas exportadas';
+
+  @override
+  String get shareHtmlMessage => 'Eu compartilho minhas notas em formato web';
+
+  @override
+  String get colorFilterLabel => 'cor';
+
+  @override
+  String get errorLoadingInfo => 'Informações de carregamento de erros';
+
+  @override
+  String get formatError => 'Erro de formato';
+
+  @override
+  String get loading => 'carregando...';
+
+  @override
+  String get noteTagsTitle => 'Etiquetas de notas';
+
+  @override
+  String get yourTags => 'Suas tags:';
+
+  @override
+  String get done => 'Preparar';
+
+  @override
+  String get noteArchived => 'Nota arquivada';
+
+  @override
+  String get noteUnarchived => 'Nota não arquivada';
+
+  @override
+  String get pdfExportHeader => 'Exportando do Bloco de Notas';
+
+  @override
+  String shareNoteMessage(String title) {
+    return 'Estou compartilhando minha mensagem com você: $title';
+  }
+
+  @override
+  String get titleHint => 'Título';
+
+  @override
+  String get editorPlaceholder => 'Escreva algo incrível...';
+
+  @override
+  String modifiedAt(String date) {
+    return 'Modificado em: $date';
+  }
+
+  @override
+  String get stopRecording => 'Parar gravação';
+
+  @override
+  String get recordVoiceNote => 'Gravar nota de voz';
+
+  @override
+  String get selectAudioFile => 'Selecionar arquivo de áudio';
 }

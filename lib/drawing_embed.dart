@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
-
+import 'l10n/app_localizations.dart';
 // 1. Definimos el Embed Personalizado
 class DrawingBlockEmbed extends quill.CustomBlockEmbed {
   const DrawingBlockEmbed(String data) : super('drawing', data);
@@ -204,7 +204,7 @@ class _DrawingWidgetState extends State<_DrawingWidget> {
                     _currentWidth = 15.0;
                     _currentColor = Colors.yellow.withAlpha(150);
                   }),
-                  tooltip: AppLocalizations.of(context)!.resaltador,
+                  tooltip: AppLocalizations.of(context)!.resaltado,
                 ),
                 IconButton(
                   icon: const Icon(Icons.auto_fix_normal_outlined),

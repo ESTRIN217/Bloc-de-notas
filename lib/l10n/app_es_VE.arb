@@ -72,7 +72,7 @@
 "noTagsCreated": "No hay etiquetas creadas. Créalas desde el menú lateral.",
 "manageTags": "Gestionar Etiquetas",
 "newTagHint": "Nueva etiqueta...",
-"tagExistsError": "Esa etiqueta ya la tienes"
+"tagExistsError": "Esa etiqueta ya la tienes",
 "renameTag": "Renombrar Etiqueta",
 "movedToTrash": "Se fue a la papelera", 
 "emptyTrashTitle": "¿Vas a vaciar la papelera?",

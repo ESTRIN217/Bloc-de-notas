@@ -183,7 +183,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String appVersion(String version) {
-    return 'Version $version';
+    return 'Version: $version';
   }
 
   @override

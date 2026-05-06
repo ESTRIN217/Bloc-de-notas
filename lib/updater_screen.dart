@@ -42,7 +42,7 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
       horizontal: 20,
       vertical: 8,
     ),
-    title: Text(AppLocalizations.of(context)!.appVersion(updater.currentVersion ?? ''),
+    title: Text(AppLocalizations.of(context)!.appVersion(updater.currentVersion),
       style: const TextStyle(
         fontWeight: FontWeight.bold,
         fontSize: 17,

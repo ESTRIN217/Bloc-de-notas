@@ -183,7 +183,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String appVersion(String version) {
-    return 'Versión $version';
+    return 'Versión: $version';
   }
 
   @override
@@ -536,7 +536,7 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
 
   @override
   String appVersion(String version) {
-    return 'Versión $version';
+    return 'Versión: $version';
   }
 
   @override

@@ -441,7 +441,7 @@ abstract class AppLocalizations {
   /// No description provided for @appVersion.
   ///
   /// In en, this message translates to:
-  /// **'Version {version}'**
+  /// **'Version: {version}'**
   String appVersion(String version);
 
   /// No description provided for @lapiz.

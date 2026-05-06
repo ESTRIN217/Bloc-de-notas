@@ -141,7 +141,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get mit_license => 'Licença MIT';
 
   @override
-  String get actualizador => '';
+  String get actualizador => 'Atualizador';
 
   @override
   String get registro_de_cambio => 'Registro de mudanças';
@@ -183,7 +183,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String appVersion(String version) {
-    return 'Versão $version';
+    return 'Versão: $version';
   }
 
   @override
@@ -494,7 +494,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get mit_license => 'Licença MIT';
 
   @override
-  String get actualizador => '';
+  String get actualizador => 'Atualizador';
 
   @override
   String get registro_de_cambio => 'Registro de mudanças';
@@ -536,7 +536,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String appVersion(String version) {
-    return 'Versão $version';
+    return 'Versão: $version';
   }
 
   @override

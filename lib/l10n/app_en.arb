@@ -247,5 +247,21 @@
   "recordVoiceNote": "Record voice note",
   "@recordVoiceNote": {},
   "selectAudioFile": "Select Audio File",
-  "@selectAudioFile": {}
+  "@selectAudioFile": {},
+  "eliminarEtiqueta": "Remove label",
+  "@eliminarEtiqueta": {},
+  "ordenar": "Order",
+  "@ordenar": {},
+  "ultima": "Latest version available: {version}",
+"@ultima": {
+"placeholders": {
+"version": {
+"type": "String"
+}
+}
+},
+  "ocultarRegistroDeCambios": "Hide change log",
+  "@ocultarRegistroDeCambios": {},
+  "verRegistroDeCambios": "View change log",
+  "@verRegistroDeCambios": {}
 }

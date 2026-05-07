@@ -597,67 +597,66 @@ void _filterItems() {
     }
 
     if (result == "DELETE") {
-      final itemToDelete = _items.firstWhere((i) => i.id == originalItem.id);
+      final itemToDelete = _items.cast<ListItem?>().firstWhere(
+        (i) => i?.id == originalItem.id, 
+        orElse: () => null
+      ) ?? _archivedItems.cast<ListItem?>().firstWhere(
+        (i) => i?.id == originalItem.id, 
+        orElse: () => null
+      );
       setState(() {
         _items.removeWhere((i) => i.id == originalItem.id);
+        _archivedItems.removeWhere((i) => i.id == originalItem.id);
         _trashedItems.add(itemToDelete); // Movemos a papelera
         _filterItems();
         _saveItems();
+        _saveArchivedItems();
         _saveTrashedItems();
       });
       _showUndoSnackbar([itemToDelete]); // Mostramos SnackBar
     } else if (result is ListItem) {
       setState(() {
-        final index = _items.indexWhere((i) => i.id == result.id);
+        // 1. Buscamos la posición original en ambas listas
+        final int indexInItems = _items.indexWhere((i) => i.id == result.id);
+        final int indexInArchived = _archivedItems.indexWhere((i) => i.id == result.id);
 
+        // 2. Si la nota quedó vacía, la eliminamos y salimos
         if (result.title.trim().isEmpty && result.document.length <= 1) {
-          if (index != -1) {
-            _items.removeAt(index);
-          }
+          if (indexInItems != -1) _items.removeAt(indexInItems);
+          if (indexInArchived != -1) _archivedItems.removeAt(indexInArchived);
           _filterItems();
           _saveItems();
+          _saveArchivedItems();
           return;
         }
 
-        if (index != -1) {
-          _items[index] = result;
+        // 3. Manejamos la actualización o inserción respetando la posición
+        if (result.isArchived) {
+          // Si se movió de Principal a Archivado o es nueva en archivados
+          if (indexInItems != -1) _items.removeAt(indexInItems); 
+          
+          if (indexInArchived != -1) {
+            _archivedItems[indexInArchived] = result; // Actualiza en su lugar
+          } else {
+            _archivedItems.insert(0, result); // Nueva nota archivada va arriba
+          }
         } else {
-          _items.insert(0, result);
+          // Si se movió de Archivado a Principal o es nueva en principal
+          if (indexInArchived != -1) _archivedItems.removeAt(indexInArchived);
+
+          if (indexInItems != -1) {
+            _items[indexInItems] = result; // Actualiza en su lugar (mantiene orden personalizado)
+          } else {
+            _items.insert(0, result); // Nueva nota va al principio
+          }
         }
 
         _filterItems();
         _saveItems();
+        _saveArchivedItems();
       });
-      _loadAllData(); // Recargamos las etiquetas globales por si se crearon nuevas
+      _loadAllData();
     }
-if (result is ListItem) {
-  setState(() {
-    // 1. Eliminamos el item de ambas listas para evitar duplicados al moverlo
-    _items.removeWhere((i) => i.id == result.id);
-    _archivedItems.removeWhere((i) => i.id == result.id);
-
-    // 2. Si la nota quedó vacía, no la guardamos en ninguna lista
-    if (result.title.trim().isEmpty && result.document.length <= 1) {
-      _filterItems();
-      _saveItems();
-      _saveArchivedItems();
-      return;
-    }
-
-    // 3. Insertamos el resultado en la lista correcta según su estado
-    if (result.isArchived) {
-      _archivedItems.insert(0, result);
-    } else {
-      _items.insert(0, result);
-    }
-
-    // 4. Aplicamos filtros y guardamos ambos archivos JSON
-    _filterItems();
-    _saveItems();
-    _saveArchivedItems();
-  });
-  _loadAllData(); // Recarga etiquetas globales si se crearon nuevas
-}
   }
 
   void _startSelectionMode(ListItem item) {
@@ -1017,8 +1016,10 @@ if (result is ListItem) {
       } else {
         // Enviar a la papelera desde el inicio
         _items.removeWhere((item) => itemsToDelete.contains(item));
+        _archivedItems.removeWhere((item) => itemsToDelete.contains(item));
         _trashedItems.addAll(itemsToDelete);
         _saveItems();
+        _saveArchivedItems();
         _saveTrashedItems();
         _showUndoSnackbar(itemsToDelete);
       }
@@ -1442,7 +1443,7 @@ if (result is ListItem) {
     IconButton(
       icon: const Icon(Icons.import_export),
       onPressed: _showSortOptions,
-      tooltip: 'Ordenar',
+      tooltip: AppLocalizations.of(context)!.ordenar,
     )
   else 
     // Si HAY una etiqueta seleccionada, mostrar menú de opciones de etiqueta
@@ -1472,7 +1473,7 @@ if (result is ListItem) {
             children: [
               Icon(Icons.delete_outline, color: Colors.red, size: 20),
               SizedBox(width: 12),
-              Text('Eliminar etiqueta', style: TextStyle(color: Colors.red)),
+              Text(AppLocalizations.of(context)!.eliminarEtiqueta, style: TextStyle(color: Colors.red)),
             ],
           ),
         ),
@@ -1573,27 +1574,31 @@ Widget _buildFilterChips() {
           padding: EdgeInsets.zero,
           children: <Widget>[
             Container(
-        // Usamos el color que pediste
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        child: ListTile(
-          // Ajustamos el padding para que no se vea apretado
-          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-          leading: Image.asset(
-            'assets/icon/notas.png',
-            width: 40, // Ajustado para que quepa bien en una línea
-            height: 40,
-          ),
-          title: Text(
-            AppLocalizations.of(context)!.flutterNotes,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 20, // Un poco más pequeño para que parezca un ítem
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+  color: Theme.of(context).colorScheme.surfaceContainerLow,
+  child: SafeArea(
+    bottom: false, // Evita añadir espacio extra en la parte inferior
+    child: ListTile(
+      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      leading: Image.asset(
+        'assets/icon/notas.png',
+        width: 40,
+        height: 40,
+      ),
+      title: Text(
+        AppLocalizations.of(context)!.flutterNotes,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
         ),
       ),
-            ListTile(
+    ),
+  ),
+),
+            Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: ListTile(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
               leading: const Icon(Icons.home_outlined),
               title: Text(AppLocalizations.of(context)!.home),
               // Está seleccionado si NO estamos en papelera Y NO hay filtro de etiqueta
@@ -1608,12 +1613,13 @@ Widget _buildFilterChips() {
                 Navigator.pop(context);
               },
             ),
+            ),
             // NUEVA SECCIÓN: Etiquetas
             const Divider(),
             Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
+                horizontal: 12.0,
+                vertical: 4.0,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1632,7 +1638,10 @@ Widget _buildFilterChips() {
               ),
             ),
             ..._availableTags.map(
-              (tag) => ListTile(
+              (tag) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: ListTile(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),(
                 leading: const Icon(Icons.label_outline),
                 title: Text(tag),
                 selected: _selectedTagFilter == tag && !_isTrashView,
@@ -1647,10 +1656,14 @@ Widget _buildFilterChips() {
                 },
               ),
             ),
+            ),
 
             const Divider(),
             // NUEVO: Ítem de Archivados
-          ListTile(
+          Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: ListTile(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
             leading: const Icon(Icons.archive_outlined),
             title: Text(AppLocalizations.of(context)!.archivados),
             selected: _isArchiveView,
@@ -1664,7 +1677,11 @@ Widget _buildFilterChips() {
               Navigator.pop(context);
             },
           ),
-            ListTile(
+          ),
+            Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: ListTile(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
               leading: const Icon(Icons.delete_outline),
               title: Text(AppLocalizations.of(context)!.papelera),
               selected: _isTrashView,
@@ -1679,8 +1696,12 @@ Widget _buildFilterChips() {
                 Navigator.pop(context);
               },
             ),
+            ),
 
-            ListTile(
+            Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: ListTile(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
               leading: Badge(
                 isLabelVisible: context.watch<UpdaterProvider>().hasUpdate,
                 backgroundColor: Colors.red,
@@ -1735,6 +1756,7 @@ Widget _buildFilterChips() {
                 );
                 // }
               },
+            ),
             ),
             const Divider(),
             const UpdateAvailableWidget(isDrawerTile: true),

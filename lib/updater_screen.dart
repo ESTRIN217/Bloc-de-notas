@@ -51,7 +51,7 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
     subtitle: FutureBuilder<BaseDeviceInfo>(
       future: DeviceInfoPlugin().deviceInfo,
       builder: (context, snapshot) {
-        String arch = "Cargando...";
+        String arch = AppLocalizations.of(context)!.loading;
         
         if (snapshot.hasData) {
           if (kIsWeb) {
@@ -139,7 +139,7 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                   ),
                   title: Text(
                     updater.hasUpdate
-                        ? 'Última: ${updater.latestVersion}'
+                        ? AppLocalizations.of(context)!.ultima(updater.currentVersion)
                         : AppLocalizations.of(context)!.buscar_actualizaciones,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -159,8 +159,8 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                     ),
                     label: Text(
                       _showChangelog
-                          ? 'Ocultar registro de cambios'
-                          : 'Ver registro de cambios',
+                          ? AppLocalizations.of(context)!.ocultarRegistroDeCambios
+                          : AppLocalizations.of(context)!.verRegistroDeCambios,
                     ),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),

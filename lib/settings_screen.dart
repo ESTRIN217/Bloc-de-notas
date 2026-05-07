@@ -169,7 +169,7 @@ class SettingsScreen extends StatelessWidget {
                         // Aplicamos el fondo al icono de GitHub (FontAwesome también funciona con IconData)
                         leading: _buildIconContainer(
                           context,
-                          Icons.verified,
+                          Icons.verified_outlined,
                         ),
                         title: Text(
                           AppLocalizations.of(context)!.registro_de_cambio,

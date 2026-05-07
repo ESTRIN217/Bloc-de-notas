@@ -111,4 +111,9 @@
   "stopRecording": "Parar gravação",
   "recordVoiceNote": "Gravar nota de voz",
   "selectAudioFile": "Selecionar arquivo de áudio"
+  "eliminarEtiqueta": "Remover etiqueta",
+  "ordenar": "Ordem",
+  "ultima": "Última versão disponível: {version}",
+  "ocultarRegistroDeCambios": "Ocultar registro de alterações",
+  "verRegistroDeCambios":  "Ver registro de alterações"
 }

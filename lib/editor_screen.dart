@@ -796,7 +796,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   Icons.unarchive_outlined,
                 ), // Icono cuando isSelected es true
                 color: dynamicIconColor,
-                tooltip: _isArchived ? 'Desarchivar' : 'Archivar',
+                tooltip: _isArchived ? AppLocalizations.of(context)!.unarchiveTooltip : AppLocalizations.of(context)!.archiveTooltip,
                 onPressed: _toggleArchive,
               ),
               IconButton(

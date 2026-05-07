@@ -761,6 +761,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select Audio File'**
   String get selectAudioFile;
+
+  /// No description provided for @eliminarEtiqueta.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove label'**
+  String get eliminarEtiqueta;
+
+  /// No description provided for @ordenar.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get ordenar;
+
+  /// No description provided for @ultima.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest version available: {version}'**
+  String ultima(String version);
+
+  /// No description provided for @ocultarRegistroDeCambios.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide change log'**
+  String get ocultarRegistroDeCambios;
+
+  /// No description provided for @verRegistroDeCambios.
+  ///
+  /// In en, this message translates to:
+  /// **'View change log'**
+  String get verRegistroDeCambios;
 }
 
 class _AppLocalizationsDelegate

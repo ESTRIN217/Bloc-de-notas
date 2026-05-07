@@ -355,6 +355,23 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get selectAudioFile => 'Seleccionar archivo de audio';
+
+  @override
+  String get eliminarEtiqueta => 'Eliminar etiqueta';
+
+  @override
+  String get ordenar => 'Ordenar';
+
+  @override
+  String ultima(String version) {
+    return 'Última versión disponible: $version';
+  }
+
+  @override
+  String get ocultarRegistroDeCambios => 'Ocultar registro de cambios';
+
+  @override
+  String get verRegistroDeCambios => 'Ver registro de cambios';
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
@@ -708,4 +725,21 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
 
   @override
   String get selectAudioFile => 'Seleccionar archivo de audio';
+
+  @override
+  String get eliminarEtiqueta => 'Eliminar etiqueta';
+
+  @override
+  String get ordenar => 'Ordenar';
+
+  @override
+  String ultima(String version) {
+    return 'Última versión disponible: $version';
+  }
+
+  @override
+  String get ocultarRegistroDeCambios => 'Ocultar registro de cambios';
+
+  @override
+  String get verRegistroDeCambios => 'Ver registro de cambios';
 }

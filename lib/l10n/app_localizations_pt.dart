@@ -355,6 +355,23 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get selectAudioFile => 'Selecionar arquivo de áudio';
+
+  @override
+  String get eliminarEtiqueta => 'Remover etiqueta';
+
+  @override
+  String get ordenar => 'Ordem';
+
+  @override
+  String ultima(String version) {
+    return 'Última versão disponível: $version';
+  }
+
+  @override
+  String get ocultarRegistroDeCambios => 'Ocultar registro de alterações';
+
+  @override
+  String get verRegistroDeCambios => 'Ver registro de alterações';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -708,4 +725,21 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get selectAudioFile => 'Selecionar arquivo de áudio';
+
+  @override
+  String get eliminarEtiqueta => 'Remover etiqueta';
+
+  @override
+  String get ordenar => 'Ordem';
+
+  @override
+  String ultima(String version) {
+    return 'Última versão disponível: $version';
+  }
+
+  @override
+  String get ocultarRegistroDeCambios => 'Ocultar registro de alterações';
+
+  @override
+  String get verRegistroDeCambios => 'Ver registro de alterações';
 }

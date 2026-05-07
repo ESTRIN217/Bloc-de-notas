@@ -119,8 +119,8 @@
   "modifiedAt": "Modificado el: {date}",
   "stopRecording": "Detener grabación",
   "recordVoiceNote": "Grabar nota de voz",
-  "selectAudioFile": "Seleccionar archivo de audio"
-  "eliminarEtiqueta": "Eliminar etiqueta,
+  "selectAudioFile": "Seleccionar archivo de audio",
+  "eliminarEtiqueta": "Eliminar etiqueta",
   "ordenar": "Ordenar",
   "ultima": "Última versión disponible: {version}",
   "ocultarRegistroDeCambios": "Ocultar registro de cambios",

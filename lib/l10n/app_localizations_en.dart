@@ -355,4 +355,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectAudioFile => 'Select Audio File';
+
+  @override
+  String get eliminarEtiqueta => 'Remove label';
+
+  @override
+  String get ordenar => 'Order';
+
+  @override
+  String ultima(String version) {
+    return 'Latest version available: $version';
+  }
+
+  @override
+  String get ocultarRegistroDeCambios => 'Hide change log';
+
+  @override
+  String get verRegistroDeCambios => 'View change log';
 }

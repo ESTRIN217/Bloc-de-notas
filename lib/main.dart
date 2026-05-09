@@ -151,9 +151,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    _backupService.initialize().then((_) {
-    _checkSignInStatus();
-    });
+    _backupService.isSignedIn();
     WidgetsBinding.instance.addObserver(this);
     _items = [];
     _filteredItems = [];
@@ -3012,5 +3010,4 @@ ListTile(
     );
   }
   
-  void _checkSignInStatus() {}
 }

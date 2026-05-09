@@ -22,13 +22,24 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
   bool _isGoogleSignIn = false;
   bool _isLoading = false;
 
-  String get _lastCloudSync => "Nunca";
-  String get _lastLocalSync => "Nunca";
+  String _lastCloudSync = "Cargando...";
+  String _lastLocalSync = "Cargando...";
 
   @override
   void initState() {
     super.initState();
     _checkSignInStatus();
+    _loadSyncDates();
+  }
+  Future<void> _loadSyncDates() async {
+    final cloud = await _backupService.getLastCloudSync();
+    final local = await _backupService.getLastLocalSync();
+    if (mounted) {
+      setState(() {
+        _lastCloudSync = cloud;
+        _lastLocalSync = local;
+      });
+    }
   }
 
   Future<void> _checkSignInStatus() async {
@@ -57,6 +68,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
     setState(() => _isLoading = true);
     try {
       await _backupService.backupToDrive();
+      await _loadSyncDates();
       if (!mounted) return;
       _showSnack(AppLocalizations.of(context)!.backupLoaded);
     } catch (e) {
@@ -73,6 +85,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
     setState(() => _isLoading = true);
     try {
       final success = await _backupService.restoreFromDrive();
+      await _loadSyncDates();
       if (!mounted) return;
       if (success) {
         _showSnack(AppLocalizations.of(context)!.restoresCloud);
@@ -94,6 +107,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
   // --- LÓGICA LOCAL ---
   Future<void> _createLocalBackup() async {
     final jsonString = await _backupService.createBackupJson();
+    await _loadSyncDates();
     if (!mounted) return;
 
     if (kIsWeb) {
@@ -145,6 +159,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
         }
 
         await _backupService.restoreFromJson(jsonString);
+        await _loadSyncDates();
         if (!mounted) return;
         _showSnack(AppLocalizations.of(context)!.restoredLocal);
       }

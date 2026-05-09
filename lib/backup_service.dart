@@ -11,14 +11,33 @@ import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sig
 
 class BackupService {
   static const String _backupFileName = 'bloc_notas_backup.json';
+  static const String _keyLastCloud = 'last_cloud_sync';
+  static const String _keyLastLocal = 'last_local_sync';
  
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   GoogleSignInAccount? _currentUser;
   GoogleSignInAccount? get user => _currentUser;
   
+  Future<void> _updateTimestamp(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+    // Formato simple: dd/MM/yyyy HH:mm
+    await prefs.setString(key, "${now.day}/${now.month}/${now.year} ${now.hour}:${now.minute}");
+  }
+  
+  Future<String> getLastCloudSync() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyLastCloud) ?? "Nunca";
+  }
+
+  Future<String> getLastLocalSync() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyLastLocal) ?? "Nunca";
+  }
+  
   Future<void> initialize() async {
     await _googleSignIn.initialize(
-      // Si usas Web, aquí deberías pasar el clientId: 'TU_ID.apps.googleusercontent.com'
+      serverClientId: '553663565353-iodl24rutmd14i90332sbujjcafkncs8.apps.googleusercontent.com',
     );
     _currentUser = await _googleSignIn.attemptLightweightAuthentication();
   }
@@ -57,6 +76,7 @@ class BackupService {
       'tags': tags,
     };
 
+    await _updateTimestamp(_keyLastLocal);
     return jsonEncode(backupData);
   }
 
@@ -165,6 +185,7 @@ class BackupService {
         uploadMedia: media,
       );
     }
+    await _updateTimestamp(_keyLastCloud);
   }
 
   Future<bool> restoreFromDrive() async {

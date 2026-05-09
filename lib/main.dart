@@ -237,7 +237,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         });
         _saveItems(); // Guardamos una sola vez con ambas notas ya en la lista
       }
-          // --- Cargar Archivados ---
+      // --- Cargar Archivados ---
       String? archivedContents;
       if (kIsWeb) {
         final prefs = await SharedPreferences.getInstance();
@@ -258,27 +258,27 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               .toList();
         });
       }
-    // --- Cargar Papelera ---
-    String? trashedContents;
-    if (kIsWeb) {
-      final prefs = await SharedPreferences.getInstance();
-      trashedContents = prefs.getString('trashed_notes');
-    } else {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/trashed_notes.json');
-      if (await file.exists()) {
-        trashedContents = await file.readAsString();
+      // --- Cargar Papelera ---
+      String? trashedContents;
+      if (kIsWeb) {
+        final prefs = await SharedPreferences.getInstance();
+        trashedContents = prefs.getString('trashed_notes');
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/trashed_notes.json');
+        if (await file.exists()) {
+          trashedContents = await file.readAsString();
+        }
       }
-    }
 
-    if (trashedContents != null && trashedContents.isNotEmpty) {
-      final List<dynamic> jsonList = jsonDecode(trashedContents);
-      setState(() {
-        _trashedItems = jsonList
-            .map((json) => ListItem.fromJson(json))
-            .toList();
-      });
-    }
+      if (trashedContents != null && trashedContents.isNotEmpty) {
+        final List<dynamic> jsonList = jsonDecode(trashedContents);
+        setState(() {
+          _trashedItems = jsonList
+              .map((json) => ListItem.fromJson(json))
+              .toList();
+        });
+      }
     } catch (e) {
       debugPrint("Error loading items: $e");
 
@@ -845,6 +845,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       debugPrint("Error saving items: $e");
     }
   }
+
   // NUEVO: Guardar Archivados
   Future<void> _saveArchivedItems() async {
     try {
@@ -865,35 +866,42 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-void _filterItems() {
-  final query = _searchController.text.toLowerCase();
-  
-  List<ListItem> sourceList;
-  if (_isTrashView) {
-    sourceList = _trashedItems;
-  } else if (_isArchiveView) {
-    sourceList = _archivedItems;
-  } else {
-    sourceList = _items;
+  void _filterItems() {
+    final query = _searchController.text.toLowerCase();
+
+    List<ListItem> sourceList;
+    if (_isTrashView) {
+      sourceList = _trashedItems;
+    } else if (_isArchiveView) {
+      sourceList = _archivedItems;
+    } else {
+      sourceList = _items;
+    }
+
+    setState(() {
+      _filteredItems = sourceList.where((item) {
+        final titleMatch = item.title.toLowerCase().contains(query);
+        final summaryMatch = item.document.toPlainText().toLowerCase().contains(
+          query,
+        );
+        final matchesSearch = titleMatch || summaryMatch;
+
+        // Filtro de Etiquetas
+        final matchesTag =
+            _selectedTagFilter == null ||
+            item.tags.contains(_selectedTagFilter);
+
+        // NUEVO: Filtro de Color
+        final matchesColor =
+            _selectedColorFilter == null ||
+            item.backgroundColor == _selectedColorFilter;
+
+        return matchesSearch && matchesTag && matchesColor;
+      }).toList();
+      _sortFilteredItems();
+    });
   }
 
-  setState(() {
-    _filteredItems = sourceList.where((item) {
-      final titleMatch = item.title.toLowerCase().contains(query);
-      final summaryMatch = item.document.toPlainText().toLowerCase().contains(query);
-      final matchesSearch = titleMatch || summaryMatch;
-      
-      // Filtro de Etiquetas
-      final matchesTag = _selectedTagFilter == null || item.tags.contains(_selectedTagFilter);
-      
-      // NUEVO: Filtro de Color
-      final matchesColor = _selectedColorFilter == null || item.backgroundColor == _selectedColorFilter;
-      
-      return matchesSearch && matchesTag && matchesColor;
-    }).toList();
-    _sortFilteredItems();
-  });
-}
   void _archiveSelectedItems() async {
     // 1. Guardamos una copia de los elementos y el estado de la vista para el "Deshacer"
     final itemsToMove = List<ListItem>.from(_selectedItems);
@@ -901,23 +909,30 @@ void _filterItems() {
 
     // Función auxiliar para generar copias de los items con el estado isArchived actualizado
     List<ListItem> getUpdatedItems(bool targetStatus) {
-      return itemsToMove.map((item) => ListItem(
-        id: item.id,
-        title: item.title,
-        summary: item.summary,
-        lastModified: item.lastModified,
-        backgroundColor: item.backgroundColor,
-        backgroundImagePath: item.backgroundImagePath,
-        tags: item.tags,
-        isArchived: targetStatus, // Actualizamos la variable según el destino
-      )).toList();
+      return itemsToMove
+          .map(
+            (item) => ListItem(
+              id: item.id,
+              title: item.title,
+              summary: item.summary,
+              lastModified: item.lastModified,
+              backgroundColor: item.backgroundColor,
+              backgroundImagePath: item.backgroundImagePath,
+              tags: item.tags,
+              isArchived:
+                  targetStatus, // Actualizamos la variable según el destino
+            ),
+          )
+          .toList();
     }
 
     setState(() {
       if (wasInArchiveView) {
         // Desarchivar: Quitar de archivados y mover a principal con isArchived = false
         final restoredItems = getUpdatedItems(false);
-        _archivedItems.removeWhere((item) => itemsToMove.any((m) => m.id == item.id));
+        _archivedItems.removeWhere(
+          (item) => itemsToMove.any((m) => m.id == item.id),
+        );
         _items.addAll(restoredItems);
       } else {
         // Archivar: Quitar de principal y mover a archivados con isArchived = true
@@ -933,7 +948,11 @@ void _filterItems() {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(wasInArchiveView ? AppLocalizations.of(context)!.notesRestored : AppLocalizations.of(context)!.notesArchived),
+        content: Text(
+          wasInArchiveView
+              ? AppLocalizations.of(context)!.notesRestored
+              : AppLocalizations.of(context)!.notesArchived,
+        ),
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
           label: AppLocalizations.of(context)!.undo,
@@ -942,12 +961,16 @@ void _filterItems() {
               if (wasInArchiveView) {
                 // Revertir restauración: de vuelta al archivo (isArchived = true)
                 final reverted = getUpdatedItems(true);
-                _items.removeWhere((item) => itemsToMove.any((m) => m.id == item.id));
+                _items.removeWhere(
+                  (item) => itemsToMove.any((m) => m.id == item.id),
+                );
                 _archivedItems.addAll(reverted);
               } else {
                 // Revertir archivado: de vuelta a la lista principal (isArchived = false)
                 final reverted = getUpdatedItems(false);
-                _archivedItems.removeWhere((item) => itemsToMove.any((m) => m.id == item.id));
+                _archivedItems.removeWhere(
+                  (item) => itemsToMove.any((m) => m.id == item.id),
+                );
                 _items.addAll(reverted);
               }
               _saveItems();
@@ -1012,13 +1035,15 @@ void _filterItems() {
     }
 
     if (result == "DELETE") {
-      final itemToDelete = _items.cast<ListItem?>().firstWhere(
-        (i) => i?.id == originalItem.id, 
-        orElse: () => null
-      ) ?? _archivedItems.cast<ListItem?>().firstWhere(
-        (i) => i?.id == originalItem.id, 
-        orElse: () => null
-      );
+      final itemToDelete =
+          _items.cast<ListItem?>().firstWhere(
+            (i) => i?.id == originalItem.id,
+            orElse: () => null,
+          ) ??
+          _archivedItems.cast<ListItem?>().firstWhere(
+            (i) => i?.id == originalItem.id,
+            orElse: () => null,
+          );
       setState(() {
         _items.removeWhere((i) => i.id == originalItem.id);
         _archivedItems.removeWhere((i) => i.id == originalItem.id);
@@ -1033,7 +1058,9 @@ void _filterItems() {
       setState(() {
         // 1. Buscamos la posición original en ambas listas
         final int indexInItems = _items.indexWhere((i) => i.id == result.id);
-        final int indexInArchived = _archivedItems.indexWhere((i) => i.id == result.id);
+        final int indexInArchived = _archivedItems.indexWhere(
+          (i) => i.id == result.id,
+        );
 
         // 2. Si la nota quedó vacía, la eliminamos y salimos
         if (result.title.trim().isEmpty && result.document.length <= 1) {
@@ -1048,8 +1075,8 @@ void _filterItems() {
         // 3. Manejamos la actualización o inserción respetando la posición
         if (result.isArchived) {
           // Si se movió de Principal a Archivado o es nueva en archivados
-          if (indexInItems != -1) _items.removeAt(indexInItems); 
-          
+          if (indexInItems != -1) _items.removeAt(indexInItems);
+
           if (indexInArchived != -1) {
             _archivedItems[indexInArchived] = result; // Actualiza en su lugar
           } else {
@@ -1060,7 +1087,8 @@ void _filterItems() {
           if (indexInArchived != -1) _archivedItems.removeAt(indexInArchived);
 
           if (indexInItems != -1) {
-            _items[indexInItems] = result; // Actualiza en su lugar (mantiene orden personalizado)
+            _items[indexInItems] =
+                result; // Actualiza en su lugar (mantiene orden personalizado)
           } else {
             _items.insert(0, result); // Nueva nota va al principio
           }
@@ -1108,13 +1136,11 @@ void _filterItems() {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title:  Text(AppLocalizations.of(context)!.tagNotesTitle),
+          title: Text(AppLocalizations.of(context)!.tagNotesTitle),
           content: SizedBox(
             width: double.maxFinite,
             child: _availableTags.isEmpty
-                ?  Text(AppLocalizations.of(context)!.noTagsCreated
-                  ,
-                  )
+                ? Text(AppLocalizations.of(context)!.noTagsCreated)
                 : ListView.builder(
                     shrinkWrap: true,
                     itemCount: _availableTags.length,
@@ -1171,7 +1197,7 @@ void _filterItems() {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child:  Text(AppLocalizations.of(context)!.cancel),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
           ],
         );
@@ -1189,7 +1215,7 @@ void _filterItems() {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return AlertDialog(
-              title:  Text(AppLocalizations.of(context)!.manageTags),
+              title: Text(AppLocalizations.of(context)!.manageTags),
               content: SizedBox(
                 width: double.maxFinite,
                 child: Column(
@@ -1219,8 +1245,12 @@ void _filterItems() {
                               (t) => t.toLowerCase() == newTag.toLowerCase(),
                             )) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                 SnackBar(
-                                  content: Text(AppLocalizations.of(context)!.tagExistsError),
+                                SnackBar(
+                                  content: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.tagExistsError,
+                                  ),
                                 ),
                               );
                               return;
@@ -1266,7 +1296,7 @@ void _filterItems() {
                                     color: Colors.red,
                                   ),
                                   onPressed: () {
-                                   _confirmDeleteTag(tag);
+                                    _confirmDeleteTag(tag);
                                   },
                                 ),
                               ],
@@ -1281,7 +1311,7 @@ void _filterItems() {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child:  Text(AppLocalizations.of(context)!.close),
+                  child: Text(AppLocalizations.of(context)!.close),
                 ),
               ],
             );
@@ -1305,7 +1335,7 @@ void _filterItems() {
           // Necesario para mostrar el error dinámicamente
           builder: (context, setDialogState) {
             return AlertDialog(
-              title:  Text(AppLocalizations.of(context)!.renameTag),
+              title: Text(AppLocalizations.of(context)!.renameTag),
               content: TextField(
                 controller: renameController,
                 autofocus: true,
@@ -1328,7 +1358,7 @@ void _filterItems() {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child:  Text(AppLocalizations.of(context)!.cancel),
+                  child: Text(AppLocalizations.of(context)!.cancel),
                 ),
                 FilledButton(
                   onPressed: () {
@@ -1349,8 +1379,9 @@ void _filterItems() {
 
                     if (exists) {
                       setDialogState(
-                        () =>
-                            errorText = AppLocalizations.of(context)!.tagExistsError,
+                        () => errorText = AppLocalizations.of(
+                          context,
+                        )!.tagExistsError,
                       );
                       return;
                     }
@@ -1385,7 +1416,7 @@ void _filterItems() {
                       Navigator.pop(context);
                     }
                   },
-                  child:  Text(AppLocalizations.of(context)!.save),
+                  child: Text(AppLocalizations.of(context)!.save),
                 ),
               ],
             );
@@ -1400,25 +1431,27 @@ void _filterItems() {
     scaffoldMessenger.clearSnackBars();
     scaffoldMessenger.showSnackBar(
       SnackBar(
-        content:  Text(AppLocalizations.of(context)!.movedToTrash),
+        content: Text(AppLocalizations.of(context)!.movedToTrash),
         behavior: SnackBarBehavior.floating, // Estilo flotante de Material 3
         action: SnackBarAction(
           label: AppLocalizations.of(context)!.undo,
           onPressed: () {
             setState(() {
-    for (var item in deletedItems) {
-      _trashedItems.removeWhere((i) => i.id == item.id);
-      if (item.isArchived) {
-        _archivedItems.add(item); // Si era archivada, vuelve a archivados
-      } else {
-        _items.add(item); // Si no, va al inicio
-      }
-    }
-    _saveItems();
-    _saveArchivedItems(); // No olvides guardar los cambios en archivados
-    _saveTrashedItems();
-    _filterItems();
-  });
+              for (var item in deletedItems) {
+                _trashedItems.removeWhere((i) => i.id == item.id);
+                if (item.isArchived) {
+                  _archivedItems.add(
+                    item,
+                  ); // Si era archivada, vuelve a archivados
+                } else {
+                  _items.add(item); // Si no, va al inicio
+                }
+              }
+              _saveItems();
+              _saveArchivedItems(); // No olvides guardar los cambios en archivados
+              _saveTrashedItems();
+              _filterItems();
+            });
           },
         ),
       ),
@@ -1489,7 +1522,10 @@ void _filterItems() {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.picture_as_pdf_outlined, color: Colors.red),
+                leading: const Icon(
+                  Icons.picture_as_pdf_outlined,
+                  color: Colors.red,
+                ),
                 title: Text(AppLocalizations.of(context)!.archivo_pdf),
                 onTap: () {
                   Navigator.pop(context);
@@ -1507,7 +1543,7 @@ void _filterItems() {
               ListTile(
                 leading: const Icon(Icons.code_outlined, color: Colors.blue),
                 title: Text(AppLocalizations.of(context)!.json_crudo),
-                subtitle:  Text(
+                subtitle: Text(
                   AppLocalizations.of(context)!.json_subtitle,
                 ), // Opcional, para aclarar el formato
                 onTap: () {
@@ -1563,9 +1599,7 @@ void _filterItems() {
     final header = AppLocalizations.of(context)!.misNotasExportadas;
     final untitledText = AppLocalizations.of(context)!.untitled;
 
-    List<pw.Widget> pdfContent = [
-      pw.Header(level: 0, child: pw.Text(header)),
-    ];
+    List<pw.Widget> pdfContent = [pw.Header(level: 0, child: pw.Text(header))];
 
     for (var item in _selectedItems) {
       // 1. Convertir el delta del documento a widgets de PDF compatibles
@@ -1618,7 +1652,9 @@ void _filterItems() {
   }
 
   Future<void> _shareAsHtml() async {
-    final String shareHtmlMessage = AppLocalizations.of(context)!.shareHtmlMessage;
+    final String shareHtmlMessage = AppLocalizations.of(
+      context,
+    )!.shareHtmlMessage;
     try {
       String combinedHtmlContent = '';
       String titlehtml = '';
@@ -1679,10 +1715,7 @@ void _filterItems() {
 
       // 7. Compartir el archivo usando la sintaxis correcta de SharePlus
       await SharePlus.instance.share(
-        ShareParams(
-          text: shareHtmlMessage,
-          files: [XFile(file.path)],
-        ),
+        ShareParams(text: shareHtmlMessage, files: [XFile(file.path)]),
       );
 
       // 8. Salir del modo de selección
@@ -1796,10 +1829,14 @@ void _filterItems() {
               Icons.unarchive_outlined,
               color: Theme.of(context).colorScheme.onSurface,
             ),
-            selectedIcon: Icon(Icons.archive_outlined,
-              color: Theme.of(context).colorScheme.onSurface,),
+            selectedIcon: Icon(
+              Icons.archive_outlined,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
             onPressed: _archiveSelectedItems,
-            tooltip: _isArchiveView ? AppLocalizations.of(context)!.unarchiveTooltip : AppLocalizations.of(context)!.archiveTooltip,
+            tooltip: _isArchiveView
+                ? AppLocalizations.of(context)!.unarchiveTooltip
+                : AppLocalizations.of(context)!.archiveTooltip,
           ),
           IconButton(
             icon: Icon(
@@ -1828,13 +1865,13 @@ void _filterItems() {
         ],
       );
     }
-        // Título dinámico según la vista
+    // Título dinámico según la vista
     Widget titleWidget;
     List<Widget> actions = [];
 
     if (_isTrashView) {
       // PAPELERA: Ocultar búsqueda y opciones, mostrar botón vaciar
-      titleWidget =  Text(AppLocalizations.of(context)!.papelera);
+      titleWidget = Text(AppLocalizations.of(context)!.papelera);
       actions = [
         IconButton(
           icon: const Icon(Icons.delete_sweep_outlined),
@@ -1849,7 +1886,9 @@ void _filterItems() {
         hintText: AppLocalizations.of(context)!.search,
         leading: const Icon(Icons.search_outlined),
         elevation: WidgetStateProperty.all(0),
-        backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.surfaceContainerHigh),
+        backgroundColor: WidgetStateProperty.all(
+          Theme.of(context).colorScheme.surfaceContainerHigh,
+        ),
         constraints: const BoxConstraints(minHeight: 48, maxHeight: 48),
       );
 
@@ -1860,47 +1899,50 @@ void _filterItems() {
           selectedIcon: const Icon(Icons.grid_view),
           onPressed: _toggleView,
         ),
-        if (_selectedTagFilter == null) 
-    // Si NO hay etiqueta seleccionada, mostrar icono de importación (ordenar)
-    IconButton(
-      icon: const Icon(Icons.import_export),
-      onPressed: _showSortOptions,
-      tooltip: AppLocalizations.of(context)!.ordenar,
-    )
-  else 
-    // Si HAY una etiqueta seleccionada, mostrar menú de opciones de etiqueta
-    PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert),
-      onSelected: (value) {
-        if (value == 'rename') {
-          _showRenameTagDialog(_selectedTagFilter!);
-        } else if (value == 'delete') {
-          _confirmDeleteTag(_selectedTagFilter!);
-        }
-      },
-      itemBuilder: (context) => [
-         PopupMenuItem(
-          value: 'rename',
-          child: Row(
-            children: [
-              Icon(Icons.edit_outlined, size: 20),
-              SizedBox(width: 12),
-              Text(AppLocalizations.of(context)!.renameTag),
+        if (_selectedTagFilter == null)
+          // Si NO hay etiqueta seleccionada, mostrar icono de importación (ordenar)
+          IconButton(
+            icon: const Icon(Icons.import_export),
+            onPressed: _showSortOptions,
+            tooltip: AppLocalizations.of(context)!.ordenar,
+          )
+        else
+          // Si HAY una etiqueta seleccionada, mostrar menú de opciones de etiqueta
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              if (value == 'rename') {
+                _showRenameTagDialog(_selectedTagFilter!);
+              } else if (value == 'delete') {
+                _confirmDeleteTag(_selectedTagFilter!);
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'rename',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_outlined, size: 20),
+                    SizedBox(width: 12),
+                    Text(AppLocalizations.of(context)!.renameTag),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                    SizedBox(width: 12),
+                    Text(
+                      AppLocalizations.of(context)!.eliminarEtiqueta,
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
-        ),
-        const PopupMenuItem(
-          value: 'delete',
-          child: Row(
-            children: [
-              Icon(Icons.delete_outline, color: Colors.red, size: 20),
-              SizedBox(width: 12),
-              Text(AppLocalizations.of(context)!.eliminarEtiqueta, style: TextStyle(color: Colors.red)),
-            ],
-          ),
-        ),
-      ],
-    ),
       ];
     }
 
@@ -1915,73 +1957,84 @@ void _filterItems() {
       ),
       title: titleWidget,
       actions: actions,
-      bottom: _isTrashView ? null : PreferredSize(
-        preferredSize: const Size.fromHeight(56),
-        child: _buildFilterChips(),
-      ),
+      bottom: _isTrashView
+          ? null
+          : PreferredSize(
+              preferredSize: const Size.fromHeight(56),
+              child: _buildFilterChips(),
+            ),
     );
   }
 
-// Widget auxiliar para los chips de filtro
-Widget _buildFilterChips() {
-  // Obtenemos los colores únicos presentes en las notas actuales
-  final uniqueColors = [..._items, ..._archivedItems]
-      .where((item) => item.backgroundColor != null)
-      .map((item) => item.backgroundColor!)
-      .toSet()
-      .toList();
+  // Widget auxiliar para los chips de filtro
+  Widget _buildFilterChips() {
+    // Obtenemos los colores únicos presentes en las notas actuales
+    final uniqueColors = [..._items, ..._archivedItems]
+        .where((item) => item.backgroundColor != null)
+        .map((item) => item.backgroundColor!)
+        .toSet()
+        .toList();
 
-  return SingleChildScrollView(
-    scrollDirection: Axis.horizontal,
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    child: Row(
-      children: [
-        // Chip de "Archivadas"
-        FilterChip(
-          label: Text(AppLocalizations.of(context)!.archivados),
-          selected: _isArchiveView,
-          onSelected: (selected) {
-            setState(() {
-              _isArchiveView = selected;
-              _isTrashView = false;
-              _selectedTagFilter = null; // Opcional: resetear otros filtros
-            });
-            _filterItems();
-          },
-        ),
-        const SizedBox(width: 8),
-        
-        // Chips de Etiquetas
-        ..._availableTags.map((tag) => Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: FilterChip(
-            label: Text(tag),
-            selected: _selectedTagFilter == tag,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          // Chip de "Archivadas"
+          FilterChip(
+            label: Text(AppLocalizations.of(context)!.archivados),
+            selected: _isArchiveView,
             onSelected: (selected) {
-              _onTagSelected(tag);
-              setState(() => _selectedTagFilter = selected ? tag : null);
+              setState(() {
+                _isArchiveView = selected;
+                _isTrashView = false;
+                _selectedTagFilter = null; // Opcional: resetear otros filtros
+              });
               _filterItems();
             },
           ),
-        )),
+          const SizedBox(width: 8),
 
-        // Chips de Colores
-        ...uniqueColors.map((colorValue) => Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: FilterChip(
-            avatar: CircleAvatar(backgroundColor: Color(colorValue), radius: 10),
-            label:  Text(AppLocalizations.of(context)!.colorFilterLabel),
-            selected: _selectedColorFilter == colorValue,
-            onSelected: (selected) {
-              setState(() => _selectedColorFilter = selected ? colorValue : null);
-              _filterItems();
-            },
+          // Chips de Etiquetas
+          ..._availableTags.map(
+            (tag) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilterChip(
+                label: Text(tag),
+                selected: _selectedTagFilter == tag,
+                onSelected: (selected) {
+                  _onTagSelected(tag);
+                  setState(() => _selectedTagFilter = selected ? tag : null);
+                  _filterItems();
+                },
+              ),
+            ),
           ),
-        )),
-      ],
-    ),
-  );
-}
+
+          // Chips de Colores
+          ...uniqueColors.map(
+            (colorValue) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilterChip(
+                avatar: CircleAvatar(
+                  backgroundColor: Color(colorValue),
+                  radius: 10,
+                ),
+                label: Text(AppLocalizations.of(context)!.colorFilterLabel),
+                selected: _selectedColorFilter == colorValue,
+                onSelected: (selected) {
+                  setState(
+                    () => _selectedColorFilter = selected ? colorValue : null,
+                  );
+                  _filterItems();
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1996,64 +2049,78 @@ Widget _buildFilterChips() {
           padding: EdgeInsets.zero,
           children: <Widget>[
             Container(
-  color: Theme.of(context).colorScheme.surfaceContainerLow,
-  child: SafeArea(
-    bottom: false, // Evita añadir espacio extra en la parte inferior
-    child: ListTile(
-      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-      leading: Image.asset(
-        'assets/icon/notas.png',
-        width: 40,
-        height: 40,
-      ),
-      title: Text(
-        AppLocalizations.of(context)!.flutterNotes,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.onSurface,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ),
-  ),
-),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: SafeArea(
+                bottom:
+                    false, // Evita añadir espacio extra en la parte inferior
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 16,
+                  ),
+                  leading: Image.asset(
+                    'assets/icon/notas.png',
+                    width: 40,
+                    height: 40,
+                  ),
+                  title: Text(
+                    AppLocalizations.of(context)!.flutterNotes,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
             Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-  child: ListTile(
-    // Redondeado estilo MD3
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-    
-    // Color de fondo cuando está seleccionado
-    selectedTileColor: Theme.of(context).colorScheme.secondaryContainer,
-    
-    // Color del texto e iconos cuando está seleccionado
-    selectedColor: Theme.of(context).colorScheme.onSecondaryContainer,
-    
-    // Cambia el icono a uno relleno (opcional) si está seleccionado para más feedback visual
-    leading: Icon(
-      !_isTrashView && _selectedTagFilter == null && !_isArchiveView
-          ? Icons.home       // Icono relleno
-          : Icons.home_outlined, // Tu icono outlined por defecto
-    ),
-    
-    title: Text(
-      AppLocalizations.of(context)!.home,
-      style: const TextStyle(fontWeight: FontWeight.w500),
-    ),
-    
-    selected: !_isTrashView && _selectedTagFilter == null && !_isArchiveView,
-    
-    onTap: () {
-      setState(() {
-        _isTrashView = false;
-        _isArchiveView = false;
-        _selectedTagFilter = null;
-      });
-      _filterItems();
-      Navigator.pop(context);
-    },
-  ),
-),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: ListTile(
+                // Redondeado estilo MD3
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+
+                // Color de fondo cuando está seleccionado
+                selectedTileColor: Theme.of(
+                  context,
+                ).colorScheme.secondaryContainer,
+
+                // Color del texto e iconos cuando está seleccionado
+                selectedColor: Theme.of(
+                  context,
+                ).colorScheme.onSecondaryContainer,
+
+                // Cambia el icono a uno relleno (opcional) si está seleccionado para más feedback visual
+                leading: Icon(
+                  !_isTrashView && _selectedTagFilter == null && !_isArchiveView
+                      ? Icons
+                            .home // Icono relleno
+                      : Icons.home_outlined, // Tu icono outlined por defecto
+                ),
+
+                title: Text(
+                  AppLocalizations.of(context)!.home,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+
+                selected:
+                    !_isTrashView &&
+                    _selectedTagFilter == null &&
+                    !_isArchiveView,
+
+                onTap: () {
+                  setState(() {
+                    _isTrashView = false;
+                    _isArchiveView = false;
+                    _selectedTagFilter = null;
+                  });
+                  _filterItems();
+                  Navigator.pop(context);
+                },
+              ),
+            ),
             // NUEVA SECCIÓN: Etiquetas
             const Divider(),
             Padding(
@@ -2064,7 +2131,8 @@ Widget _buildFilterChips() {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(AppLocalizations.of(context)!.etiquetas,
+                  Text(
+                    AppLocalizations.of(context)!.etiquetas,
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                   IconButton(
@@ -2079,128 +2147,143 @@ Widget _buildFilterChips() {
             ),
             ..._availableTags.map(
               (tag) => Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: ListTile(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-              selectedTileColor: Theme.of(context).colorScheme.secondaryContainer,
-    
-    // Color del texto e iconos cuando está seleccionado
-    selectedColor: Theme.of(context).colorScheme.onSecondaryContainer,(
-                leading: const Icon(Icons.label_outline),
-                title: Text(tag),
-                selected: _selectedTagFilter == tag && !_isTrashView,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                child: ListTile(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  selectedTileColor: Theme.of(
+                    context,
+                  ).colorScheme.secondaryContainer,
+
+                  // Color del texto e iconos cuando está seleccionado
+                  selectedColor: Theme.of(
+                    context,
+                  ).colorScheme.onSecondaryContainer,
+                  leading: const Icon(Icons.label_outline),
+                  title: Text(tag),
+                  selected: _selectedTagFilter == tag && !_isTrashView,
+                  onTap: () {
+                    setState(() {
+                      _isTrashView = false;
+                      _isArchiveView = false;
+                      _selectedTagFilter = tag;
+                    });
+                    _filterItems();
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ),
+
+            const Divider(),
+            // NUEVO: Ítem de Archivados
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: ListTile(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                leading: const Icon(Icons.archive_outlined),
+                title: Text(AppLocalizations.of(context)!.archivados),
+                selected: _isArchiveView,
                 onTap: () {
                   setState(() {
+                    _isArchiveView = true;
                     _isTrashView = false;
-                    _isArchiveView = false;
-                    _selectedTagFilter = tag;
+                    _selectedTagFilter = null;
                   });
                   _filterItems();
                   Navigator.pop(context);
                 },
               ),
             ),
-            ),
-
-            const Divider(),
-            // NUEVO: Ítem de Archivados
-          Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: ListTile(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-            leading: const Icon(Icons.archive_outlined),
-            title: Text(AppLocalizations.of(context)!.archivados),
-            selected: _isArchiveView,
-            onTap: () {
-              setState(() {
-                _isArchiveView = true;
-                _isTrashView = false;
-                _selectedTagFilter = null;
-              });
-              _filterItems();
-              Navigator.pop(context);
-            },
-          ),
-          ),
             Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: ListTile(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-              leading: const Icon(Icons.delete_outline),
-              title: Text(AppLocalizations.of(context)!.papelera),
-              selected: _isTrashView,
-              onTap: () {
-                setState(() {
-                  _isTrashView = true;
-                  _isArchiveView = false;
-                  _selectedTagFilter =
-                      null; // Opcional: quitar filtro al ir a papelera
-                });
-                _filterItems();
-                Navigator.pop(context);
-              },
-            ),
-            ),
-
-            Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: ListTile(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-              leading: Badge(
-                isLabelVisible: context.watch<UpdaterProvider>().hasUpdate,
-                backgroundColor: Colors.red,
-                smallSize: 10,
-                child: const Icon(Icons.settings_outlined),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: ListTile(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                leading: const Icon(Icons.delete_outline),
+                title: Text(AppLocalizations.of(context)!.papelera),
+                selected: _isTrashView,
+                onTap: () {
+                  setState(() {
+                    _isTrashView = true;
+                    _isArchiveView = false;
+                    _selectedTagFilter =
+                        null; // Opcional: quitar filtro al ir a papelera
+                  });
+                  _filterItems();
+                  Navigator.pop(context);
+                },
               ),
-              title: Text(AppLocalizations.of(context)!.settings),
-              onTap: () async {
-                Navigator.pop(context); // Cierra el drawer
-
-                //if (Platform.isAndroid) {
-                // Lógica para Android: MethodChannel
-                //  final themeProvider = context.read<ThemeProvider>();
-                //   try {
-                //   final Map<dynamic, dynamic>? result = await platform
-                //     .invokeMethod('openNativeSettings', {
-                //     'useDynamicColors': themeProvider.useDynamicColors,
-                //   'themeMode': themeProvider.themeMode.toString(),
-                //  'languageCode': themeProvider.locale.languageCode,
-                //});
-
-                //if (result != null) {
-                //if (result['useDynamicColors'] != null) {
-                //themeProvider.setUseDynamicColors(
-                //result['useDynamicColors'],
-                //);
-                //}
-                //if (result['themeMode'] != null) {
-                //ThemeMode mode = ThemeMode.system;
-                //if (result['themeMode'] == 'ThemeMode.light') {
-                //  mode = ThemeMode.light;
-                //}
-                //if (result['themeMode'] == 'ThemeMode.dark') {
-                //  mode = ThemeMode.dark;
-                //}
-                //themeProvider.setThemeMode(mode);
-                //}
-                // Puedes agregar aquí la actualización del locale si lo necesitas
-                //}
-                //} on PlatformException catch (e) {
-                //debugPrint(
-                //  "Error al abrir ajustes nativos: '${e.message}'.",
-                //);
-                //}
-                //} else {
-                // Lógica para iOS/Otros: Pantalla de Flutter
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SettingsScreen(),
-                  ),
-                );
-                // }
-              },
             ),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: ListTile(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                leading: Badge(
+                  isLabelVisible: context.watch<UpdaterProvider>().hasUpdate,
+                  backgroundColor: Colors.red,
+                  smallSize: 10,
+                  child: const Icon(Icons.settings_outlined),
+                ),
+                title: Text(AppLocalizations.of(context)!.settings),
+                onTap: () async {
+                  Navigator.pop(context); // Cierra el drawer
+
+                  //if (Platform.isAndroid) {
+                  // Lógica para Android: MethodChannel
+                  //  final themeProvider = context.read<ThemeProvider>();
+                  //   try {
+                  //   final Map<dynamic, dynamic>? result = await platform
+                  //     .invokeMethod('openNativeSettings', {
+                  //     'useDynamicColors': themeProvider.useDynamicColors,
+                  //   'themeMode': themeProvider.themeMode.toString(),
+                  //  'languageCode': themeProvider.locale.languageCode,
+                  //});
+
+                  //if (result != null) {
+                  //if (result['useDynamicColors'] != null) {
+                  //themeProvider.setUseDynamicColors(
+                  //result['useDynamicColors'],
+                  //);
+                  //}
+                  //if (result['themeMode'] != null) {
+                  //ThemeMode mode = ThemeMode.system;
+                  //if (result['themeMode'] == 'ThemeMode.light') {
+                  //  mode = ThemeMode.light;
+                  //}
+                  //if (result['themeMode'] == 'ThemeMode.dark') {
+                  //  mode = ThemeMode.dark;
+                  //}
+                  //themeProvider.setThemeMode(mode);
+                  //}
+                  // Puedes agregar aquí la actualización del locale si lo necesitas
+                  //}
+                  //} on PlatformException catch (e) {
+                  //debugPrint(
+                  //  "Error al abrir ajustes nativos: '${e.message}'.",
+                  //);
+                  //}
+                  //} else {
+                  // Lógica para iOS/Otros: Pantalla de Flutter
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
+                  );
+                  // }
+                },
+              ),
             ),
             const Divider(),
             const UpdateAvailableWidget(isDrawerTile: true),
@@ -2253,10 +2336,10 @@ Widget _buildFilterChips() {
 
                       return Text(
                         AppLocalizations.of(context)!.appVersionFull(
-    packageInfo.version,
-    packageInfo.buildNumber,
-    platformDetail,
-  ),
+                          packageInfo.version,
+                          packageInfo.buildNumber,
+                          platformDetail,
+                        ),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
@@ -2267,14 +2350,14 @@ Widget _buildFilterChips() {
                       );
                     } catch (e) {
                       // Si el cast falla, mostramos un mensaje genérico en lugar de "Cargando..."
-                      return  Text(
+                      return Text(
                         AppLocalizations.of(context)!.formatError,
                         style: TextStyle(fontSize: 12),
                       );
                     }
                   }
 
-                  return  Text(
+                  return Text(
                     AppLocalizations.of(context)!.loading,
                     style: TextStyle(fontSize: 12),
                   );
@@ -2497,9 +2580,7 @@ Widget _buildFilterChips() {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: Theme.of(
-          context,
-        ).colorScheme.primaryContainer,
+                      color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: dynamicTextColor.withValues(alpha: 0.3),
@@ -2542,58 +2623,63 @@ Widget _buildFilterChips() {
       ),
       child: InkWell(
         onTap: () {
-    if (_isSelectionMode) {
-      _toggleSelection(item);
-    } else if (_isTrashView) {
-      // MOSTRAR DIÁLOGO EN PAPELERA
-      showModalBottomSheet(
-        context: context,
-        builder: (context) => SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.restore),
-                title:  Text(AppLocalizations.of(context)!.restoreNote),
-                onTap: () {
-                  setState(() {
-    for (var item in deletedItems) {
-      _trashedItems.removeWhere((i) => i.id == item.id);
-      if (item.isArchived) {
-        _archivedItems.add(item); // Si era archivada, vuelve a archivados
-      } else {
-        _items.add(item); // Si no, va al inicio
-      }
-    }
-    _saveItems();
-    _saveArchivedItems(); 
-    _saveTrashedItems();
-    _filterItems();
-  });
-                  Navigator.pop(context);
-                },
+          if (_isSelectionMode) {
+            _toggleSelection(item);
+          } else if (_isTrashView) {
+            // MOSTRAR DIÁLOGO EN PAPELERA
+            showModalBottomSheet(
+              context: context,
+              builder: (context) => SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.restore),
+                      title: Text(AppLocalizations.of(context)!.restoreNote),
+                      onTap: () {
+                        setState(() {
+                          for (var item in _selectedItems) {
+                            _trashedItems.removeWhere((i) => i.id == item.id);
+                            if (item.isArchived) {
+                              _archivedItems.add(
+                                item,
+                              ); // Si era archivada, vuelve a archivados
+                            } else {
+                              _items.add(item); // Si no, va al inicio
+                            }
+                          }
+                          _saveItems();
+                          _saveArchivedItems();
+                          _saveTrashedItems();
+                          _filterItems();
+                        });
+                        Navigator.pop(context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.delete_forever,
+                        color: Colors.red,
+                      ),
+                      title: Text(AppLocalizations.of(context)!.deleteForever),
+                      onTap: () {
+                        setState(() {
+                          _cleanupImagesForItems([item]);
+                          _trashedItems.remove(item);
+                          _saveTrashedItems();
+                          _filterItems();
+                        });
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                ),
               ),
-              ListTile(
-                leading: const Icon(Icons.delete_forever, color: Colors.red),
-                title:  Text(AppLocalizations.of(context)!.deleteForever),
-                onTap: () {
-                  setState(() {
-                    _cleanupImagesForItems([item]);
-                    _trashedItems.remove(item);
-                    _saveTrashedItems();
-                    _filterItems();
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        ),
-      );
-    } else {
-      _navigateToEditor(item);
-    }
-  },
+            );
+          } else {
+            _navigateToEditor(item);
+          }
+        },
         onLongPress: () => !_isSelectionMode ? _startSelectionMode(item) : null,
         child: Ink(
           // Usar Ink para que la decoración no tape el efecto visual
@@ -2795,14 +2881,18 @@ Widget _buildFilterChips() {
       debugPrint("Error guardando papelera: $e");
     }
   }
+
   void _emptyTrash() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title:  Text(AppLocalizations.of(context)!.emptyTrashTitle),
-        content:  Text(AppLocalizations.of(context)!.emptyTrashMessage),
+        title: Text(AppLocalizations.of(context)!.emptyTrashTitle),
+        content: Text(AppLocalizations.of(context)!.emptyTrashMessage),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child:  Text(AppLocalizations.of(context)!.cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
           FilledButton(
             onPressed: () {
               setState(() {
@@ -2813,70 +2903,75 @@ Widget _buildFilterChips() {
               });
               Navigator.pop(context);
             },
-            child:  Text(AppLocalizations.of(context)!.emptyTrashAction),
+            child: Text(AppLocalizations.of(context)!.emptyTrashAction),
           ),
         ],
       ),
     );
   }
-  // Ejemplo de la función que maneja el cambio de filtro
-void _onTagSelected(String? tag) {
-  setState(() {
-    _isTrashView = false;
-    _isArchiveView = false;
-    // Si se toca la misma etiqueta, se deselecciona (vuelve el icono import)
-    // Si se toca una nueva, se activa el filtro (aparecen los tres puntos)
-    _selectedTagFilter = (_selectedTagFilter == tag) ? null : tag;
-    _filterItems();
-  });
-}
-  void _confirmDeleteTag(String tag) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(AppLocalizations.of(context)!.deleteTagTitle(tag)),
-      content:  Text(AppLocalizations.of(context)!.deleteTagMessage),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child:  Text(AppLocalizations.of(context)!.cancel),
-        ),
-        TextButton(
-          onPressed: () {
-            setState(() {
-              // 1. Eliminar de la lista global de etiquetas
-              _availableTags.remove(tag);
-              _selectedTagFilter = null; // Volvemos a la vista general
 
-              // 2. Función interna para limpiar la etiqueta de cualquier lista de notas
-              void removeTagFromList(List<ListItem> list) {
-                for (var item in list) {
-                  // Si el ítem contiene la etiqueta, la removemos
-                  if (item.tags.contains(tag)) {
-                    item.tags.remove(tag);
+  // Ejemplo de la función que maneja el cambio de filtro
+  void _onTagSelected(String? tag) {
+    setState(() {
+      _isTrashView = false;
+      _isArchiveView = false;
+      // Si se toca la misma etiqueta, se deselecciona (vuelve el icono import)
+      // Si se toca una nueva, se activa el filtro (aparecen los tres puntos)
+      _selectedTagFilter = (_selectedTagFilter == tag) ? null : tag;
+      _filterItems();
+    });
+  }
+
+  void _confirmDeleteTag(String tag) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.deleteTagTitle(tag)),
+        content: Text(AppLocalizations.of(context)!.deleteTagMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                // 1. Eliminar de la lista global de etiquetas
+                _availableTags.remove(tag);
+                _selectedTagFilter = null; // Volvemos a la vista general
+
+                // 2. Función interna para limpiar la etiqueta de cualquier lista de notas
+                void removeTagFromList(List<ListItem> list) {
+                  for (var item in list) {
+                    // Si el ítem contiene la etiqueta, la removemos
+                    if (item.tags.contains(tag)) {
+                      item.tags.remove(tag);
+                    }
                   }
                 }
-              }
 
-              // 3. Aplicar la limpieza a todas tus fuentes de datos[cite: 1]
-              removeTagFromList(_items);
-              removeTagFromList(_archivedItems);
-              removeTagFromList(_trashedItems);
+                // 3. Aplicar la limpieza a todas tus fuentes de datos[cite: 1]
+                removeTagFromList(_items);
+                removeTagFromList(_archivedItems);
+                removeTagFromList(_trashedItems);
 
-              // 4. Persistir todos los cambios en SharedPreferences y archivos JSON[cite: 1]
-              _saveTags();
-              _saveItems();
-              _saveArchivedItems();
-              _saveTrashedItems();
-              
-              _filterItems(); // Refrescar la UI[cite: 1]
-            });
-            Navigator.pop(context);
-          },
-          child:  Text(AppLocalizations.of(context)!.delete, style: TextStyle(color: Colors.red)),
-        ),
-      ],
-    ),
-  );
-}
+                // 4. Persistir todos los cambios en SharedPreferences y archivos JSON[cite: 1]
+                _saveTags();
+                _saveItems();
+                _saveArchivedItems();
+                _saveTrashedItems();
+
+                _filterItems(); // Refrescar la UI[cite: 1]
+              });
+              Navigator.pop(context);
+            },
+            child: Text(
+              AppLocalizations.of(context)!.delete,
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

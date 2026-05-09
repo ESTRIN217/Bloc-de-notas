@@ -791,6 +791,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View change log'**
   String get verRegistroDeCambios;
+
+  /// No description provided for @actualizacionDisponible.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get actualizacionDisponible;
+
+  /// No description provided for @actualizacionesDeLaApp.
+  ///
+  /// In en, this message translates to:
+  /// **'App updates'**
+  String get actualizacionesDeLaApp;
+
+  /// No description provided for @chaneldescripcion.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify you when a new version is available'**
+  String get chaneldescripcion;
+
+  /// No description provided for @desing.
+  ///
+  /// In en, this message translates to:
+  /// **'Made with ❤️ in Venezuela'**
+  String get desing;
 }
 
 class _AppLocalizationsDelegate

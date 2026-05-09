@@ -72,7 +72,10 @@ class SettingsScreen extends StatelessWidget {
                     children: [
                       ListTile(
                         // Aplicamos el fondo al icono del modo oscuro
-                        leading: _buildIconContainer(context, Icons.dark_mode_outlined),
+                        leading: _buildIconContainer(
+                          context,
+                          Icons.dark_mode_outlined,
+                        ),
                         title: Text(AppLocalizations.of(context)!.themeMode),
                       ),
                       Padding(
@@ -115,20 +118,21 @@ class SettingsScreen extends StatelessWidget {
                         // Aplicamos el fondo al icono de idioma
                         leading: _buildIconContainer(context, Icons.language),
                         title: Text(
-  themeProvider.isSystemLocale 
-    ? AppLocalizations.of(context)!.system_default // Ahora mostrará "Predeterminado"
-    : themeProvider.locale.countryCode == "VE"
-      ? AppLocalizations.of(context)!.venezolano
-      : themeProvider.locale.countryCode == "BR"
-        ? AppLocalizations.of(context)!.brasileno
-        : themeProvider.locale.languageCode == 'es'
-          ? AppLocalizations.of(context)!.espanol
-          : themeProvider.locale.languageCode == 'pt'
-            ? AppLocalizations.of(context)!.portugues
-            : themeProvider.locale.languageCode == 'en'
-              ? AppLocalizations.of(context)!.ingles
-              : '🌐 ${themeProvider.locale.languageCode.toUpperCase()}',
-),
+                          themeProvider.isSystemLocale
+                              ? AppLocalizations.of(context)!
+                                    .system_default // Ahora mostrará "Predeterminado"
+                              : themeProvider.locale.countryCode == "VE"
+                              ? AppLocalizations.of(context)!.venezolano
+                              : themeProvider.locale.countryCode == "BR"
+                              ? AppLocalizations.of(context)!.brasileno
+                              : themeProvider.locale.languageCode == 'es'
+                              ? AppLocalizations.of(context)!.espanol
+                              : themeProvider.locale.languageCode == 'pt'
+                              ? AppLocalizations.of(context)!.portugues
+                              : themeProvider.locale.languageCode == 'en'
+                              ? AppLocalizations.of(context)!.ingles
+                              : '🌐 ${themeProvider.locale.languageCode.toUpperCase()}',
+                        ),
                         subtitle: Text(AppLocalizations.of(context)!.idioma),
                         onTap: () {
                           _showLanguageDialog(context, themeProvider);
@@ -289,8 +293,6 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  
-
   void _showLanguageDialog(BuildContext context, ThemeProvider themeProvider) {
     showModalBottomSheet(
       context: context,
@@ -304,15 +306,17 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-// OPCIÓN PREDETERMINADO
-ListTile(
-  leading: const Icon(Icons.language),
-  title: Text(AppLocalizations.of(context)!.system_default),
-  onTap: () {
-    themeProvider.setLocale(null); // Al pasar null, el provider sabe que es el sistema
-    Navigator.pop(context);
-  },
-),
+                // OPCIÓN PREDETERMINADO
+                ListTile(
+                  leading: const Icon(Icons.language),
+                  title: Text(AppLocalizations.of(context)!.system_default),
+                  onTap: () {
+                    themeProvider.setLocale(
+                      null,
+                    ); // Al pasar null, el provider sabe que es el sistema
+                    Navigator.pop(context);
+                  },
+                ),
                 const Divider(), // Una línea divisoria queda bien aquí
                 // VENEZUELA
                 ListTile(

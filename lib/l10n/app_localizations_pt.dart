@@ -372,6 +372,19 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get verRegistroDeCambios => 'Ver registro de alterações';
+
+  @override
+  String get actualizacionDisponible => 'Atualização disponível';
+
+  @override
+  String get actualizacionesDeLaApp => 'Atualizações de aplicativos';
+
+  @override
+  String get chaneldescripcion =>
+      'Notifica você quando uma nova versão estiver disponível';
+
+  @override
+  String get desing => 'Feito com ❤️ na Venezuela';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -742,4 +755,17 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get verRegistroDeCambios => 'Ver registro de alterações';
+
+  @override
+  String get actualizacionDisponible => 'Atualização disponível';
+
+  @override
+  String get actualizacionesDeLaApp => 'Atualizações de aplicativos';
+
+  @override
+  String get chaneldescripcion =>
+      'Notifica você quando uma nova versão estiver disponível';
+
+  @override
+  String get desing => 'Feito com ❤️ na Venezuela';
 }

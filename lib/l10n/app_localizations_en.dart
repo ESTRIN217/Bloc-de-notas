@@ -372,4 +372,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verRegistroDeCambios => 'View change log';
+
+  @override
+  String get actualizacionDisponible => 'Update available';
+
+  @override
+  String get actualizacionesDeLaApp => 'App updates';
+
+  @override
+  String get chaneldescripcion => 'Notify you when a new version is available';
+
+  @override
+  String get desing => 'Made with ❤️ in Venezuela';
 }

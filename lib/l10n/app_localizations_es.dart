@@ -372,6 +372,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get verRegistroDeCambios => 'Ver registro de cambios';
+
+  @override
+  String get actualizacionDisponible => 'Actualización disponible';
+
+  @override
+  String get actualizacionesDeLaApp => 'Actualizaciones de la app';
+
+  @override
+  String get chaneldescripcion =>
+      'Notifica cuando hay una nueva versión disponible';
+
+  @override
+  String get desing => 'Hecho con ❤️ en Venezuela';
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
@@ -742,4 +755,17 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
 
   @override
   String get verRegistroDeCambios => 'Ver registro de cambios';
+
+  @override
+  String get actualizacionDisponible => 'Actualización disponible';
+
+  @override
+  String get actualizacionesDeLaApp => 'Actualizaciones de la app';
+
+  @override
+  String get chaneldescripcion =>
+      'Notifica cuando hay una nueva versión disponible';
+
+  @override
+  String get desing => 'Hecho con ❤️ en Venezuela';
 }

@@ -2163,7 +2163,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   selectedColor: Theme.of(
                     context,
                   ).colorScheme.onSecondaryContainer,
-                  leading: const Icon(Icons.label_outline),
+                  leading: const Icon(
+                  !_isTrashView && _selectedTagFilter == null && !_isArchiveView
+                  ? Icons.label
+                  : Icons.label_outline),
                   title: Text(tag),
                   selected: _selectedTagFilter == tag && !_isTrashView,
                   onTap: () {
@@ -2187,7 +2190,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
                 ),
-                leading: const Icon(Icons.archive_outlined),
+                selectedTileColor: Theme.of(
+                    context,
+                  ).colorScheme.secondaryContainer,
+
+                  // Color del texto e iconos cuando está seleccionado
+                  selectedColor: Theme.of(
+                    context,
+                  ).colorScheme.onSecondaryContainer,
+                leading: const Icon(
+                  !_isTrashView && _selectedTagFilter == null && !_isArchiveView
+                  ? Icons.archive
+                  : Icons.archive_outlined),
                 title: Text(AppLocalizations.of(context)!.archivados),
                 selected: _isArchiveView,
                 onTap: () {
@@ -2207,7 +2221,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
                 ),
-                leading: const Icon(Icons.delete_outline),
+                selectedTileColor: Theme.of(
+                    context,
+                  ).colorScheme.secondaryContainer,
+
+                  // Color del texto e iconos cuando está seleccionado
+                  selectedColor: Theme.of(
+                    context,
+                  ).colorScheme.onSecondaryContainer,
+                leading: const Icon(
+                  !_isTrashView && _selectedTagFilter == null && !_isArchiveView
+                  ? Icons.delete
+                  : Icons.delete_outline),
                 title: Text(AppLocalizations.of(context)!.papelera),
                 selected: _isTrashView,
                 onTap: () {
@@ -2634,44 +2659,49 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ListTile(
-                      leading: const Icon(Icons.restore),
+                      leading: const Icon(Icons.restore_outlined), // Icono outlined
                       title: Text(AppLocalizations.of(context)!.restoreNote),
                       onTap: () {
                         setState(() {
-                          for (var item in _selectedItems) {
-                            _trashedItems.removeWhere((i) => i.id == item.id);
-                            if (item.isArchived) {
-                              _archivedItems.add(
-                                item,
-                              ); // Si era archivada, vuelve a archivados
-                            } else {
-                              _items.add(item); // Si no, va al inicio
-                            }
-                          }
-                          _saveItems();
-                          _saveArchivedItems();
-                          _saveTrashedItems();
-                          _filterItems();
-                        });
-                        Navigator.pop(context);
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(
-                        Icons.delete_forever,
-                        color: Colors.red,
-                      ),
-                      title: Text(AppLocalizations.of(context)!.deleteForever),
-                      onTap: () {
-                        setState(() {
-                          _cleanupImagesForItems([item]);
-                          _trashedItems.remove(item);
-                          _saveTrashedItems();
-                          _filterItems();
-                        });
-                        Navigator.pop(context);
-                      },
-                    ),
+                          // 1. Eliminamos el ítem de la papelera comparando por ID (más seguro)
+                          _trashedItems.removeWhere((i) => i.id == item.id);
+
+      // 2. Verificamos si debe volver a archivados o a la lista principal
+      if (item.isArchived) {
+        _archivedItems.add(item);
+      } else {
+        _items.add(item);
+      }
+
+      // 3. Persistimos los cambios en todas las listas
+      _saveItems();
+      _saveArchivedItems();
+      _saveTrashedItems();
+
+      // 4. Actualizamos la interfaz
+      _filterItems();
+    });
+    Navigator.pop(context);
+  },
+),
+ListTile(
+  leading: const Icon(
+    Icons.delete_forever_outlined, // Icono outlined
+    color: Colors.red,
+  ),
+  title: Text(AppLocalizations.of(context)!.deleteForever),
+  onTap: () {
+    setState(() {
+      // Limpieza definitiva del ítem individual
+      _cleanupImagesForItems([item]);
+      _trashedItems.removeWhere((i) => i.id == item.id);
+      
+      _saveTrashedItems();
+      _filterItems();
+    });
+    Navigator.pop(context);
+  },
+),
                   ],
                 ),
               ),

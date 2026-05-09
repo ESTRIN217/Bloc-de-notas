@@ -3,18 +3,22 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 
 // Google Drive & Auth
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
-import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 
 class BackupService {
   static const String _backupFileName = 'bloc_notas_backup.json';
-
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: [drive.DriveApi.driveAppdataScope],
-  );
+ 
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  Future<void> initialize() async {
+    await _googleSignIn.initialize(
+      scopes: [drive.DriveApi.driveAppdataScope],
+      // Si usas Web, aquí deberías pasar el clientId: 'TU_ID.apps.googleusercontent.com'
+    );
+  }
 
   // --- 1. RECOPILAR Y EMPAQUETAR DATOS (LOCAL -> JSON) ---
   Future<String> createBackupJson() async {
@@ -80,7 +84,19 @@ class BackupService {
   // --- 3. LÓGICA DE GOOGLE DRIVE ---
   
   Future<GoogleSignInAccount?> signIn() async {
-    return await _googleSignIn.signIn();
+    try {
+      // Verificamos si la plataforma soporta el nuevo método de autenticación
+      if (_googleSignIn.supportsAuthenticate()) {
+        return await _googleSignIn.authenticate();
+      } else {
+        // En algunas plataformas (como Web sin el botón oficial) 
+        // podrías necesitar un flujo alternativo, pero para Android esto basta.
+        return null;
+      }
+    } catch (e) {
+      debugPrint('Error en el inicio de sesión: $e');
+      rethrow;
+    }
   }
 
   Future<void> signOut() async {
@@ -88,7 +104,9 @@ class BackupService {
   }
 
   Future<bool> isSignedIn() async {
-    return await _googleSignIn.isSignedIn();
+    // attemptLightweightAuthentication reemplaza a signInSilently()
+    final account = await _googleSignIn.attemptLightweightAuthentication();
+    return account != null;
   }
 
   Future<void> backupToDrive() async {

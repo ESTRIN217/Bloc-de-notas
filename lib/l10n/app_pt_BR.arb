@@ -120,7 +120,7 @@
   "actualizacionesDeLaApp": "Atualizações de aplicativos",
   "chaneldescripcion": "Você já possui a versão mais recente.",
   "desing": "Feito com ❤️ na Venezuela",
-  "titleSeccionbackup": "Armazenamento e dados",
+  "titleSeccionBackup": "Armazenamento e dados",
   "backupSyncTitle": "Fazer backup e restaurar",
   "errorSign": "Erro ao fazer login: {e}",
   "backupLoaded": "¡O backup foi carregado com sucesso para o Google Drive.!",

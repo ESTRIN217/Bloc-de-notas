@@ -384,6 +384,100 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get desing => 'Feito com ❤️ na Venezuela';
+
+  @override
+  String get titleSeccionBackup => 'Armazenamento e dados';
+
+  @override
+  String get backupSyncTitle => 'Fazer backup e restaurar';
+
+  @override
+  String errorSign(String e) {
+    return 'Erro ao fazer login: $e';
+  }
+
+  @override
+  String get backupLoaded =>
+      '¡O backup foi carregado com sucesso para o Google Drive.!';
+
+  @override
+  String errorCloud(String e) {
+    return 'Erro ao executar o backup na nuvem: $e';
+  }
+
+  @override
+  String get restoresCloud =>
+      'Notas restauradas. As alterações serão refletidas após o retorno.';
+
+  @override
+  String get restoresCloudempty =>
+      'Nenhuma cópia foi encontrada no seu Google Drive.';
+
+  @override
+  String restoredCloudError(String e) {
+    return 'Erro ao restaurar: $e';
+  }
+
+  @override
+  String get backupDownload => 'Arquivo baixado para seu PC/Celular.';
+
+  @override
+  String get backupTLF => 'Meu backup do Bloco de Notas';
+
+  @override
+  String get restoredLocal =>
+      'Dados importados com sucesso. Retorne à tela inicial para visualizá-los.';
+
+  @override
+  String restoredLocalError(String e) {
+    return 'Erro ao importar arquivo local: $e';
+  }
+
+  @override
+  String get cloudBackup => 'Google drive';
+
+  @override
+  String get signing =>
+      'Conexão segura. Seus dados são salvos na pasta oculta do aplicativo.';
+
+  @override
+  String get sing_in =>
+      'Inicie sessão para sincronizar as suas notas com o seu Drive de forma segura.';
+
+  @override
+  String synchronization(String lastCloudSync) {
+    return 'Última sincronização: $lastCloudSync';
+  }
+
+  @override
+  String get connectWithGoogle => 'Conecte-se com o Google';
+
+  @override
+  String get backup => 'Apoiar';
+
+  @override
+  String get restore => 'Restaurar';
+
+  @override
+  String get localBackup => 'Apoio local';
+
+  @override
+  String get downloadBackup =>
+      'Baixe um arquivo JSON com todas as suas notas e tags para o seu dispositivo.';
+
+  @override
+  String get backupPhone => 'Salve um backup no armazenamento do seu telefone.';
+
+  @override
+  String get download => 'Baixar';
+
+  @override
+  String get import => 'Importar';
+
+  @override
+  String lastBackup(String lastLocalSync) {
+    return 'Último backup: $lastLocalSync';
+  }
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -766,4 +860,98 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get desing => 'Feito com ❤️ na Venezuela';
+
+  @override
+  String get titleSeccionBackup => 'Armazenamento e dados';
+
+  @override
+  String get backupSyncTitle => 'Fazer backup e restaurar';
+
+  @override
+  String errorSign(String e) {
+    return 'Erro ao fazer login: $e';
+  }
+
+  @override
+  String get backupLoaded =>
+      '¡O backup foi carregado com sucesso para o Google Drive.!';
+
+  @override
+  String errorCloud(String e) {
+    return 'Erro ao executar o backup na nuvem: $e';
+  }
+
+  @override
+  String get restoresCloud =>
+      'Notas restauradas. As alterações serão refletidas após o retorno.';
+
+  @override
+  String get restoresCloudempty =>
+      'Nenhuma cópia foi encontrada no seu Google Drive.';
+
+  @override
+  String restoredCloudError(String e) {
+    return 'Erro ao restaurar: $e';
+  }
+
+  @override
+  String get backupDownload => 'Arquivo baixado para seu PC/Celular.';
+
+  @override
+  String get backupTLF => 'Meu backup do Bloco de Notas';
+
+  @override
+  String get restoredLocal =>
+      'Dados importados com sucesso. Retorne à tela inicial para visualizá-los.';
+
+  @override
+  String restoredLocalError(String e) {
+    return 'Erro ao importar arquivo local: $e';
+  }
+
+  @override
+  String get cloudBackup => 'Google drive';
+
+  @override
+  String get signing =>
+      'Conexão segura. Seus dados são salvos na pasta oculta do aplicativo.';
+
+  @override
+  String get sing_in =>
+      'Inicie sessão para sincronizar as suas notas com o seu Drive de forma segura.';
+
+  @override
+  String synchronization(String lastCloudSync) {
+    return 'Última sincronização: $lastCloudSync';
+  }
+
+  @override
+  String get connectWithGoogle => 'Conecte-se com o Google';
+
+  @override
+  String get backup => 'Apoiar';
+
+  @override
+  String get restore => 'Restaurar';
+
+  @override
+  String get localBackup => 'Apoio local';
+
+  @override
+  String get downloadBackup =>
+      'Baixe um arquivo JSON com todas as suas notas e tags para o seu dispositivo.';
+
+  @override
+  String get backupPhone => 'Salve um backup no armazenamento do seu telefone.';
+
+  @override
+  String get download => 'Baixar';
+
+  @override
+  String get import => 'Importar';
+
+  @override
+  String lastBackup(String lastLocalSync) {
+    return 'Último backup: $lastLocalSync';
+  }
 }

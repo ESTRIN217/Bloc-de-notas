@@ -120,7 +120,7 @@
   "actualizacionesDeLaApp": "Atualizações de aplicativos",
   "chaneldescripcion": "Você já possui a versão mais recente.",
   "desing": "Feito com ❤️ na Venezuela",
-  "titleSeccionbackup": "Armazenamento e dados",
+  "titleSeccionBackup": "Armazenamento e dados",
   "backupSyncTitle": "Fazer backup e restaurar",
   "errorSign": "Erro ao fazer login: {e}",
   "backupLoaded": "¡O backup foi carregado com sucesso para o Google Drive.!",
@@ -141,7 +141,7 @@
   "restore": "Restaurar",
   "localBackup": "Apoio local",
   "downloadBackup": "Baixe um arquivo JSON com todas as suas notas e tags para o seu dispositivo.",
-  "backupPhone": "Salve um backup no armazenamento do seu telefone."
+  "backupPhone": "Salve um backup no armazenamento do seu telefone.",
   "download": "Baixar",
   "import": "Importar",
   "lastBackup": "Último backup: {lastLocalSync}"

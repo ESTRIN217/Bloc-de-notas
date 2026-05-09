@@ -384,4 +384,95 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get desing => 'Made with ❤️ in Venezuela';
+
+  @override
+  String get titleSeccionBackup => 'Storage and data';
+
+  @override
+  String get backupSyncTitle => 'Backup and restore';
+
+  @override
+  String errorSign(String e) {
+    return 'Error logging in: $e';
+  }
+
+  @override
+  String get backupLoaded => '¡Backup successfully uploaded to Google Drive!';
+
+  @override
+  String errorCloud(String e) {
+    return 'Error backing up to the cloud: $e';
+  }
+
+  @override
+  String get restoresCloud =>
+      'Notes restored. Changes will be reflected upon return.';
+
+  @override
+  String get restoresCloudempty => 'No copy was found in your Google Drive.';
+
+  @override
+  String restoredCloudError(String e) {
+    return 'Error restoring: $e';
+  }
+
+  @override
+  String get backupDownload => 'File downloaded to your PC/Phone.';
+
+  @override
+  String get backupTLF => 'My Notepad backup';
+
+  @override
+  String get restoredLocal =>
+      'Data imported successfully. Return to the home screen to view it.';
+
+  @override
+  String restoredLocalError(String e) {
+    return 'Error importing local file: $e';
+  }
+
+  @override
+  String get cloudBackup => 'Google drive';
+
+  @override
+  String get signing =>
+      'Securely connected. Your data is saved in the app\'s hidden folder.';
+
+  @override
+  String get sing_in => 'Sign in to securely sync your notes to your Drive.';
+
+  @override
+  String synchronization(String lastCloudSync) {
+    return 'Last synchronization: $lastCloudSync';
+  }
+
+  @override
+  String get connectWithGoogle => 'Connect with Google';
+
+  @override
+  String get backup => 'back up';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get localBackup => 'Local Backup';
+
+  @override
+  String get downloadBackup =>
+      'Download a JSON file with all your notes and tags to your device.';
+
+  @override
+  String get backupPhone => 'Save a backup to your phone\'s storage.';
+
+  @override
+  String get download => 'Download';
+
+  @override
+  String get import => 'Import';
+
+  @override
+  String lastBackup(String lastLocalSync) {
+    return 'Last backup: $lastLocalSync';
+  }
 }

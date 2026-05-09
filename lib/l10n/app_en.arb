@@ -273,7 +273,7 @@
   "desing": "Made with ❤️ in Venezuela",
   "@desing": {},
   "titleSeccionBackup": "Storage and data",
-  "@titleSeccionbackup": {},
+  "@titleSeccionBackup": {},
   "backupSyncTitle": "Backup and restore",
   "@backupSyncTitle": {},
   "errorSign": "Error logging in: {e}",
@@ -349,7 +349,7 @@
   "download": "Download",
   "@download": {},
   "import": "Import",
-  "@import: {},
+  "@import": {},
   "lastBackup": "Last backup: {lastLocalSync}",
   "@lastBackup": {
   "placeholders": {

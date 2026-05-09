@@ -141,7 +141,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  _buildSectionTitle(context, AppLocalizations.of(context)!.titleSeccionbackup,),
+                  _buildSectionTitle(context, AppLocalizations.of(context)!.titleSeccionBackup,),
                   _buildSettingsGroup(
                     context,
                     children: [

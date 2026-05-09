@@ -120,7 +120,7 @@
   "actualizacionesDeLaApp": "Actualizaciones de la app",
   "chaneldescripcion": "Ya tienes la última versión",
   "desing": "Hecho con ❤️ en Venezuela",
-  "titleSeccionbackup": "Almacenamiento y datos",
+  "titleSeccionBackup": "Almacenamiento y datos",
   "backupSyncTitle": "Copias de seguridad y restauración",
   "errorSign": "Error al iniciar sesión: {e}",
   "backupLoaded": "¡Respaldo subido a Google Drive exitosamente!",

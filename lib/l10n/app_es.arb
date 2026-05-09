@@ -129,7 +129,7 @@
   "actualizacionesDeLaApp": "Actualizaciones de la app",
   "chaneldescripcion": "Ya tienes la última versión",
   "desing": "Hecho con ❤️ en Venezuela",
-  "titleSeccionbackup": "Almacenamiento y datos",
+  "titleSeccionBackup": "Almacenamiento y datos",
   "backupSyncTitle": "Copias de seguridad y restauración",
   "errorSign": "Error al iniciar sesión: {e}",
   "backupLoaded": "¡Respaldo subido a Google Drive exitosamente!",
@@ -149,7 +149,7 @@
   "backup": "Respaldar",
   "restore": "Restaurar",
   "localBackup": "Respaldo Local",
-  "downloadBackup": "Descarga un archivo JSON con todas tus notas y etiquetas a tu dispositivo."
+  "downloadBackup": "Descarga un archivo JSON con todas tus notas y etiquetas a tu dispositivo.",
   "backupPhone": "Guarda una copia de seguridad en el almacenamiento de tu teléfono.",
   "download": "Descargar",
   "import": "Importar",

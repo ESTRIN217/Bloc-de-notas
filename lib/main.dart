@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bloc_de_notas/audioembedbuilder.dart';
+import 'package:bloc_de_notas/backup_service.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 // Solo se usa si !kIsWeb
@@ -144,10 +145,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   late List<ListItem> _archivedItems;
   bool _isArchiveView = false;
   int? _selectedColorFilter;
+  
+  BackupService get _backupService => BackupService();
 
   @override
   void initState() {
     super.initState();
+    _backupService.initialize().then((_) {
+    _checkSignInStatus();
+    });
     WidgetsBinding.instance.addObserver(this);
     _items = [];
     _filteredItems = [];
@@ -2163,7 +2169,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   selectedColor: Theme.of(
                     context,
                   ).colorScheme.onSecondaryContainer,
-                  leading: const Icon(
+                  leading: Icon(
                   !_isTrashView && _selectedTagFilter == null && !_isArchiveView
                   ? Icons.label
                   : Icons.label_outline),
@@ -2198,7 +2204,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   selectedColor: Theme.of(
                     context,
                   ).colorScheme.onSecondaryContainer,
-                leading: const Icon(
+                leading: Icon(
                   !_isTrashView && _selectedTagFilter == null && !_isArchiveView
                   ? Icons.archive
                   : Icons.archive_outlined),
@@ -2229,7 +2235,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   selectedColor: Theme.of(
                     context,
                   ).colorScheme.onSecondaryContainer,
-                leading: const Icon(
+                leading: Icon(
                   !_isTrashView && _selectedTagFilter == null && !_isArchiveView
                   ? Icons.delete
                   : Icons.delete_outline),

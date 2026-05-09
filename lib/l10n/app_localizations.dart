@@ -815,6 +815,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Made with ❤️ in Venezuela'**
   String get desing;
+
+  /// No description provided for @titleSeccionBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage and data'**
+  String get titleSeccionBackup;
+
+  /// No description provided for @backupSyncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup and restore'**
+  String get backupSyncTitle;
+
+  /// No description provided for @errorSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Error logging in: {e}'**
+  String errorSign(String e);
+
+  /// No description provided for @backupLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'¡Backup successfully uploaded to Google Drive!'**
+  String get backupLoaded;
+
+  /// No description provided for @errorCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Error backing up to the cloud: {e}'**
+  String errorCloud(String e);
+
+  /// No description provided for @restoresCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes restored. Changes will be reflected upon return.'**
+  String get restoresCloud;
+
+  /// No description provided for @restoresCloudempty.
+  ///
+  /// In en, this message translates to:
+  /// **'No copy was found in your Google Drive.'**
+  String get restoresCloudempty;
+
+  /// No description provided for @restoredCloudError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error restoring: {e}'**
+  String restoredCloudError(String e);
+
+  /// No description provided for @backupDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'File downloaded to your PC/Phone.'**
+  String get backupDownload;
+
+  /// No description provided for @backupTLF.
+  ///
+  /// In en, this message translates to:
+  /// **'My Notepad backup'**
+  String get backupTLF;
+
+  /// No description provided for @restoredLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Data imported successfully. Return to the home screen to view it.'**
+  String get restoredLocal;
+
+  /// No description provided for @restoredLocalError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error importing local file: {e}'**
+  String restoredLocalError(String e);
+
+  /// No description provided for @cloudBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Google drive'**
+  String get cloudBackup;
+
+  /// No description provided for @signing.
+  ///
+  /// In en, this message translates to:
+  /// **'Securely connected. Your data is saved in the app\'s hidden folder.'**
+  String get signing;
+
+  /// No description provided for @sing_in.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to securely sync your notes to your Drive.'**
+  String get sing_in;
+
+  /// No description provided for @synchronization.
+  ///
+  /// In en, this message translates to:
+  /// **'Last synchronization: {lastCloudSync}'**
+  String synchronization(String lastCloudSync);
+
+  /// No description provided for @connectWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect with Google'**
+  String get connectWithGoogle;
+
+  /// No description provided for @backup.
+  ///
+  /// In en, this message translates to:
+  /// **'back up'**
+  String get backup;
+
+  /// No description provided for @restore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// No description provided for @localBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Backup'**
+  String get localBackup;
+
+  /// No description provided for @downloadBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Download a JSON file with all your notes and tags to your device.'**
+  String get downloadBackup;
+
+  /// No description provided for @backupPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a backup to your phone\'s storage.'**
+  String get backupPhone;
+
+  /// No description provided for @download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get download;
+
+  /// No description provided for @import.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get import;
+
+  /// No description provided for @lastBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Last backup: {lastLocalSync}'**
+  String lastBackup(String lastLocalSync);
 }
 
 class _AppLocalizationsDelegate

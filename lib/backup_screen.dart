@@ -1,3 +1,5 @@
+import 'dart:convert' show utf8;
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html; // Para la descarga en Web
 import 'backup_service.dart';
+import 'l10n/app_localizations.dart';
 
 class BackupSyncScreen extends StatefulWidget {
   const BackupSyncScreen({super.key});
@@ -18,6 +21,10 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
   final BackupService _backupService = BackupService();
   bool _isGoogleSignIn = false;
   bool _isLoading = false;
+
+  String? get _lastCloudSync => null;
+
+  String? get _lastLocalSync => null;
 
   @override
   void initState() {
@@ -35,11 +42,15 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
     setState(() => _isLoading = true);
     try {
       final account = await _backupService.signIn();
+      if (!mounted) return;
       setState(() => _isGoogleSignIn = account != null);
     } catch (e) {
-      _showSnack(AppLocalizations.of(context)!.errorSign(e));
+      if (!mounted) return;
+      _showSnack(AppLocalizations.of(context)!.errorSign(e.toString()));
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -47,11 +58,15 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
     setState(() => _isLoading = true);
     try {
       await _backupService.backupToDrive();
+      if (!mounted) return;
       _showSnack(AppLocalizations.of(context)!.backupLoaded);
     } catch (e) {
-      _showSnack(AppLocalizations.of(context)!.errorCloud(e));
+      if (!mounted) return;
+      _showSnack(AppLocalizations.of(context)!.errorCloud(e.toString()));
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -59,21 +74,28 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
     setState(() => _isLoading = true);
     try {
       final success = await _backupService.restoreFromDrive();
+      if (!mounted) return;
       if (success) {
         _showSnack(AppLocalizations.of(context)!.restoresCloud);
       } else {
         _showSnack(AppLocalizations.of(context)!.restoresCloudempty);
       }
     } catch (e) {
-      _showSnack(AppLocalizations.of(context)!.restoredCloudError(e));
+      if (!mounted) return;
+      _showSnack(
+        AppLocalizations.of(context)!.restoredCloudError(e.toString()),
+      );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   // --- LÓGICA LOCAL ---
   Future<void> _createLocalBackup() async {
     final jsonString = await _backupService.createBackupJson();
+    if (!mounted) return;
 
     if (kIsWeb) {
       // Magia para Web: Forzar descarga del navegador
@@ -84,32 +106,36 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
         ..setAttribute("download", "bloc_notas_backup.json")
         ..click();
       html.Url.revokeObjectUrl(url);
-      _showSnack(AppLocalizations.of(context)!.backupDownload);
+      if (mounted) {
+        _showSnack(AppLocalizations.of(context)!.backupDownload);
+      }
     } else {
       // En Android, usamos path_provider y SharePlus para guardarlo donde el usuario quiera
       final dir = await getTemporaryDirectory();
+      if (!mounted) return;
       final file = File('${dir.path}/bloc_notas_backup.json');
       await file.writeAsString(jsonString);
-      
+      if (!mounted) return;
+
       await SharePlus.instance.share(
         ShareParams(
-          text: AppLocalizations.of(context)!.backupTLF, 
-          files: [XFile(file.path)]
-        )
+          text: AppLocalizations.of(context)!.backupTLF,
+          files: [XFile(file.path)],
+        ),
       );
     }
   }
 
   Future<void> _restoreFromLocal() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
       );
 
       if (result != null) {
         String jsonString;
-        
+
         if (kIsWeb) {
           // En web los bytes vienen directamente
           jsonString = utf8.decode(result.files.single.bytes!);
@@ -120,16 +146,20 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
         }
 
         await _backupService.restoreFromJson(jsonString);
+        if (!mounted) return;
         _showSnack(AppLocalizations.of(context)!.restoredLocal);
       }
     } catch (e) {
-      _showSnack(AppLocalizations.of(context)!.restoredLocalError);
+      if (!mounted) return;
+      _showSnack(AppLocalizations.of(context)!.restoredLocalError as String);
     }
   }
 
   void _showSnack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -170,7 +200,11 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.cloud_outlined, color: colorScheme.primary, size: 28),
+                Icon(
+                  Icons.cloud_outlined,
+                  color: colorScheme.primary,
+                  size: 28,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -179,7 +213,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                   ),
                 ),
                 if (_isGoogleSignIn)
-                  Icon(Icons.check_circle_outlined, color: Colors.green[400])
+                  Icon(Icons.check_circle_outlined, color: Colors.green[400]),
               ],
             ),
             const SizedBox(height: 16),
@@ -191,8 +225,11 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!.synchronization(_lastCloudSync),
-              style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+              AppLocalizations.of(context)!.synchronization(_lastCloudSync!),
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 24),
             if (!_isGoogleSignIn)
@@ -201,7 +238,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                 child: FilledButton.icon(
                   onPressed: _handleGoogleSignIn,
                   icon: const Icon(Icons.login_outlined),
-                  label: const Text(AppLocalizations.of(context)!.connectWithGoogle),
+                  label: Text(AppLocalizations.of(context)!.connectWithGoogle),
                 ),
               )
             else
@@ -211,7 +248,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                     child: FilledButton.tonalIcon(
                       onPressed: _backupToCloud,
                       icon: const Icon(Icons.cloud_upload_outlined),
-                      label: const Text(AppLocalizations.of(context)!.backup),
+                      label: Text(AppLocalizations.of(context)!.backup),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -219,7 +256,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                     child: FilledButton.tonalIcon(
                       onPressed: _restoreFromCloud,
                       icon: const Icon(Icons.cloud_download_outlined),
-                      label: const Text(AppLocalizations.of(context)!.restore),
+                      label: Text(AppLocalizations.of(context)!.restore),
                     ),
                   ),
                 ],
@@ -244,7 +281,11 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.folder_outlined, color: colorScheme.secondary, size: 28),
+                Icon(
+                  Icons.folder_outlined,
+                  color: colorScheme.secondary,
+                  size: 28,
+                ),
                 const SizedBox(width: 12),
                 Text(
                   AppLocalizations.of(context)!.localBackup,
@@ -261,8 +302,11 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!.lastBackup(_lastLocalSync),
-              style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+              AppLocalizations.of(context)!.lastBackup(_lastLocalSync!),
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 24),
             Row(
@@ -270,19 +314,25 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: _createLocalBackup,
-                    icon: Icon(kIsWeb ? Icons.download_outlined : Icons.save_outlined),
-                    label: Text(kIsWeb ? AppLocalizations.of(context)!.download : AppLocalizations.of(context)!.save),
+                    icon: Icon(
+                      kIsWeb ? Icons.download_outlined : Icons.save_outlined,
+                    ),
+                    label: Text(
+                      kIsWeb
+                          ? AppLocalizations.of(context)!.download
+                          : AppLocalizations.of(context)!.save,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      _restoreFromLocal,
+                      _restoreFromLocal();
                       // Lógica de file_picker para seleccionar el JSON local
                     },
                     icon: const Icon(Icons.file_open_outlined),
-                    label: const Text(AppLocalizations.of(context)!.import),
+                    label: Text(AppLocalizations.of(context)!.import),
                   ),
                 ),
               ],

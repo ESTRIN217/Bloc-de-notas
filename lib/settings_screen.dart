@@ -115,20 +115,20 @@ class SettingsScreen extends StatelessWidget {
                         // Aplicamos el fondo al icono de idioma
                         leading: _buildIconContainer(context, Icons.language),
                         title: Text(
-                          // 1. Si el locale es nulo, es porque está en modo sistema
-                          themeProvider.locale.countryCode == "VE"
-                              ? AppLocalizations.of(context)!.venezolano
-                              : themeProvider.locale.countryCode == "BR"
-                              ? AppLocalizations.of(context)!.brasileno
-                              // 3. Por último, los idiomas genéricos
-                              : themeProvider.locale.languageCode == 'es'
-                              ? AppLocalizations.of(context)!.espanol
-                              : themeProvider.locale.languageCode == 'pt'
-                              ? AppLocalizations.of(context)!.portugues
-                              : themeProvider.locale.languageCode == 'en'
-                              ? AppLocalizations.of(context)!.ingles
-                              : '🌐 ${themeProvider.locale.languageCode.toUpperCase()}',
-                        ),
+  themeProvider.isSystemLocale 
+    ? AppLocalizations.of(context)!.system_default // Ahora mostrará "Predeterminado"
+    : themeProvider.locale.countryCode == "VE"
+      ? AppLocalizations.of(context)!.venezolano
+      : themeProvider.locale.countryCode == "BR"
+        ? AppLocalizations.of(context)!.brasileno
+        : themeProvider.locale.languageCode == 'es'
+          ? AppLocalizations.of(context)!.espanol
+          : themeProvider.locale.languageCode == 'pt'
+            ? AppLocalizations.of(context)!.portugues
+            : themeProvider.locale.languageCode == 'en'
+              ? AppLocalizations.of(context)!.ingles
+              : '🌐 ${themeProvider.locale.languageCode.toUpperCase()}',
+),
                         subtitle: Text(AppLocalizations.of(context)!.idioma),
                         onTap: () {
                           _showLanguageDialog(context, themeProvider);
@@ -304,19 +304,15 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // OPCIÓN PREDETERMINADO
-                ListTile(
-                  leading: const Icon(Icons.language),
-                  title: Text(
-                    AppLocalizations.of(context)!.system_default,
-                  ), // Usa la clave del ARB
-                  onTap: () {
-                    themeProvider.setLocale(
-                      WidgetsBinding.instance.platformDispatcher.locale,
-                    );
-                    Navigator.pop(context);
-                  },
-                ),
+// OPCIÓN PREDETERMINADO
+ListTile(
+  leading: const Icon(Icons.language),
+  title: Text(AppLocalizations.of(context)!.system_default),
+  onTap: () {
+    themeProvider.setLocale(null); // Al pasar null, el provider sabe que es el sistema
+    Navigator.pop(context);
+  },
+),
                 const Divider(), // Una línea divisoria queda bien aquí
                 // VENEZUELA
                 ListTile(

@@ -18,8 +18,9 @@ class ThemeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Locale _locale = WidgetsBinding.instance.platformDispatcher.locale; // Idioma por defecto
-  Locale get locale => _locale;
+  Locale? _manualLocale;
+  Locale get locale => _manualLocale ?? WidgetsBinding.instance.platformDispatcher.locale;
+  bool get isSystemLocale => _manualLocale == null;
 
   // Constructor: Al crear el Provider, cargamos las preferencias guardadas
   ThemeProvider() {
@@ -29,23 +30,28 @@ class ThemeProvider with ChangeNotifier {
   // Función privada para cargar el idioma al iniciar
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? languageCode = prefs.getString('language_code');
+    final String? lang = prefs.getString('language_code');
+    final String? country = prefs.getString('country_code'); // Nuevo
     
-    if (languageCode != null) {
-      _locale = Locale(languageCode);
+    if (lang != null) {
+      _manualLocale = Locale(lang, country == "" ? null : country);
       notifyListeners();
     }
   }
 
   // Actualiza el idioma y lo guarda en memoria
   Future<void> setLocale(Locale? newLocale) async {
-    if (_locale != newLocale) {
-      _locale = newLocale!;
-      notifyListeners(); // Actualiza la UI de inmediato
-      
-      // Guardamos la preferencia en segundo plano
-      final prefs = await SharedPreferences.getInstance();
+    _manualLocale = newLocale;
+    notifyListeners();
+    
+    final prefs = await SharedPreferences.getInstance();
+    if (newLocale == null) {
+      // Si es null, borramos para volver al sistema
+      await prefs.remove('language_code');
+      await prefs.remove('country_code');
+    } else {
       await prefs.setString('language_code', newLocale.languageCode);
+      await prefs.setString('country_code', newLocale.countryCode ?? "");
     }
   }
 }

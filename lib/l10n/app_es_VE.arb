@@ -115,5 +115,9 @@
   "ordenar": "Ordenar",
   "ultima": "Última versión disponible: {version}",
   "ocultarRegistroDeCambios": "Ocultar registro de cambios",
-  "verRegistroDeCambios":  "Ver registro de cambios"
+  "verRegistroDeCambios":  "Ver registro de cambios",
+  "actualizacionDisponible": "Actualización disponible",
+  "actualizacionesDeLaApp": "Actualizaciones de la app",
+  "chaneldescripcion": "Notifica cuando hay una nueva versión disponible",
+  "desing": "Hecho con ❤️ en Venezuela"
 }

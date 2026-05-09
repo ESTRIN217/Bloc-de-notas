@@ -10,7 +10,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 class UpdaterProvider with ChangeNotifier {
   bool _autoUpdate = false;
   bool _notifications = false;
-  String _currentVersion = 'Cargando...';
+  String _currentVersion = AppLocalizations.of(context)!.loading;
   bool _isChecking = false;
 
   String? _latestVersion;
@@ -75,9 +75,7 @@ class UpdaterProvider with ChangeNotifier {
           iOS: initializationSettingsDarwin,
         );
 
-    // Corregido: Usamos el parámetro posicional para las configuraciones
     await _notificationsPlugin.initialize(
-      // DEBES poner el nombre 'initializationSettings:' antes de la variable
       settings: initializationSettings,
 
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
@@ -192,9 +190,9 @@ class UpdaterProvider with ChangeNotifier {
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
           'updater_channel_id',
-          'Actualizaciones de la app',
+          AppLocalizations.of(context)!.actualizacionesDeLaApp,
           channelDescription:
-              'Notifica cuando hay una nueva versión disponible',
+              AppLocalizations.of(context)!.chaneldescripcion,
           importance: Importance.max,
           priority: Priority.high,
           icon: '@mipmap/ic_launcher', // Asegura que use tu icono de app
@@ -206,8 +204,8 @@ class UpdaterProvider with ChangeNotifier {
     // Corregido: Parámetros posicionales para id, title, body y notificationDetails
     await _notificationsPlugin.show(
       id: 0, // ID de la notificación
-      title: 'Actualización disponible',
-      body: 'Versión $_latestVersion',
+      title: AppLocalizations.of(context)!.actualizacionDisponible,
+      body: AppLocalizations.of(context)!.appVersion(_latestVersion ?? ''),
       notificationDetails: platformDetails,
       payload: _downloadUrl, // Pasamos la URL al payload para abrirla al tocar
     );

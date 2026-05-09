@@ -52,7 +52,7 @@ class AboutScreen extends StatelessWidget {
           // Nota de pie sutil
           Center(
             child: Text(
-              "Hecho con ❤️ en Venezuela",
+              AppLocalizations.of(context)!.desing,
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),

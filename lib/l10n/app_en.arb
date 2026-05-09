@@ -263,5 +263,13 @@
   "ocultarRegistroDeCambios": "Hide change log",
   "@ocultarRegistroDeCambios": {},
   "verRegistroDeCambios": "View change log",
-  "@verRegistroDeCambios": {}
+  "@verRegistroDeCambios": {},
+  "actualizacionDisponible": "Update available",
+  "@actualizacionDisponible": {},
+  "actualizacionesDeLaApp": "App updates",
+  "@actualizacionesDeLaApp": {},
+  "chaneldescripcion": "Notify you when a new version is available",
+  "@chaneldescripcion": {},
+  "desing": "Made with ❤️ in Venezuela",
+  "@desing": {}
 }

@@ -11,7 +11,7 @@ import 'l10n/app_localizations.dart';
 class UpdaterProvider with ChangeNotifier {
   bool _autoUpdate = false;
   bool _notifications = false;
-  String _currentVersion = AppLocalizations.of(context!)!.loading;
+  String _currentVersion = 'Cargando...';
   bool _isChecking = false;
 
   String? _latestVersion;
@@ -165,7 +165,7 @@ class UpdaterProvider with ChangeNotifier {
           if (hasUpdate) {
             _showNativeNotification();
           } else {
-            _showSnackBar(context, 'Ya tienes la última versión');
+            _showSnackBar(context, AppLocalizations.of(context)!.chaneldescripcion);
           }
         }
       }
@@ -214,8 +214,8 @@ class UpdaterProvider with ChangeNotifier {
   Future<void> _showNativeNotification() async {
     AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'updater_channel_id',
-      AppLocalizations.of(context!)!.actualizacionesDeLaApp,
-      channelDescription: AppLocalizations.of(context!)!.chaneldescripcion,
+      'Actualizaciones de la app',
+      channelDescription: 'Notifica cuando hay una nueva versión disponible',
       importance: Importance.max,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher', // Asegura que use tu icono de app
@@ -229,8 +229,8 @@ class UpdaterProvider with ChangeNotifier {
     // Corregido: Parámetros posicionales para id, title, body y notificationDetails
     await _notificationsPlugin.show(
       id: 0, // ID de la notificación
-      title: AppLocalizations.of(context!)!.actualizacionDisponible,
-      body: AppLocalizations.of(context!)!.appVersion(_latestVersion ?? ''),
+      title: 'Actualización disponible',
+      body: 'Versión $_latestVersion',
       notificationDetails: platformDetails,
       payload: _downloadUrl, // Pasamos la URL al payload para abrirla al tocar
     );

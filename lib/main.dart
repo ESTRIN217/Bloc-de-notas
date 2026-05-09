@@ -3011,4 +3011,6 @@ ListTile(
       ),
     );
   }
+  
+  void _checkSignInStatus() {}
 }

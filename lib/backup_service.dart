@@ -3,20 +3,24 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 
 // Google Drive & Auth
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 
 class BackupService {
   static const String _backupFileName = 'bloc_notas_backup.json';
  
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  GoogleSignInAccount? _currentUser;
+  GoogleSignInAccount? get user => _currentUser;
+  
   Future<void> initialize() async {
     await _googleSignIn.initialize(
       // Si usas Web, aquí deberías pasar el clientId: 'TU_ID.apps.googleusercontent.com'
     );
+    _currentUser = await _googleSignIn.attemptLightweightAuthentication();
   }
 
   // --- 1. RECOPILAR Y EMPAQUETAR DATOS (LOCAL -> JSON) ---
@@ -84,21 +88,20 @@ class BackupService {
   
   Future<GoogleSignInAccount?> signIn() async {
   try {
-    if (await _googleSignIn.supportsAuthenticate()) {
+    if (_googleSignIn.supportsAuthenticate()) {
       // 1. Autenticación básica (Login)
-      final GoogleSignInAccount? account = await _googleSignIn.authenticate();
+      final GoogleSignInAccount account = await _googleSignIn.authenticate();
 
-      if (account != null) {
-        // 2. Autorización de Scopes (Permisos de Drive)
-        // Definimos el scope que necesitas
-        final driveScope = [drive.DriveApi.driveAppdataScope];
-        
-        // Solicitamos el permiso explícito al usuario
-        await account.authorizationClient.authorizeScopes(driveScope);
-        
-        return account;
-      }
-    }
+      // 2. Autorización de Scopes (Permisos de Drive)
+      // Definimos el scope que necesitas
+      final driveScope = [drive.DriveApi.driveAppdataScope];
+      
+      // Solicitamos el permiso explícito al usuario
+      await account.authorizationClient.authorizeScopes(driveScope);
+      
+      _currentUser = account;
+      return account;
+        }
     return null;
   } catch (e) {
     debugPrint('Error en el inicio de sesión: $e');
@@ -108,6 +111,7 @@ class BackupService {
 
   Future<void> signOut() async {
     await _googleSignIn.signOut();
+    _currentUser = null;
   }
 
   Future<bool> isSignedIn() async {
@@ -118,7 +122,7 @@ class BackupService {
 
   Future<void> backupToDrive() async {
     // 1. Obtenemos el usuario actual (debe estar logueado previamente)
-    final account = GoogleSignIn.instance.currentUser;
+    final account = user;
     if (account == null) throw Exception("No hay un usuario autenticado");
 
     // 2. Definimos los scopes necesarios
@@ -131,7 +135,6 @@ class BackupService {
     // Se llama sobre el objeto 'authorization', no sobre GoogleSignIn
     final client = authorization.authClient(scopes: driveScopes);
     
-    if (client == null) throw Exception("No se pudo crear el cliente autenticado");
 
     final driveApi = drive.DriveApi(client);
     final backupJson = await createBackupJson();
@@ -166,7 +169,7 @@ class BackupService {
 
   Future<bool> restoreFromDrive() async {
   // 1. Obtener el usuario actual
-  final account = GoogleSignIn.instance.currentUser;
+  final account = user;
   if (account == null) throw Exception("No autenticado");
 
   // 2. Definir scopes y obtener autorización
@@ -175,7 +178,6 @@ class BackupService {
 
   // 3. Usar el método correcto de la extensión: .authClient()
   final client = authorization.authClient(scopes: driveScopes);
-  if (client == null) throw Exception("No se pudo crear el cliente");
 
   final driveApi = drive.DriveApi(client);
 

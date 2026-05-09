@@ -807,7 +807,7 @@ abstract class AppLocalizations {
   /// No description provided for @chaneldescripcion.
   ///
   /// In en, this message translates to:
-  /// **'Notify you when a new version is available'**
+  /// **'You already have the latest version'**
   String get chaneldescripcion;
 
   /// No description provided for @desing.

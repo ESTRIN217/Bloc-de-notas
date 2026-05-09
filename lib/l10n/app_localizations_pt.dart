@@ -380,8 +380,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get actualizacionesDeLaApp => 'Atualizações de aplicativos';
 
   @override
-  String get chaneldescripcion =>
-      'Notifica você quando uma nova versão estiver disponível';
+  String get chaneldescripcion => 'Você já possui a versão mais recente.';
 
   @override
   String get desing => 'Feito com ❤️ na Venezuela';
@@ -763,8 +762,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get actualizacionesDeLaApp => 'Atualizações de aplicativos';
 
   @override
-  String get chaneldescripcion =>
-      'Notifica você quando uma nova versão estiver disponível';
+  String get chaneldescripcion => 'Você já possui a versão mais recente.';
 
   @override
   String get desing => 'Feito com ❤️ na Venezuela';

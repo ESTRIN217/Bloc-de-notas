@@ -380,7 +380,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actualizacionesDeLaApp => 'App updates';
 
   @override
-  String get chaneldescripcion => 'Notify you when a new version is available';
+  String get chaneldescripcion => 'You already have the latest version';
 
   @override
   String get desing => 'Made with ❤️ in Venezuela';

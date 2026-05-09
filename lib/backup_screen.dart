@@ -22,9 +22,8 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
   bool _isGoogleSignIn = false;
   bool _isLoading = false;
 
-  String? get _lastCloudSync => null;
-
-  String? get _lastLocalSync => null;
+  String get _lastCloudSync => "Nunca";
+  String get _lastLocalSync => "Nunca";
 
   @override
   void initState() {
@@ -225,7 +224,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!.synchronization(_lastCloudSync!),
+              AppLocalizations.of(context)!.synchronization(_lastCloudSync),
               style: TextStyle(
                 fontSize: 12,
                 color: colorScheme.onSurfaceVariant,
@@ -302,7 +301,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!.lastBackup(_lastLocalSync!),
+              AppLocalizations.of(context)!.lastBackup(_lastLocalSync),
               style: TextStyle(
                 fontSize: 12,
                 color: colorScheme.onSurfaceVariant,

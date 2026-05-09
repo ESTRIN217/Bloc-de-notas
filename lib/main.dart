@@ -2170,7 +2170,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     context,
                   ).colorScheme.onSecondaryContainer,
                   leading: Icon(
-                  !_isTrashView && _selectedTagFilter == null && !_isArchiveView
+                  _selectedTagFilter == tag && !_isTrashView
                   ? Icons.label
                   : Icons.label_outline),
                   title: Text(tag),
@@ -2205,7 +2205,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     context,
                   ).colorScheme.onSecondaryContainer,
                 leading: Icon(
-                  !_isTrashView && _selectedTagFilter == null && !_isArchiveView
+                _isArchiveView
                   ? Icons.archive
                   : Icons.archive_outlined),
                 title: Text(AppLocalizations.of(context)!.archivados),
@@ -2236,7 +2236,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     context,
                   ).colorScheme.onSecondaryContainer,
                 leading: Icon(
-                  !_isTrashView && _selectedTagFilter == null && !_isArchiveView
+                 _isTrashView
                   ? Icons.delete
                   : Icons.delete_outline),
                 title: Text(AppLocalizations.of(context)!.papelera),

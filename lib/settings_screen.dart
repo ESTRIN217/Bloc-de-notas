@@ -13,6 +13,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'update_widget.dart';
 import 'updater_provider.dart';
+import 'backup_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -139,6 +140,24 @@ class SettingsScreen extends StatelessWidget {
                         },
                       ),
                     ],
+                  ),
+                  _buildSectionTitle(context, AppLocalizations.of(context)!.titleSeccionbackup,),
+                  _buildSettingsGroup(
+                    context,
+                    children: [
+                      ListTile(
+                        leading: _buildIconContainer(context, Icons.cloud_download_outlined),
+                        title: Text(AppLocalizations.of(context)!.backupSyncTitle),
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const BackupSyncScreen(),
+                              ),
+                            );
+                        },
+                      ),
+                    ]
                   ),
 
                   _buildSectionTitle(

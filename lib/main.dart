@@ -2300,12 +2300,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   //}
                   //} else {
                   // Lógica para iOS/Otros: Pantalla de Flutter
-                  Navigator.push(
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const SettingsScreen(),
                     ),
                   );
+                  _loadAllData();
                   // }
                 },
               ),

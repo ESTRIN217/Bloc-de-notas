@@ -271,5 +271,91 @@
   "chaneldescripcion": "You already have the latest version",
   "@chaneldescripcion": {},
   "desing": "Made with ❤️ in Venezuela",
-  "@desing": {}
+  "@desing": {},
+  "titleSeccionBackup": "Storage and data",
+  "@titleSeccionbackup": {},
+  "backupSyncTitle": "Backup and restore",
+  "@backupSyncTitle": {},
+  "errorSign": "Error logging in: {e}",
+  "@errorSign": {
+  "placeholders": {
+  "e": {
+  "type": "String"
+  }
+  }
+  },
+  "backupLoaded": "¡Backup successfully uploaded to Google Drive!",
+  "@backupLoaded": {},
+  "errorCloud": "Error backing up to the cloud: {e}",
+  "@errorCloud": {
+  "placeholders": {
+  "e": {
+  "type": "String"
+  }
+  }
+  },
+  "restoresCloud": "Notes restored. Changes will be reflected upon return.",
+  "@restoresCloud": {},
+  "restoresCloudempty": "No copy was found in your Google Drive.",
+  "@restoresCloudempty": {},
+  "restoredCloudError": "Error restoring: {e}",
+  "@restoredCloudError": {
+  "placeholders": {
+  "e": {
+  "type": "String"
+  }
+  }
+  },
+  "backupDownload": "File downloaded to your PC/Phone.",
+  "@backupDownload": {},
+  "backupTLF": "My Notepad backup",
+  "@backupTLF": {},
+  "restoredLocal": "Data imported successfully. Return to the home screen to view it.",
+  "@restoredLocal": {},
+  "restoredLocalError": "Error importing local file: {e}",
+  "@restoredLocalError": {
+  "placeholders": {
+  "e": {
+  "type": "String"
+  }
+  }
+  },
+  "cloudBackup": "Google drive",
+  "@cloudBackup": {},
+  "signing": "Securely connected. Your data is saved in the app's hidden folder.",
+  "@signing": {},
+  "sing_in": "Sign in to securely sync your notes to your Drive.",
+  "@sing_in": {},
+  "synchronization": "Last synchronization: {lastCloudSync}",
+  "@synchronization": {
+  "placeholders": {
+  "lastCloudSync": {
+  "type": "String"
+  }
+  }
+  },
+  "connectWithGoogle": "Connect with Google",
+  "@connectWithGoogle": {},
+  "backup": "back up",
+  "@backup": {},
+  "restore": "Restore",
+  "@restore": {},
+  "localBackup": "Local Backup",
+  "@localBackup": {},
+  "downloadBackup": "Download a JSON file with all your notes and tags to your device.",
+  "@downloadBackup": {},
+  "backupPhone": "Save a backup to your phone's storage.",
+  "@backupPhone": {},
+  "download": "Download",
+  "@download": {},
+  "import": "Import",
+  "@import: {},
+  "lastBackup": "Last backup: {lastLocalSync}",
+  "@lastBackup": {
+  "placeholders": {
+  "lastLocalSync": {
+  "type": "String"
+  }
+  }
+  }
 }

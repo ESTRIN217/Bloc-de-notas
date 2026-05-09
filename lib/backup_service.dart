@@ -15,7 +15,6 @@ class BackupService {
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   Future<void> initialize() async {
     await _googleSignIn.initialize(
-      scopes: [drive.DriveApi.driveAppdataScope],
       // Si usas Web, aquí deberías pasar el clientId: 'TU_ID.apps.googleusercontent.com'
     );
   }
@@ -84,19 +83,27 @@ class BackupService {
   // --- 3. LÓGICA DE GOOGLE DRIVE ---
   
   Future<GoogleSignInAccount?> signIn() async {
-    try {
-      // Verificamos si la plataforma soporta el nuevo método de autenticación
-      if (_googleSignIn.supportsAuthenticate()) {
-        return await _googleSignIn.authenticate();
-      } else {
-        // En algunas plataformas (como Web sin el botón oficial) 
-        // podrías necesitar un flujo alternativo, pero para Android esto basta.
-        return null;
+  try {
+    if (await _googleSignIn.supportsAuthenticate()) {
+      // 1. Autenticación básica (Login)
+      final GoogleSignInAccount? account = await _googleSignIn.authenticate();
+
+      if (account != null) {
+        // 2. Autorización de Scopes (Permisos de Drive)
+        // Definimos el scope que necesitas
+        final driveScope = [drive.DriveApi.driveAppdataScope];
+        
+        // Solicitamos el permiso explícito al usuario
+        await account.authorizationClient.authorizeScopes(driveScope);
+        
+        return account;
       }
-    } catch (e) {
-      debugPrint('Error en el inicio de sesión: $e');
-      rethrow;
     }
+    return null;
+  } catch (e) {
+    debugPrint('Error en el inicio de sesión: $e');
+    rethrow;
+  }
   }
 
   Future<void> signOut() async {
@@ -110,24 +117,35 @@ class BackupService {
   }
 
   Future<void> backupToDrive() async {
-    final client = await _googleSignIn.authenticatedClient();
-    if (client == null) throw Exception("No autenticado");
+    // 1. Obtenemos el usuario actual (debe estar logueado previamente)
+    final account = GoogleSignIn.instance.currentUser;
+    if (account == null) throw Exception("No hay un usuario autenticado");
+
+    // 2. Definimos los scopes necesarios
+    final driveScopes = [drive.DriveApi.driveAppdataScope];
+
+    // 3. Obtenemos la autorización (esto verifica si el usuario ya dio permiso)
+    final authorization = await account.authorizationClient.authorizeScopes(driveScopes);
+
+    // 4. USAMOS LA EXTENSIÓN: El método correcto es .authClient() 
+    // Se llama sobre el objeto 'authorization', no sobre GoogleSignIn
+    final client = authorization.authClient(scopes: driveScopes);
+    
+    if (client == null) throw Exception("No se pudo crear el cliente autenticado");
 
     final driveApi = drive.DriveApi(client);
     final backupJson = await createBackupJson();
     
-    // Convertimos el string JSON a un stream de bytes para subirlo
     final List<int> bytes = utf8.encode(backupJson);
-    final media = drive.Media(Stream.value(bytes), bytes.length);
+    final media = drive.Media(Stream.fromIterable([bytes]), bytes.length);
 
-    // 1. Buscar si ya existe un backup previo en appDataFolder
+    // Búsqueda y subida (tu lógica de Drive se mantiene igual)
     final fileList = await driveApi.files.list(
       spaces: 'appDataFolder',
       q: "name = '$_backupFileName'",
     );
 
     if (fileList.files != null && fileList.files!.isNotEmpty) {
-      // 2. Si existe, lo actualizamos (sobrescribimos)
       final existingFileId = fileList.files!.first.id!;
       await driveApi.files.update(
         drive.File(), 
@@ -135,7 +153,6 @@ class BackupService {
         uploadMedia: media,
       );
     } else {
-      // 3. Si no existe, creamos uno nuevo dentro de appDataFolder
       final driveFile = drive.File()
         ..name = _backupFileName
         ..parents = ['appDataFolder'];
@@ -148,37 +165,46 @@ class BackupService {
   }
 
   Future<bool> restoreFromDrive() async {
-    final client = await _googleSignIn.authenticatedClient();
-    if (client == null) throw Exception("No autenticado");
+  // 1. Obtener el usuario actual
+  final account = GoogleSignIn.instance.currentUser;
+  if (account == null) throw Exception("No autenticado");
 
-    final driveApi = drive.DriveApi(client);
+  // 2. Definir scopes y obtener autorización
+  final driveScopes = [drive.DriveApi.driveAppdataScope];
+  final authorization = await account.authorizationClient.authorizeScopes(driveScopes);
 
-    final fileList = await driveApi.files.list(
-      spaces: 'appDataFolder',
-      q: "name = '$_backupFileName'",
-    );
+  // 3. Usar el método correcto de la extensión: .authClient()
+  final client = authorization.authClient(scopes: driveScopes);
+  if (client == null) throw Exception("No se pudo crear el cliente");
 
-    if (fileList.files == null || fileList.files!.isEmpty) {
-      return false; // No hay copia de seguridad en la nube
-    }
+  final driveApi = drive.DriveApi(client);
 
-    final fileId = fileList.files!.first.id!;
-    
-    // Descargamos el archivo
-    final drive.Media fileMedia = await driveApi.files.get(
-      fileId,
-      downloadOptions: drive.DownloadOptions.fullMedia,
-    ) as drive.Media;
+  final fileList = await driveApi.files.list(
+    spaces: 'appDataFolder',
+    q: "name = '$_backupFileName'",
+  );
 
-    // Convertimos los bytes descargados a String
-    final List<int> dataStore = [];
-    await for (var data in fileMedia.stream) {
-      dataStore.addAll(data);
-    }
-    final String jsonString = utf8.decode(dataStore);
+  if (fileList.files == null || fileList.files!.isEmpty) {
+    return false; // No hay copia de seguridad
+  }
 
-    // Restauramos
-    await restoreFromJson(jsonString);
-    return true;
+  final fileId = fileList.files!.first.id!;
+  
+  // Descargamos el archivo
+  final drive.Media fileMedia = await driveApi.files.get(
+    fileId,
+    downloadOptions: drive.DownloadOptions.fullMedia,
+  ) as drive.Media;
+
+  // Convertimos los bytes descargados a String
+  final List<int> dataStore = [];
+  await for (var data in fileMedia.stream) {
+    dataStore.addAll(data);
+  }
+  final String jsonString = utf8.decode(dataStore);
+
+  // Restauramos
+  await restoreFromJson(jsonString);
+  return true;
   }
 }

@@ -14,7 +14,7 @@ class BackupService {
   static const String _keyLastCloud = 'last_cloud_sync';
   static const String _keyLastLocal = 'last_local_sync';
  
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  final GoogleSignIn googleSignIn = GoogleSignIn.instance;
   GoogleSignInAccount? _currentUser;
   GoogleSignInAccount? get user => _currentUser;
   
@@ -36,10 +36,10 @@ class BackupService {
   }
   
   Future<void> initialize() async {
-    await _googleSignIn.initialize(
+    await googleSignIn.initialize(
       serverClientId: '553663565353-9ngn5cci4abakms72m0s1mmp1u4blr2b.apps.googleusercontent.com',
     );
-    _currentUser = await _googleSignIn.attemptLightweightAuthentication();
+    _currentUser = await googleSignIn.attemptLightweightAuthentication();
   }
 
   // --- 1. RECOPILAR Y EMPAQUETAR DATOS (LOCAL -> JSON) ---
@@ -108,9 +108,9 @@ class BackupService {
   
   Future<GoogleSignInAccount?> signIn() async {
   try {
-    if (_googleSignIn.supportsAuthenticate()) {
+    if (googleSignIn.supportsAuthenticate()) {
       // 1. Autenticación básica (Login)
-      final GoogleSignInAccount account = await _googleSignIn.authenticate();
+      final GoogleSignInAccount account = await googleSignIn.authenticate();
 
       // 2. Autorización de Scopes (Permisos de Drive)
       // Definimos el scope que necesitas
@@ -130,13 +130,13 @@ class BackupService {
   }
 
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    await googleSignIn.signOut();
     _currentUser = null;
   }
 
   Future<bool> isSignedIn() async {
     // attemptLightweightAuthentication reemplaza a signInSilently()
-    final account = await _googleSignIn.attemptLightweightAuthentication();
+    final account = await googleSignIn.attemptLightweightAuthentication();
     return account != null;
   }
 

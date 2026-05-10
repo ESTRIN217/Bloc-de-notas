@@ -4,12 +4,15 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html; // Para la descarga en Web
 import 'backup_service.dart';
 import 'l10n/app_localizations.dart';
-import 'package:google_sign_in_web/google_sign_in_web.dart' as web;
 
 class BackupSyncScreen extends StatefulWidget {
   const BackupSyncScreen({super.key});
@@ -248,7 +251,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
             ),
             const SizedBox(height: 24),
             if (!_isGoogleSignIn)
-              if (GoogleSignIn.supportsAuthenticate())
+              if (GoogleSignIn.instance.supportsAuthenticate())
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -258,9 +261,12 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                 ),
               )
               else ...<Widget>[
-                if (kIsWeb)
-                web.renderButton()
-              ],
+              if (kIsWeb)
+    // Usamos 'as dynamic' o la interfaz de plataforma para que el compilador 
+    // de Android ignore la implementación específica de web durante el build
+    (GoogleSignInPlatform.instance as dynamic).renderButton()
+]
+
             else
               Row(
                 children: [

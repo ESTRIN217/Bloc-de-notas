@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html; // Para la descarga en Web
 import 'backup_service.dart';
 import 'l10n/app_localizations.dart';
+import 'package:google_sign_in_web/google_sign_in_web.dart' as web;
 
 class BackupSyncScreen extends StatefulWidget {
   const BackupSyncScreen({super.key});
@@ -247,6 +248,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
             ),
             const SizedBox(height: 24),
             if (!_isGoogleSignIn)
+              if (GoogleSignIn.supportsAuthenticate())
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -255,6 +257,10 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                   label: Text(AppLocalizations.of(context)!.connectWithGoogle),
                 ),
               )
+              else ...<Widget>[
+                if (kIsWeb)
+                web.renderButton()
+              ],
             else
               Row(
                 children: [

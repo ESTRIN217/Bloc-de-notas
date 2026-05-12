@@ -37,7 +37,7 @@ class BackupService {
   
   Future<void> initialize() async {
     await googleSignIn.initialize(
-      serverClientId: '553663565353-9ngn5cci4abakms72m0s1mmp1u4blr2b.apps.googleusercontent.com',
+      serverClientId: '75724238092-s5b6rpdbltabptna6iuq8o80sac9roj7.apps.googleusercontent.com',
     );
     _currentUser = await googleSignIn.attemptLightweightAuthentication();
   }

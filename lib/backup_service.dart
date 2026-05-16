@@ -15,6 +15,8 @@ class BackupService {
   static const String _backupFileName = 'bloc_notas_backup.json';
   static const String _keyLastCloud = 'last_cloud_sync';
   static const String _keyLastLocal = 'last_local_sync';
+  static const String _webClientId = '75724238092-s5b6rpdbltabptna6iuq8o80sac9roj7.apps.googleusercontent.com';
+  static const String _androidClientId = '75724238092-ihhufgnfb6snr44v4q4hb8nngco4mkrd.apps.googleusercontent.com';
 
   final GoogleSignIn googleSignIn = GoogleSignIn.instance;
   GoogleSignInAccount? _currentUser;
@@ -46,10 +48,19 @@ class BackupService {
   }
 
   Future<void> initialize() async {
-    await googleSignIn.initialize(
-      serverClientId:
-          '75724238092-s5b6rpdbltabptna6iuq8o80sac9roj7.apps.googleusercontent.com', // [cite: 937]
-    );
+    if (kIsWeb) {
+      // Configuración estricta para el entorno Web
+      await googleSignIn.initialize(
+        clientId: _webClientId,
+      );
+    } else {
+      // Configuración óptima para Android / Entornos Móviles
+      await googleSignIn.initialize(
+        // Pasamos el ID Web como serverClientId para permitir que Android pueda
+        // generar un token de autenticación válido para los alcances de Google Drive API
+        serverClientId: _webClientId,
+      );
+    }
 
     //  Nos suscribimos de manera reactiva para actualizar el estado del usuario automáticamente ante cualquier cambio
     googleSignIn.authenticationEvents.listen((

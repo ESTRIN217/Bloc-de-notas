@@ -141,7 +141,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   late List<ListItem> _trashedItems;
   List<String> _availableTags = [];
   String? _selectedTagFilter;
-  // NUEVO: Variables para Archivo
+  //   Variables para Archivo
   late List<ListItem> _archivedItems;
   bool _isArchiveView = false;
   int? _selectedColorFilter;
@@ -188,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  // NUEVO: Método unificado para cargar todo
+  //  Método unificado para cargar todo
   Future<void> _loadAllData() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -299,9 +299,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   ListItem _createWelcomeNote() {
     final welcomeNote = ListItem(
       id: 'welcome_note',
-      title: '¡Bienvenido a Bloc de notas!', // Este es el título en la lista
+      title: AppLocalizations.of(context)!.welcomeNoteTitle, 
       summary: jsonEncode([
-        // TÍTULO DENTRO DE LA NOTA
         {"insert": "¡Bienvenido a Bloc de notas!"},
         {
           "insert": "\n",
@@ -407,7 +406,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   ListItem _createExerciteNote() {
     final exerciteNote = ListItem(
       id: 'exercite_note',
-      title: '¡Rutina de ejercicios!', // Este es el título en la lista
+      title: AppLocalizations.of(context)!.exerciseNoteTitle, 
       summary: jsonEncode([
         {
           "insert": "RUTINA MAESTRA: FUERZA Y RESISTENCIA",
@@ -825,7 +824,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return exerciteNote;
   }
 
-  // NUEVO: Guardar Etiquetas
+  //   Guardar Etiquetas
   Future<void> _saveTags() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('available_tags', _availableTags);
@@ -850,7 +849,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  // NUEVO: Guardar Archivados
+  //   Guardar Archivados
   Future<void> _saveArchivedItems() async {
     try {
       final List<Map<String, dynamic>> jsonList = _archivedItems
@@ -895,7 +894,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             _selectedTagFilter == null ||
             item.tags.contains(_selectedTagFilter);
 
-        // NUEVO: Filtro de Color
+        //   Filtro de Color
         final matchesColor =
             _selectedColorFilter == null ||
             item.backgroundColor == _selectedColorFilter;
@@ -1134,7 +1133,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     });
   }
 
-  // NUEVO: Diálogo para asignar etiquetas en modo selección
+  //   Diálogo para asignar etiquetas en modo selección
   void _showAssignTagDialog() {
     showDialog(
       context: context,
@@ -1209,7 +1208,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
   }
 
-  // NUEVO: Diálogo para gestionar/crear etiquetas desde el Drawer
+  //   Diálogo para gestionar/crear etiquetas desde el Drawer
   void _showManageTagsDialog() {
     final TextEditingController tagController = TextEditingController();
 
@@ -1289,7 +1288,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                                 IconButton(
                                   icon: const Icon(Icons.edit_outlined),
                                   onPressed: () {
-                                    // Aquí  llamas a una función para renombrar
+                                  
                                     _showRenameTagDialog(tag);
                                   },
                                 ),
@@ -1452,7 +1451,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 }
               }
               _saveItems();
-              _saveArchivedItems(); // No olvides guardar los cambios en archivados
+              _saveArchivedItems(); 
               _saveTrashedItems();
               _filterItems();
             });
@@ -1541,7 +1540,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 title: Text(AppLocalizations.of(context)!.html),
                 onTap: () {
                   Navigator.pop(context);
-                  _shareAsHtml(); // Cambié el nombre para mantener el estándar
+                  _shareAsHtml(); 
                 },
               ),
               ListTile(
@@ -1549,7 +1548,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 title: Text(AppLocalizations.of(context)!.json_crudo),
                 subtitle: Text(
                   AppLocalizations.of(context)!.json_subtitle,
-                ), // Opcional, para aclarar el formato
+                ), 
                 onTap: () {
                   Navigator.pop(context);
                   _shareAsJson();
@@ -2187,7 +2186,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ),
 
             const Divider(),
-            // NUEVO: Ítem de Archivados
+            //   Ítem de Archivados
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: ListTile(
@@ -2596,7 +2595,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   // En GridView, el Expanded tomará el espacio restante
                   child: ClipRect(child: richTextPreview),
                 ),
-        // NUEVO: Visualización de etiquetas al final de la tarjeta
+        //   Visualización de etiquetas al final de la tarjeta
         if (item.tags.isNotEmpty) ...[
           const SizedBox(height: 8),
           Wrap(

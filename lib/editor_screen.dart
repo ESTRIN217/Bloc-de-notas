@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:io' as io show Directory, File;
 import 'package:bloc_de_notas/audioembedbuilder.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -17,11 +18,13 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'list_item.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
+import 'package:path/path.dart' as path;
 import 'package:record/record.dart';
 import 'drawing_embed.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; // IMPORTANTE AÑADIR
+import 'timestampembed.dart';
 
 enum TtsState { playing, stopped }
 
@@ -49,6 +52,34 @@ class _EditorScreenState extends State<EditorScreen> {
   List<String> _currentTags = [];
   List<String> _availableGlobalTags = [];
   bool _isArchived = false; // NUEVO: Estado de archivo
+  final _contentController = () {
+    return QuillController.basic(
+        config: QuillControllerConfig(
+      clipboardConfig: QuillClipboardConfig(
+        enableExternalRichPaste: true,
+        onImagePaste: (imageBytes) async {
+          if (kIsWeb) {
+            // Dart IO is unsupported on the web.
+            return null;
+          }
+          // Save the image somewhere and return the image URL that will be
+          // stored in the Quill Delta JSON (the document).
+          final newFileName =
+              'image-file-${DateTime.now().toIso8601String()}.png';
+          final newPath = path.join(
+            io.Directory.systemTemp.path,
+            newFileName,
+          );
+          final file = await io.File(
+            newPath,
+          ).writeAsBytes(imageBytes, flush: true);
+          return file.path;
+        },
+      ),
+    ));
+  }();
+  final FocusNode _editorFocusNode = FocusNode();
+  final ScrollController _editorScrollController = ScrollController();
 
   @override
   void initState() {
@@ -153,6 +184,8 @@ class _EditorScreenState extends State<EditorScreen> {
     _titleController.dispose();
     _contentController.dispose();
     _flutterTts.stop();
+    _editorScrollController.dispose();
+    _editorFocusNode.dispose();
     super.dispose();
   }
 
@@ -700,6 +733,49 @@ class _EditorScreenState extends State<EditorScreen> {
                 ),
               ),
             ),
+            showClipboardPaste: true,
+            customButtons: [
+                  QuillToolbarCustomButtonOptions(
+                    icon: const Icon(Icons.add_alarm_rounded),
+                    onPressed: () {
+                      _contentController.document.insert(
+                        _contentController.selection.extentOffset,
+                        TimeStampEmbed(
+                          DateTime.now().toString(),
+                        ),
+                      );
+
+                      _contentController.updateSelection(
+                        TextSelection.collapsed(
+                          offset: _contentController.selection.extentOffset + 1,
+                        ),
+                        ChangeSource.local,
+                      );
+                    },
+                  ),
+                ],
+                buttonOptions: QuillSimpleToolbarButtonOptions(
+                  base: QuillToolbarBaseButtonOptions(
+                    afterButtonPressed: () {
+                      final isDesktop = {
+                        TargetPlatform.linux,
+                        TargetPlatform.windows,
+                        TargetPlatform.macOS
+                      }.contains(defaultTargetPlatform);
+                      if (isDesktop) {
+                        _editorFocusNode.requestFocus();
+                      }
+                    },
+                  ),
+                  linkStyle: QuillToolbarLinkStyleButtonOptions(
+                    validateLink: (link) {
+                      // Treats all links as valid. When launching the URL,
+                      // `https://` is prefixed if the link is incomplete (e.g., `google.com` → `https://google.com`)
+                      // however this happens only within the editor.
+                      return true;
+                    },
+                  ),
+                ),
           ),
         );
       },
@@ -869,6 +945,8 @@ class _EditorScreenState extends State<EditorScreen> {
 
                       // Envolvemos el editor en un Theme para forzar el color de todo el texto
                       child: quill.QuillEditor.basic(
+                        focusNode: _editorFocusNode,
+                        scrollController: _editorScrollController,
                         controller: _contentController,
                         config: quill.QuillEditorConfig(
                           autoFocus: false,
@@ -901,6 +979,17 @@ class _EditorScreenState extends State<EditorScreen> {
                             ),
                             // Estilo para Títulos Medianos (H2)
                             h2: quill.DefaultTextBlockStyle(
+                              TextStyle(
+                                color: dynamicTextColor,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              const quill.HorizontalSpacing(0, 0),
+                              const quill.VerticalSpacing(8, 0),
+                              const quill.VerticalSpacing(0, 0),
+                              null,
+                            ),
+                              h3: quill.DefaultTextBlockStyle(
                               TextStyle(
                                 color: dynamicTextColor,
                                 fontSize: 22,
@@ -983,12 +1072,30 @@ class _EditorScreenState extends State<EditorScreen> {
                             // 1. Builders personalizados primero
                             AudioEmbedBuilder(),
                             DrawingEmbedBuilder(),
+                            TimeStampEmbedBuilder(),
 
                             // 2. Builders de la librería según la plataforma
                             if (kIsWeb)
                               ...FlutterQuillEmbeds.editorWebBuilders()
                             else
                               ...FlutterQuillEmbeds.editorBuilders(),
+                            imageEmbedConfig: QuillEditorImageEmbedConfig(
+                        imageProviderBuilder: (context, imageUrl) {
+                          // https://pub.dev/packages/flutter_quill_extensions#-image-assets
+                          if (imageUrl.startsWith('assets/')) {
+                            return AssetImage(imageUrl);
+                          }
+                          return null;
+                        },
+                      ),
+                      videoEmbedConfig: QuillEditorVideoEmbedConfig(
+                        customVideoBuilder: (videoUrl, readOnly) {
+                          // To load YouTube videos https://github.com/singerdmx/flutter-quill/releases/tag/v10.8.0
+                          return null;
+                        },
+                      ),
+                    ),
+                    
                           ],
                         ),
                       ),

@@ -180,6 +180,20 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                         data: updater.latestChangelog!,
                         styleSheet: MarkdownStyleSheet.fromTheme(
                           Theme.of(context),
+                          selectable:
+                          true, // Permite al usuario seleccionar y copiar texto
+                      // Hace que los enlaces en el markdown funcionen
+                      onTapLink: (text, href, title) async {
+                        if (href != null) {
+                          final uri = Uri.parse(href);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(
+                              uri,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          }
+                        }
+                      },
                         ),
                       ),
                     ),

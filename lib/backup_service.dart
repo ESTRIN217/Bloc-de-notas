@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math; // [cite: 1017] Para el cálculo del Jitter aleatorio
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart'; // [cite: 964] Para llamar al requestSync nativo si fuera necesario
 
 // Google Drive & Auth
 import 'package:google_sign_in/google_sign_in.dart';
@@ -16,12 +18,16 @@ class BackupService {
  
   final GoogleSignIn googleSignIn = GoogleSignIn.instance;
   GoogleSignInAccount? _currentUser;
+  
+  // Getter reactivo de lectura directa
   GoogleSignInAccount? get user => _currentUser;
+
+  // ARQUITECTURA REACTIVA (v7.x): Exponemos el flujo de eventos para que la UI escuche cambios en tiempo real
+  Stream<GoogleSignInAccount?> get onCurrentUserChanged => googleSignIn.onCurrentUserChanged; // [cite: 935, 937]
   
   Future<void> _updateTimestamp(String key) async {
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
-    // Formato simple: dd/MM/yyyy HH:mm
     await prefs.setString(key, "${now.day}/${now.month}/${now.year} ${now.hour}:${now.minute}");
   }
   
@@ -37,15 +43,66 @@ class BackupService {
   
   Future<void> initialize() async {
     await googleSignIn.initialize(
-      serverClientId: '75724238092-s5b6rpdbltabptna6iuq8o80sac9roj7.apps.googleusercontent.com',
+      serverClientId: '75724238092-s5b6rpdbltabptna6iuq8o80sac9roj7.apps.googleusercontent.com', // [cite: 937]
     );
-    _currentUser = await googleSignIn.attemptLightweightAuthentication();
+
+    //  Nos suscribimos de manera reactiva para actualizar el estado del usuario automáticamente ante cualquier cambio
+    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
+      _currentUser = account;
+    });
+
+    _currentUser = await googleSignIn.attemptLightweightAuthentication(); // [cite: 775]
+  }
+
+  // --- ALGORITMO RESILIENTE: Exponential Backoff con Jitter ---
+  //  Envuelve las peticiones a la API de Drive para mitigar los errores de cuota 403 y 429
+  Future<T> _retryWithBackoff<T>(Future<T> Function() operation) async {
+    int retries = 0;
+    const int maxRetries = 3;
+    int baseDelayMs = 2000; // Espera base inicial de 2 segundos
+    final random = math.Random();
+
+    while (true) {
+      try {
+        return await operation();
+      } catch (e) {
+        final errStr = e.toString();
+        // [cite: 1016] Detectamos si el error es debido a límites de tasa de peticiones (Rate Limit o Quota Exceeded)
+        final isQuotaError = errStr.contains('403') || errStr.contains('429');
+
+        if (isQuotaError && retries < maxRetries) {
+          retries++;
+          // [cite: 1018] Fórmula exponencial: (2^retries * baseDelay) + variación aleatoria (Jitter) para no saturar en olas sincronizadas
+          int backoffMs = (math.pow(2, retries) * baseDelayMs).toInt();
+          int jitter = random.nextInt(1000); // Hasta 1 segundo de desvío aleatorio
+          
+          debugPrint('Límite de cuota de Google Drive alcanzado. Reintento $retries/$maxRetries en ${backoffMs + jitter}ms...');
+          await Future.delayed(Duration(milliseconds: backoffMs + jitter));
+        } else {
+          // Si no es un error de cuotas, o superó el máximo de reintentos, lanzamos la excepción
+          rethrow;
+        }
+      }
+    }
+  }
+
+  // --- MITIGACIÓN ANDROID: requestSync para sincronización de índices locales ---
+  //  Evita que tras una reinstalación el índice local retorne una lista de archivos vacía
+  Future<void> _requestAndroidMetaDataSync() async {
+    if (!Platform.isAndroid) return;
+    try {
+      // Usamos un canal de plataforma por si decides enlazar el requestSync() de Play Services de forma nativa
+      const channel = MethodChannel('com.example.bloc_notas/google_drive');
+      await channel.invokeMethod('requestSync');
+    } catch (e) {
+      // Fallback silencioso en desarrollo si el canal nativo no se ha declarado aún
+      debugPrint('Sincronización de metadatos Play Services omitida/no configurada: $e');
+    }
   }
 
   // --- 1. RECOPILAR Y EMPAQUETAR DATOS (LOCAL -> JSON) ---
   Future<String> createBackupJson() async {
     final prefs = await SharedPreferences.getInstance();
-    
     String notes = '[]';
     String archived = '[]';
     String trashed = '[]';
@@ -66,7 +123,6 @@ class BackupService {
       if (await fileTrashed.exists()) trashed = await fileTrashed.readAsString();
     }
 
-    // Empaquetamos todo en un solo mapa
     final backupData = {
       'version': 1,
       'timestamp': DateTime.now().toIso8601String(),
@@ -75,7 +131,6 @@ class BackupService {
       'trashed': jsonDecode(trashed),
       'tags': tags,
     };
-
     await _updateTimestamp(_keyLastLocal);
     return jsonEncode(backupData);
   }
@@ -91,7 +146,6 @@ class BackupService {
     final List<String> tags = List<String>.from(data['tags'] ?? []);
 
     await prefs.setStringList('available_tags', tags);
-
     if (kIsWeb) {
       await prefs.setString('notes', notesStr);
       await prefs.setString('archived_notes', archivedStr);
@@ -107,26 +161,20 @@ class BackupService {
   // --- 3. LÓGICA DE GOOGLE DRIVE ---
   
   Future<GoogleSignInAccount?> signIn() async {
-  try {
-    if (googleSignIn.supportsAuthenticate()) {
-      // 1. Autenticación básica (Login)
-      final GoogleSignInAccount account = await googleSignIn.authenticate();
-
-      // 2. Autorización de Scopes (Permisos de Drive)
-      // Definimos el scope que necesitas
-      final driveScope = [drive.DriveApi.driveAppdataScope];
-      
-      // Solicitamos el permiso explícito al usuario
-      await account.authorizationClient.authorizeScopes(driveScope);
-      
-      _currentUser = account;
-      return account;
-        }
-    return null;
-  } catch (e) {
-    debugPrint('Error en el inicio de sesión: $e');
-    rethrow;
-  }
+    try {
+      if (googleSignIn.supportsAuthenticate()) {
+        final GoogleSignInAccount account = await googleSignIn.authenticate(); // [cite: 937]
+        final driveScope = [drive.DriveApi.driveAppdataScope]; // [cite: 950]
+        await account.authorizationClient.authorizeScopes(driveScope); // [cite: 937]
+        
+        _currentUser = account;
+        return account;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error en el inicio de sesión: $e');
+      rethrow;
+    }
   }
 
   Future<void> signOut() async {
@@ -135,99 +183,94 @@ class BackupService {
   }
 
   Future<bool> isSignedIn() async {
-    // attemptLightweightAuthentication reemplaza a signInSilently()
     final account = await googleSignIn.attemptLightweightAuthentication();
     return account != null;
   }
 
   Future<void> backupToDrive() async {
-    // 1. Obtenemos el usuario actual (debe estar logueado previamente)
     final account = user;
     if (account == null) throw Exception("No hay un usuario autenticado");
 
-    // 2. Definimos los scopes necesarios
     final driveScopes = [drive.DriveApi.driveAppdataScope];
-
-    // 3. Obtenemos la autorización (esto verifica si el usuario ya dio permiso)
     final authorization = await account.authorizationClient.authorizeScopes(driveScopes);
-
-    // 4. USAMOS LA EXTENSIÓN: El método correcto es .authClient() 
-    // Se llama sobre el objeto 'authorization', no sobre GoogleSignIn
-    final client = authorization.authClient(scopes: driveScopes);
-    
-
+    final client = authorization.authClient(scopes: driveScopes); // [cite: 797]
     final driveApi = drive.DriveApi(client);
-    final backupJson = await createBackupJson();
     
+    final backupJson = await createBackupJson();
     final List<int> bytes = utf8.encode(backupJson);
-    final media = drive.Media(Stream.fromIterable([bytes]), bytes.length);
-
-    // Búsqueda y subida (tu lógica de Drive se mantiene igual)
-    final fileList = await driveApi.files.list(
-      spaces: 'appDataFolder',
+    
+    // [cite: 1017] Aplicamos el envoltorio de reintentos a la consulta de Drive
+    final fileList = await _retryWithBackoff(() => driveApi.files.list(
+      spaces: 'appDataFolder', // [cite: 996]
       q: "name = '$_backupFileName'",
-    );
+    ));
 
     if (fileList.files != null && fileList.files!.isNotEmpty) {
       final existingFileId = fileList.files!.first.id!;
-      await driveApi.files.update(
-        drive.File(), 
-        existingFileId, 
-        uploadMedia: media,
-      );
+      
+      // [cite: 1017] Aplicamos reintentos a la subida de actualización
+      await _retryWithBackoff(() async {
+        final media = drive.Media(Stream.fromIterable([bytes]), bytes.length); //  Fresh stream por reintento
+        return await driveApi.files.update(
+          drive.File(), 
+          existingFileId, 
+          uploadMedia: media,
+        );
+      });
     } else {
       final driveFile = drive.File()
         ..name = _backupFileName
-        ..parents = ['appDataFolder'];
+        ..parents = ['appDataFolder']; // [cite: 991]
         
-      await driveApi.files.create(
-        driveFile, 
-        uploadMedia: media,
-      );
+      // [cite: 1017] Aplicamos reintentos a la creación del nuevo archivo
+      await _retryWithBackoff(() async {
+        final media = drive.Media(Stream.fromIterable([bytes]), bytes.length); //  Fresh stream por reintento
+        return await driveApi.files.create(
+          driveFile, 
+          uploadMedia: media,
+        );
+      });
     }
     await _updateTimestamp(_keyLastCloud);
   }
 
   Future<bool> restoreFromDrive() async {
-  // 1. Obtener el usuario actual
-  final account = user;
-  if (account == null) throw Exception("No autenticado");
+    final account = user;
+    if (account == null) throw Exception("No autenticado");
 
-  // 2. Definir scopes y obtener autorización
-  final driveScopes = [drive.DriveApi.driveAppdataScope];
-  final authorization = await account.authorizationClient.authorizeScopes(driveScopes);
+    final driveScopes = [drive.DriveApi.driveAppdataScope];
+    final authorization = await account.authorizationClient.authorizeScopes(driveScopes);
+    final client = authorization.authClient(scopes: driveScopes);
+    final driveApi = drive.DriveApi(client);
 
-  // 3. Usar el método correcto de la extensión: .authClient()
-  final client = authorization.authClient(scopes: driveScopes);
+    // [cite: 964] Mitigación Android: Forzamos la actualización de metadatos antes del listado
+    await _requestAndroidMetaDataSync();
 
-  final driveApi = drive.DriveApi(client);
+    // [cite: 1017] Aplicamos reintentos a la lectura de la lista
+    final fileList = await _retryWithBackoff(() => driveApi.files.list(
+      spaces: 'appDataFolder', // [cite: 996]
+      q: "name = '$_backupFileName'",
+    ));
 
-  final fileList = await driveApi.files.list(
-    spaces: 'appDataFolder',
-    q: "name = '$_backupFileName'",
-  );
+    if (fileList.files == null || fileList.files!.isEmpty) {
+      return false; // No hay copia de seguridad
+    }
 
-  if (fileList.files == null || fileList.files!.isEmpty) {
-    return false; // No hay copia de seguridad
-  }
+    final fileId = fileList.files!.first.id!;
+    
+    // [cite: 1017] Aplicamos reintentos a la descarga del archivo multimedia
+    final drive.Media fileMedia = await _retryWithBackoff(() => driveApi.files.get(
+      fileId,
+      downloadOptions: drive.DownloadOptions.fullMedia,
+    )) as drive.Media;
 
-  final fileId = fileList.files!.first.id!;
-  
-  // Descargamos el archivo
-  final drive.Media fileMedia = await driveApi.files.get(
-    fileId,
-    downloadOptions: drive.DownloadOptions.fullMedia,
-  ) as drive.Media;
-
-  // Convertimos los bytes descargados a String
-  final List<int> dataStore = [];
-  await for (var data in fileMedia.stream) {
-    dataStore.addAll(data);
-  }
-  final String jsonString = utf8.decode(dataStore);
-
-  // Restauramos
-  await restoreFromJson(jsonString);
-  return true;
+    final List<int> dataStore = [];
+    await for (var data in fileMedia.stream) { //  Consumo del stream de bytes seguro
+      dataStore.addAll(data);
+    }
+    final String jsonString = utf8.decode(dataStore);
+    
+    await restoreFromJson(jsonString);
+    return true;
   }
 }

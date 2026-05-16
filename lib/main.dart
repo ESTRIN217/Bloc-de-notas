@@ -2550,16 +2550,41 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           ),
 
           embedBuilders: [
-            // 1. Builders personalizados primero
-            AudioEmbedBuilder(),
-            DrawingEmbedBuilder(),
+  // 1. Builders personalizados primero
+  AudioEmbedBuilder(),
+  DrawingEmbedBuilder(),
+  TimeStampEmbedBuilder(),
 
-            // 2. Builders de la librería según la plataforma
-            if (kIsWeb)
-              ...FlutterQuillEmbeds.editorWebBuilders()
-            else
-              ...FlutterQuillEmbeds.editorBuilders(),
-          ],
+  // 2. Builders de la librería según la plataforma con sus configuraciones internas
+  if (kIsWeb)
+    ...FlutterQuillEmbeds.editorWebBuilders(
+      imageEmbedConfig: QuillEditorImageEmbedConfig(
+        imageProviderBuilder: (context, imageUrl) {
+          if (imageUrl.startsWith('assets/')) {
+            return AssetImage(imageUrl);
+          }
+          return null;
+        },
+      ),
+      videoEmbedConfig: const QuillEditorWebVideoEmbedConfig(),
+    )
+  else
+    ...FlutterQuillEmbeds.editorBuilders(
+      imageEmbedConfig: QuillEditorImageEmbedConfig(
+        imageProviderBuilder: (context, imageUrl) {
+          if (imageUrl.startsWith('assets/')) {
+            return AssetImage(imageUrl);
+          }
+          return null;
+        },
+      ),
+      videoEmbedConfig: QuillEditorVideoEmbedConfig(
+        customVideoBuilder: (videoUrl, readOnly) {
+          return null;
+        },
+      ),
+    ),
+],
         ),
       ),
     );

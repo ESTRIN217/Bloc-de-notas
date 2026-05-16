@@ -67,6 +67,21 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
       }
     }
   }
+  Future<void> _handleGoogleSignOut() async {
+    setState(() => _isLoading = true);
+    try {
+      await _backupService.signOut();
+      if (!mounted) return;
+      setState(() => _isGoogleSignIn = false);
+    } catch (e) {
+      if (!mounted) return;
+      _showSnack(AppLocalizations.of(context)!.errorSign(e.toString()));
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   Future<void> _backupToCloud() async {
     setState(() => _isLoading = true);
@@ -169,7 +184,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      _showSnack(AppLocalizations.of(context)!.restoredLocalError as String);
+      _showSnack(AppLocalizations.of(context)!.restoredLocalError(e.toString()));
     }
   }
 
@@ -192,7 +207,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
         elevation: 0,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? _buildSkeletonBody(colorScheme)
           : ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
@@ -251,7 +266,6 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
             ),
             const SizedBox(height: 24),
             if (!_isGoogleSignIn)
-              if (GoogleSignIn.instance.supportsAuthenticate())
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -260,33 +274,39 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                   label: Text(AppLocalizations.of(context)!.connectWithGoogle),
                 ),
               )
-              else ...<Widget>[
-              if (kIsWeb)
-    // Usamos 'as dynamic' o la interfaz de plataforma para que el compilador 
-    // de Android ignore la implementación específica de web durante el build
-    (GoogleSignInPlatform.instance as dynamic).renderButton()
-]
-
-            else
+            else ...[
               Row(
                 children: [
                   Expanded(
-                    child: FilledButton.tonalIcon(
+                    child: OutlinedButton.icon(
                       onPressed: _backupToCloud,
                       icon: const Icon(Icons.cloud_upload_outlined),
-                      label: Text(AppLocalizations.of(context)!.backup),
+                      label: Text(AppLocalizations.of(context)!.save), 
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: FilledButton.tonalIcon(
+                    child: OutlinedButton.icon(
                       onPressed: _restoreFromCloud,
                       icon: const Icon(Icons.cloud_download_outlined),
-                      label: Text(AppLocalizations.of(context)!.restore),
+                      label: Text(AppLocalizations.of(context)!.import), 
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: _handleGoogleSignOut,
+                  icon: const Icon(Icons.logout_outlined),
+                  label: Text(AppLocalizations.of(context)!.logout ?? "Cerrar sesión"),
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.error,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -308,22 +328,22 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
             Row(
               children: [
                 Icon(
-                  Icons.folder_outlined,
-                  color: colorScheme.secondary,
+                  Icons.phone_android_outlined,
+                  color: colorScheme.primary,
                   size: 28,
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  AppLocalizations.of(context)!.localBackup,
-                  style: Theme.of(context).textTheme.titleLarge,
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context)!.localBackupTitle ?? "Copia Local",
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
             Text(
-              kIsWeb
-                  ? AppLocalizations.of(context)!.downloadBackup
-                  : AppLocalizations.of(context)!.backupPhone,
+              AppLocalizations.of(context)!.localBackupDesc ?? "Guarda o importa tus notas directamente en el almacenamiento de tu dispositivo.",
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
@@ -353,14 +373,124 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () {
-                      _restoreFromLocal();
-                      // Lógica de file_picker para seleccionar el JSON local
-                    },
+                    onPressed: _restoreFromLocal,
                     icon: const Icon(Icons.file_open_outlined),
                     label: Text(AppLocalizations.of(context)!.import),
                   ),
                 ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  // Cuerpo completo esquelético que simula la lista de opciones
+  Widget _buildSkeletonBody(ColorScheme colorScheme) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.4, end: 0.8),
+      duration: const Duration(milliseconds: 1000),
+      builder: (context, opacity, child) {
+        return Opacity(
+          opacity: opacity,
+          child: ListView(
+            padding: const EdgeInsets.all(16.0),
+            children: [
+              _buildSkeletonCard(colorScheme, hasSubtitle: true, hasTwoButtons: true),
+              const SizedBox(height: 16),
+              _buildSkeletonCard(colorScheme, hasSubtitle: true, hasTwoButtons: true),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Molde individual que clona visualmente a Card.outlined
+  Widget _buildSkeletonCard(
+    ColorScheme colorScheme, {
+    required bool hasSubtitle,
+    required bool hasTwoButtons,
+  }) {
+    return Card.outlined(
+      color: colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Fila de Título e Icono
+            Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: colorScheme.onSurfaceVariant.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  width: 140,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: colorScheme.onSurfaceVariant.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            // Línea de descripción / subtítulo
+            Container(
+              width: double.infinity,
+              height: 14,
+              decoration: BoxDecoration(
+                color: colorScheme.onSurfaceVariant.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            if (hasSubtitle) ...[
+              const SizedBox(height: 8),
+              Container(
+                width: 200,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: colorScheme.onSurfaceVariant.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ],
+            const SizedBox(height: 24),
+            // Botones Esqueléticos distribuidos de forma idéntica
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: colorScheme.onSurfaceVariant.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20), // Atributo Stadium de MD3
+                    ),
+                  ),
+                ),
+                if (hasTwoButtons) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: colorScheme.onSurfaceVariant.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ],

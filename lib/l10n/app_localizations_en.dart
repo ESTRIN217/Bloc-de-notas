@@ -216,7 +216,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeNoteTitle => 'Welcome to Notepad!';
 
   @override
-  String get exerciseNoteTitle => 'Workout Routine!';
+  String get exerciseNoteTitle => 'Exercise routine!';
 
   @override
   String get tagNotesTitle => 'Tag notes';

@@ -52,10 +52,10 @@ class _EditorScreenState extends State<EditorScreen> {
   List<String> _currentTags = [];
   List<String> _availableGlobalTags = [];
   bool _isArchived = false; // NUEVO: Estado de archivo
-  final _contentController = () {
-    return QuillController.basic(
-        config: QuillControllerConfig(
-      clipboardConfig: QuillClipboardConfig(
+  final quill.QuillController _controller = () {
+    return quill.QuillController.basic(
+        config: quill.QuillControllerConfig(
+      clipboardConfig: quill.QuillClipboardConfig(
         enableExternalRichPaste: true,
         onImagePaste: (imageBytes) async {
           if (kIsWeb) {
@@ -735,7 +735,7 @@ class _EditorScreenState extends State<EditorScreen> {
             ),
             showClipboardPaste: true,
             customButtons: [
-                  QuillToolbarCustomButtonOptions(
+                  quill.QuillToolbarCustomButtonOptions(
                     icon: const Icon(Icons.add_alarm_rounded),
                     onPressed: () {
                       _contentController.document.insert(
@@ -749,13 +749,13 @@ class _EditorScreenState extends State<EditorScreen> {
                         TextSelection.collapsed(
                           offset: _contentController.selection.extentOffset + 1,
                         ),
-                        ChangeSource.local,
+                        quill.ChangeSource.local,
                       );
                     },
                   ),
                 ],
-                buttonOptions: QuillSimpleToolbarButtonOptions(
-                  base: QuillToolbarBaseButtonOptions(
+                buttonOptions: quill.QuillSimpleToolbarButtonOptions(
+                  base: quill.QuillToolbarBaseButtonOptions(
                     afterButtonPressed: () {
                       final isDesktop = {
                         TargetPlatform.linux,
@@ -767,7 +767,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       }
                     },
                   ),
-                  linkStyle: QuillToolbarLinkStyleButtonOptions(
+                  linkStyle: quill.QuillToolbarLinkStyleButtonOptions(
                     validateLink: (link) {
                       // Treats all links as valid. When launching the URL,
                       // `https://` is prefixed if the link is incomplete (e.g., `google.com` → `https://google.com`)
@@ -1069,34 +1069,41 @@ class _EditorScreenState extends State<EditorScreen> {
                           ),
 
                           embedBuilders: [
-                            // 1. Builders personalizados primero
-                            AudioEmbedBuilder(),
-                            DrawingEmbedBuilder(),
-                            TimeStampEmbedBuilder(),
+  // 1. Builders personalizados primero
+  AudioEmbedBuilder(),
+  DrawingEmbedBuilder(),
+  TimeStampEmbedBuilder(),
 
-                            // 2. Builders de la librería según la plataforma
-                            if (kIsWeb)
-                              ...FlutterQuillEmbeds.editorWebBuilders()
-                            else
-                              ...FlutterQuillEmbeds.editorBuilders(),
-                            imageEmbedConfig: QuillEditorImageEmbedConfig(
-                        imageProviderBuilder: (context, imageUrl) {
-                          // https://pub.dev/packages/flutter_quill_extensions#-image-assets
-                          if (imageUrl.startsWith('assets/')) {
-                            return AssetImage(imageUrl);
-                          }
-                          return null;
-                        },
-                      ),
-                      videoEmbedConfig: QuillEditorVideoEmbedConfig(
-                        customVideoBuilder: (videoUrl, readOnly) {
-                          // To load YouTube videos https://github.com/singerdmx/flutter-quill/releases/tag/v10.8.0
-                          return null;
-                        },
-                      ),
-                    ),
-                    
-                          ],
+  // 2. Builders de la librería según la plataforma con sus configuraciones internas
+  if (kIsWeb)
+    ...FlutterQuillEmbeds.editorWebBuilders(
+      imageEmbedConfig: QuillEditorImageEmbedConfig(
+        imageProviderBuilder: (context, imageUrl) {
+          if (imageUrl.startsWith('assets/')) {
+            return AssetImage(imageUrl);
+          }
+          return null;
+        },
+      ),
+      videoEmbedConfig: const QuillEditorWebVideoEmbedConfig(),
+    )
+  else
+    ...FlutterQuillEmbeds.editorBuilders(
+      imageEmbedConfig: QuillEditorImageEmbedConfig(
+        imageProviderBuilder: (context, imageUrl) {
+          if (imageUrl.startsWith('assets/')) {
+            return AssetImage(imageUrl);
+          }
+          return null;
+        },
+      ),
+      videoEmbedConfig: QuillEditorVideoEmbedConfig(
+        customVideoBuilder: (videoUrl, readOnly) {
+          return null;
+        },
+      ),
+    ),
+],
                         ),
                       ),
                     ),

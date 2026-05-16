@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'updater_provider.dart';
 import 'l10n/app_localizations.dart';
 // Para detectar Android/iOS
@@ -180,7 +181,9 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                         data: updater.latestChangelog!,
                         styleSheet: MarkdownStyleSheet.fromTheme(
                           Theme.of(context),
-                          selectable:
+                          
+                        ),
+                        selectable:
                           true, // Permite al usuario seleccionar y copiar texto
                       // Hace que los enlaces en el markdown funcionen
                       onTapLink: (text, href, title) async {
@@ -194,7 +197,6 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                           }
                         }
                       },
-                        ),
                       ),
                     ),
                     crossFadeState: _showChangelog

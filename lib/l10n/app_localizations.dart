@@ -501,7 +501,7 @@ abstract class AppLocalizations {
   /// No description provided for @exerciseNoteTitle.
   ///
   /// In en, this message translates to:
-  /// **'Workout Routine!'**
+  /// **'Exercise routine!'**
   String get exerciseNoteTitle;
 
   /// No description provided for @tagNotesTitle.

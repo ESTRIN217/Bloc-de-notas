@@ -35,6 +35,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
     _checkSignInStatus();
     _loadSyncDates();
   }
+
   Future<void> _loadSyncDates() async {
     final cloud = await _backupService.getLastCloudSync();
     final local = await _backupService.getLastLocalSync();
@@ -67,6 +68,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
       }
     }
   }
+
   Future<void> _handleGoogleSignOut() async {
     setState(() => _isLoading = true);
     try {
@@ -184,7 +186,9 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      _showSnack(AppLocalizations.of(context)!.restoredLocalError(e.toString()));
+      _showSnack(
+        AppLocalizations.of(context)!.restoredLocalError(e.toString()),
+      );
     }
   }
 
@@ -281,7 +285,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                     child: OutlinedButton.icon(
                       onPressed: _backupToCloud,
                       icon: const Icon(Icons.cloud_upload_outlined),
-                      label: Text(AppLocalizations.of(context)!.save), 
+                      label: Text(AppLocalizations.of(context)!.save),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -289,7 +293,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                     child: OutlinedButton.icon(
                       onPressed: _restoreFromCloud,
                       icon: const Icon(Icons.cloud_download_outlined),
-                      label: Text(AppLocalizations.of(context)!.import), 
+                      label: Text(AppLocalizations.of(context)!.import),
                     ),
                   ),
                 ],
@@ -300,7 +304,9 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                 child: TextButton.icon(
                   onPressed: _handleGoogleSignOut,
                   icon: const Icon(Icons.logout_outlined),
-                  label: Text(AppLocalizations.of(context)!.logout ?? "Cerrar sesión"),
+                  label: Text(
+                    AppLocalizations.of(context)!.logout,
+                  ),
                   style: TextButton.styleFrom(
                     foregroundColor: colorScheme.error,
                   ),
@@ -335,7 +341,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    AppLocalizations.of(context)!.localBackupTitle ?? "Copia Local",
+                    AppLocalizations.of(context)!.localBackup,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
@@ -343,7 +349,9 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              AppLocalizations.of(context)!.localBackupDesc ?? "Guarda o importa tus notas directamente en el almacenamiento de tu dispositivo.",
+              kIsWeb
+                  ? AppLocalizations.of(context)!.downloadBackup
+                  : AppLocalizations.of(context)!.backupPhone,
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
@@ -385,6 +393,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
       ),
     );
   }
+
   // Cuerpo completo esquelético que simula la lista de opciones
   Widget _buildSkeletonBody(ColorScheme colorScheme) {
     return TweenAnimationBuilder<double>(
@@ -396,9 +405,17 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
-              _buildSkeletonCard(colorScheme, hasSubtitle: true, hasTwoButtons: true),
+              _buildSkeletonCard(
+                colorScheme,
+                hasSubtitle: true,
+                hasTwoButtons: true,
+              ),
               const SizedBox(height: 16),
-              _buildSkeletonCard(colorScheme, hasSubtitle: true, hasTwoButtons: true),
+              _buildSkeletonCard(
+                colorScheme,
+                hasSubtitle: true,
+                hasTwoButtons: true,
+              ),
             ],
           ),
         );
@@ -430,7 +447,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: colorScheme.onSurfaceVariant.withOpacity(0.2),
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -439,7 +456,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                   width: 140,
                   height: 20,
                   decoration: BoxDecoration(
-                    color: colorScheme.onSurfaceVariant.withOpacity(0.2),
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -451,7 +468,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
               width: double.infinity,
               height: 14,
               decoration: BoxDecoration(
-                color: colorScheme.onSurfaceVariant.withOpacity(0.15),
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -461,7 +478,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                 width: 200,
                 height: 12,
                 decoration: BoxDecoration(
-                  color: colorScheme.onSurfaceVariant.withOpacity(0.1),
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -474,8 +491,12 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                   child: Container(
                     height: 40,
                     decoration: BoxDecoration(
-                      color: colorScheme.onSurfaceVariant.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(20), // Atributo Stadium de MD3
+                      color: colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.15,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        20,
+                      ), // Atributo Stadium de MD3
                     ),
                   ),
                 ),
@@ -485,7 +506,9 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
                     child: Container(
                       height: 40,
                       decoration: BoxDecoration(
-                        color: colorScheme.onSurfaceVariant.withOpacity(0.15),
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.15,
+                        ),
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),

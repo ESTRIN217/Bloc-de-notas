@@ -478,6 +478,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String lastBackup(String lastLocalSync) {
     return 'Último backup: $lastLocalSync';
   }
+
+  @override
+  String get logout => 'Sair';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -954,4 +957,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String lastBackup(String lastLocalSync) {
     return 'Último backup: $lastLocalSync';
   }
+
+  @override
+  String get logout => 'Sair';
 }

@@ -357,5 +357,7 @@
   "type": "String"
   }
   }
-  }
+  },
+  "logout": "Log out",
+  "@logout": {}
 }

@@ -34,6 +34,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'drawing_embed.dart';
 import 'update_widget.dart';
 import 'theme.dart';
+import 'timestampembed.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(

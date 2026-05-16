@@ -144,5 +144,6 @@
   "backupPhone": "Guarda una copia de seguridad en el almacenamiento de tu teléfono.",
   "download": "Descargar",
   "import": "Importar",
-  "lastBackup": "Último respaldo: {lastLocalSync}"
+  "lastBackup": "Último respaldo: {lastLocalSync}",
+  "logout": "Cerrar sesión"
 }

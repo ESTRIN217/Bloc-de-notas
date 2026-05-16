@@ -475,4 +475,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String lastBackup(String lastLocalSync) {
     return 'Last backup: $lastLocalSync';
   }
+
+  @override
+  String get logout => 'Log out';
 }

@@ -965,6 +965,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Last backup: {lastLocalSync}'**
   String lastBackup(String lastLocalSync);
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get logout;
 }
 
 class _AppLocalizationsDelegate

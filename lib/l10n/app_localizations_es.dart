@@ -478,6 +478,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String lastBackup(String lastLocalSync) {
     return 'Último respaldo: $lastLocalSync';
   }
+
+  @override
+  String get logout => 'Cerrar sesión';
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
@@ -954,4 +957,7 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
   String lastBackup(String lastLocalSync) {
     return 'Último respaldo: $lastLocalSync';
   }
+
+  @override
+  String get logout => 'Cerrar sesión';
 }

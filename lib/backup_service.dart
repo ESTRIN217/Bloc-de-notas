@@ -15,22 +15,26 @@ class BackupService {
   static const String _backupFileName = 'bloc_notas_backup.json';
   static const String _keyLastCloud = 'last_cloud_sync';
   static const String _keyLastLocal = 'last_local_sync';
- 
+
   final GoogleSignIn googleSignIn = GoogleSignIn.instance;
   GoogleSignInAccount? _currentUser;
-  
+
   // Getter reactivo de lectura directa
   GoogleSignInAccount? get user => _currentUser;
 
   // ARQUITECTURA REACTIVA (v7.x): Exponemos el flujo de eventos para que la UI escuche cambios en tiempo real
-  Stream<GoogleSignInAccount?> get onCurrentUserChanged => googleSignIn.onCurrentUserChanged; // [cite: 935, 937]
-  
+  Stream<GoogleSignInAuthenticationEvent?> get onCurrentUserChanged =>
+      googleSignIn.authenticationEvents;
+
   Future<void> _updateTimestamp(String key) async {
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
-    await prefs.setString(key, "${now.day}/${now.month}/${now.year} ${now.hour}:${now.minute}");
+    await prefs.setString(
+      key,
+      "${now.day}/${now.month}/${now.year} ${now.hour}:${now.minute}",
+    );
   }
-  
+
   Future<String> getLastCloudSync() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_keyLastCloud) ?? "Nunca";
@@ -40,18 +44,28 @@ class BackupService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_keyLastLocal) ?? "Nunca";
   }
-  
+
   Future<void> initialize() async {
     await googleSignIn.initialize(
-      serverClientId: '75724238092-s5b6rpdbltabptna6iuq8o80sac9roj7.apps.googleusercontent.com', // [cite: 937]
+      serverClientId:
+          '75724238092-s5b6rpdbltabptna6iuq8o80sac9roj7.apps.googleusercontent.com', // [cite: 937]
     );
 
     //  Nos suscribimos de manera reactiva para actualizar el estado del usuario automáticamente ante cualquier cambio
-    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
-      _currentUser = account;
+    googleSignIn.authenticationEvents.listen((
+      GoogleSignInAuthenticationEvent event,
+    ) {
+      if (event is GoogleSignInAuthenticationEventSignIn) {
+        // Aquí el analizador sí reconoce "event.user" sin problemas
+        _currentUser = event.user;
+      } else if (event is GoogleSignInAuthenticationEventSignOut) {
+        // El usuario cerró sesión
+        _currentUser = null;
+      }
     });
 
-    _currentUser = await googleSignIn.attemptLightweightAuthentication(); // [cite: 775]
+    _currentUser = await googleSignIn
+        .attemptLightweightAuthentication(); // [cite: 775]
   }
 
   // --- ALGORITMO RESILIENTE: Exponential Backoff con Jitter ---
@@ -74,9 +88,13 @@ class BackupService {
           retries++;
           // [cite: 1018] Fórmula exponencial: (2^retries * baseDelay) + variación aleatoria (Jitter) para no saturar en olas sincronizadas
           int backoffMs = (math.pow(2, retries) * baseDelayMs).toInt();
-          int jitter = random.nextInt(1000); // Hasta 1 segundo de desvío aleatorio
-          
-          debugPrint('Límite de cuota de Google Drive alcanzado. Reintento $retries/$maxRetries en ${backoffMs + jitter}ms...');
+          int jitter = random.nextInt(
+            1000,
+          ); // Hasta 1 segundo de desvío aleatorio
+
+          debugPrint(
+            'Límite de cuota de Google Drive alcanzado. Reintento $retries/$maxRetries en ${backoffMs + jitter}ms...',
+          );
           await Future.delayed(Duration(milliseconds: backoffMs + jitter));
         } else {
           // Si no es un error de cuotas, o superó el máximo de reintentos, lanzamos la excepción
@@ -96,7 +114,9 @@ class BackupService {
       await channel.invokeMethod('requestSync');
     } catch (e) {
       // Fallback silencioso en desarrollo si el canal nativo no se ha declarado aún
-      debugPrint('Sincronización de metadatos Play Services omitida/no configurada: $e');
+      debugPrint(
+        'Sincronización de metadatos Play Services omitida/no configurada: $e',
+      );
     }
   }
 
@@ -119,8 +139,12 @@ class BackupService {
       final fileTrashed = File('${dir.path}/trashed_notes.json');
 
       if (await fileNotes.exists()) notes = await fileNotes.readAsString();
-      if (await fileArchived.exists()) archived = await fileArchived.readAsString();
-      if (await fileTrashed.exists()) trashed = await fileTrashed.readAsString();
+      if (await fileArchived.exists()) {
+        archived = await fileArchived.readAsString();
+      }
+      if (await fileTrashed.exists()) {
+        trashed = await fileTrashed.readAsString();
+      }
     }
 
     final backupData = {
@@ -159,14 +183,17 @@ class BackupService {
   }
 
   // --- 3. LÓGICA DE GOOGLE DRIVE ---
-  
+
   Future<GoogleSignInAccount?> signIn() async {
     try {
       if (googleSignIn.supportsAuthenticate()) {
-        final GoogleSignInAccount account = await googleSignIn.authenticate(); // [cite: 937]
+        final GoogleSignInAccount account = await googleSignIn
+            .authenticate(); // [cite: 937]
         final driveScope = [drive.DriveApi.driveAppdataScope]; // [cite: 950]
-        await account.authorizationClient.authorizeScopes(driveScope); // [cite: 937]
-        
+        await account.authorizationClient.authorizeScopes(
+          driveScope,
+        ); // [cite: 937]
+
         _currentUser = account;
         return account;
       }
@@ -192,28 +219,35 @@ class BackupService {
     if (account == null) throw Exception("No hay un usuario autenticado");
 
     final driveScopes = [drive.DriveApi.driveAppdataScope];
-    final authorization = await account.authorizationClient.authorizeScopes(driveScopes);
+    final authorization = await account.authorizationClient.authorizeScopes(
+      driveScopes,
+    );
     final client = authorization.authClient(scopes: driveScopes); // [cite: 797]
     final driveApi = drive.DriveApi(client);
-    
+
     final backupJson = await createBackupJson();
     final List<int> bytes = utf8.encode(backupJson);
-    
+
     // [cite: 1017] Aplicamos el envoltorio de reintentos a la consulta de Drive
-    final fileList = await _retryWithBackoff(() => driveApi.files.list(
-      spaces: 'appDataFolder', // [cite: 996]
-      q: "name = '$_backupFileName'",
-    ));
+    final fileList = await _retryWithBackoff(
+      () => driveApi.files.list(
+        spaces: 'appDataFolder', // [cite: 996]
+        q: "name = '$_backupFileName'",
+      ),
+    );
 
     if (fileList.files != null && fileList.files!.isNotEmpty) {
       final existingFileId = fileList.files!.first.id!;
-      
+
       // [cite: 1017] Aplicamos reintentos a la subida de actualización
       await _retryWithBackoff(() async {
-        final media = drive.Media(Stream.fromIterable([bytes]), bytes.length); //  Fresh stream por reintento
+        final media = drive.Media(
+          Stream.fromIterable([bytes]),
+          bytes.length,
+        ); //  Fresh stream por reintento
         return await driveApi.files.update(
-          drive.File(), 
-          existingFileId, 
+          drive.File(),
+          existingFileId,
           uploadMedia: media,
         );
       });
@@ -221,14 +255,14 @@ class BackupService {
       final driveFile = drive.File()
         ..name = _backupFileName
         ..parents = ['appDataFolder']; // [cite: 991]
-        
+
       // [cite: 1017] Aplicamos reintentos a la creación del nuevo archivo
       await _retryWithBackoff(() async {
-        final media = drive.Media(Stream.fromIterable([bytes]), bytes.length); //  Fresh stream por reintento
-        return await driveApi.files.create(
-          driveFile, 
-          uploadMedia: media,
-        );
+        final media = drive.Media(
+          Stream.fromIterable([bytes]),
+          bytes.length,
+        ); //  Fresh stream por reintento
+        return await driveApi.files.create(driveFile, uploadMedia: media);
       });
     }
     await _updateTimestamp(_keyLastCloud);
@@ -239,7 +273,9 @@ class BackupService {
     if (account == null) throw Exception("No autenticado");
 
     final driveScopes = [drive.DriveApi.driveAppdataScope];
-    final authorization = await account.authorizationClient.authorizeScopes(driveScopes);
+    final authorization = await account.authorizationClient.authorizeScopes(
+      driveScopes,
+    );
     final client = authorization.authClient(scopes: driveScopes);
     final driveApi = drive.DriveApi(client);
 
@@ -247,29 +283,36 @@ class BackupService {
     await _requestAndroidMetaDataSync();
 
     // [cite: 1017] Aplicamos reintentos a la lectura de la lista
-    final fileList = await _retryWithBackoff(() => driveApi.files.list(
-      spaces: 'appDataFolder', // [cite: 996]
-      q: "name = '$_backupFileName'",
-    ));
+    final fileList = await _retryWithBackoff(
+      () => driveApi.files.list(
+        spaces: 'appDataFolder', // [cite: 996]
+        q: "name = '$_backupFileName'",
+      ),
+    );
 
     if (fileList.files == null || fileList.files!.isEmpty) {
       return false; // No hay copia de seguridad
     }
 
     final fileId = fileList.files!.first.id!;
-    
+
     // [cite: 1017] Aplicamos reintentos a la descarga del archivo multimedia
-    final drive.Media fileMedia = await _retryWithBackoff(() => driveApi.files.get(
-      fileId,
-      downloadOptions: drive.DownloadOptions.fullMedia,
-    )) as drive.Media;
+    final drive.Media fileMedia =
+        await _retryWithBackoff(
+              () => driveApi.files.get(
+                fileId,
+                downloadOptions: drive.DownloadOptions.fullMedia,
+              ),
+            )
+            as drive.Media;
 
     final List<int> dataStore = [];
-    await for (var data in fileMedia.stream) { //  Consumo del stream de bytes seguro
+    await for (var data in fileMedia.stream) {
+      //  Consumo del stream de bytes seguro
       dataStore.addAll(data);
     }
     final String jsonString = utf8.decode(dataStore);
-    
+
     await restoreFromJson(jsonString);
     return true;
   }

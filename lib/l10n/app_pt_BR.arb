@@ -144,5 +144,6 @@
   "backupPhone": "Salve um backup no armazenamento do seu telefone.",
   "download": "Baixar",
   "import": "Importar",
-  "lastBackup": "Último backup: {lastLocalSync}"
+  "lastBackup": "Último backup: {lastLocalSync}",
+  "logout": "Sair"
 }

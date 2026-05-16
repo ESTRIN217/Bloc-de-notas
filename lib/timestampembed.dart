@@ -50,7 +50,7 @@ class TimeStampEmbedBuilder extends EmbedBuilder {
     String second = dateTime.second.toString().padLeft(2, '0');
 
     // Combinación manteniendo la fecha completa y la hora requerida
-    final String formattedDateTime = '$day/$month/$year $hour:$min:$second';
+    final String formattedDateTime = '$day/$month/$year $hour:$minute:$second';
 
     return Row(
       mainAxisSize: MainAxisSize.min,

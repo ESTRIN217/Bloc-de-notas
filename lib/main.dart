@@ -1,16 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bloc_de_notas/audioembedbuilder.dart';
 import 'package:bloc_de_notas/backup_service.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 // Solo se usa si !kIsWeb
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:markdown_quill/markdown_quill.dart';
 import 'package:flutter_quill_to_pdf/flutter_quill_to_pdf.dart';
 import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart'
@@ -31,10 +28,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'drawing_embed.dart';
 import 'update_widget.dart';
 import 'theme.dart';
-import 'timestampembed.dart';
 import 'note_item_widget.dart';
 
 void main() {
@@ -205,6 +200,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   Future<void> _loadItems() async {
+    final String languageCode = Localizations.localeOf(context).languageCode; 
   try {
     // 1. Cargamos la preferencia de la vista (Lista o Cuadrícula)
     final prefs = await SharedPreferences.getInstance();
@@ -216,7 +212,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
 
     // Obtenemos el código de idioma actual (ej. 'es' o 'en')
-    final String languageCode = Localizations.localeOf(context).languageCode;
+    
 
     // 2. Cargamos las notas activas
     String? contents;
@@ -294,7 +290,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     debugPrint("Error loading items: $e");
 
     // Manejo de error: Fallback seguro cargando desde los assets JSON
-    final String languageCode = Localizations.localeOf(context).languageCode;
     final defaultNotes = await loadDefaultNotesFromAssets(languageCode);
     setState(() {
       _items = defaultNotes;
@@ -1909,6 +1904,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                       return Text(
                         AppLocalizations.of(context)!.appVersionFull(
                           packageInfo.version,
+                          packageInfo.buildNumber,
                           platformDetail,
                         ),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(

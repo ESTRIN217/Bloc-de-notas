@@ -971,6 +971,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Log out'**
   String get logout;
+
+  /// No description provided for @updatesTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags updated in {selectedItems} note'**
+  String updatesTag(String selectedItems);
 }
 
 class _AppLocalizationsDelegate

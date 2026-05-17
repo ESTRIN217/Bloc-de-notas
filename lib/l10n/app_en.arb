@@ -360,10 +360,10 @@
   },
   "logout": "Log out",
   "@logout": {},
-  "updatesTag": "Tags updated in {selectedItems.length} note",
+  "updatesTag": "Tags updated in {selectedItems} note",
   "@updatesTag": {
   "placeholders": {
-  "selectedItems.length": {
+  "selectedItems": {
   "type": "String"
   }
   }

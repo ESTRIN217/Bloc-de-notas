@@ -758,7 +758,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                AppLocalizations.of(context)!.updatesTag(_selectedItems.length),
+                                AppLocalizations.of(context)!.updatesTag(_selectedItems.length as String),
                               ),
                             ),
                           );

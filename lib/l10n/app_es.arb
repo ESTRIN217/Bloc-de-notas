@@ -155,5 +155,5 @@
   "import": "Importar",
   "lastBackup": "Último respaldo: {lastLocalSync}",
   "logout": "Cerrar sesión",
-  "updatesTag": "Etiquetas actualizadas en {selectedItems.length} nota"
+  "updatesTag": "Etiquetas actualizadas en {selectedItems} nota"
 }

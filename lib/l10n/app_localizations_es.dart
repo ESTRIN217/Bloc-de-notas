@@ -481,6 +481,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get logout => 'Cerrar sesión';
+
+  @override
+  String updatesTag(String selectedItems) {
+    return 'Etiquetas actualizadas en $selectedItems nota';
+  }
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
@@ -960,4 +965,9 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
 
   @override
   String get logout => 'Cerrar sesión';
+
+  @override
+  String updatesTag(String selectedItems) {
+    return 'Etiquetas actualizadas en $selectedItems nota';
+  }
 }

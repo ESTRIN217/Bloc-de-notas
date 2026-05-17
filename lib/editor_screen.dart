@@ -54,29 +54,30 @@ class _EditorScreenState extends State<EditorScreen> {
   bool _isArchived = false; // NUEVO: Estado de archivo
   final quill.QuillController _controller = () {
     return quill.QuillController.basic(
-        config: quill.QuillControllerConfig(
-      clipboardConfig: quill.QuillClipboardConfig(
-        enableExternalRichPaste: true,
-        onImagePaste: (imageBytes) async {
-          if (kIsWeb) {
-            // Dart IO is unsupported on the web.
-            return null;
-          }
-          // Save the image somewhere and return the image URL that will be
-          // stored in the Quill Delta JSON (the document).
-          final newFileName =
-              'image-file-${DateTime.now().toIso8601String()}.png';
-          final newPath = path.join(
-            io.Directory.systemTemp.path,
-            newFileName,
-          );
-          final file = await io.File(
-            newPath,
-          ).writeAsBytes(imageBytes, flush: true);
-          return file.path;
-        },
+      config: quill.QuillControllerConfig(
+        clipboardConfig: quill.QuillClipboardConfig(
+          enableExternalRichPaste: true,
+          onImagePaste: (imageBytes) async {
+            if (kIsWeb) {
+              // Dart IO is unsupported on the web.
+              return null;
+            }
+            // Save the image somewhere and return the image URL that will be
+            // stored in the Quill Delta JSON (the document).
+            final newFileName =
+                'image-file-${DateTime.now().toIso8601String()}.png';
+            final newPath = path.join(
+              io.Directory.systemTemp.path,
+              newFileName,
+            );
+            final file = await io.File(
+              newPath,
+            ).writeAsBytes(imageBytes, flush: true);
+            return file.path;
+          },
+        ),
       ),
-    ));
+    );
   }();
   final FocusNode _editorFocusNode = FocusNode();
   final ScrollController _editorScrollController = ScrollController();
@@ -343,7 +344,10 @@ class _EditorScreenState extends State<EditorScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.picture_as_pdf_outlined, color: Colors.red),
+                leading: const Icon(
+                  Icons.picture_as_pdf_outlined,
+                  color: Colors.red,
+                ),
                 title: Text(AppLocalizations.of(context)!.archivo_pdf),
                 onTap: () {
                   Navigator.pop(context);
@@ -735,47 +739,45 @@ class _EditorScreenState extends State<EditorScreen> {
             ),
             showClipboardPaste: true,
             customButtons: [
-                  quill.QuillToolbarCustomButtonOptions(
-                    icon: const Icon(Icons.add_alarm_rounded),
-                    onPressed: () {
-                      _contentController.document.insert(
-                        _contentController.selection.extentOffset,
-                        TimeStampEmbed(
-                          DateTime.now().toString(),
-                        ),
-                      );
+              quill.QuillToolbarCustomButtonOptions(
+                icon: const Icon(Icons.add_alarm_rounded),
+                onPressed: () {
+                  _contentController.document.insert(
+                    _contentController.selection.extentOffset,
+                    TimeStampEmbed(DateTime.now().toString()),
+                  );
 
-                      _contentController.updateSelection(
-                        TextSelection.collapsed(
-                          offset: _contentController.selection.extentOffset + 1,
-                        ),
-                        quill.ChangeSource.local,
-                      );
-                    },
-                  ),
-                ],
-                buttonOptions: quill.QuillSimpleToolbarButtonOptions(
-                  base: quill.QuillToolbarBaseButtonOptions(
-                    afterButtonPressed: () {
-                      final isDesktop = {
-                        TargetPlatform.linux,
-                        TargetPlatform.windows,
-                        TargetPlatform.macOS
-                      }.contains(defaultTargetPlatform);
-                      if (isDesktop) {
-                        _editorFocusNode.requestFocus();
-                      }
-                    },
-                  ),
-                  linkStyle: quill.QuillToolbarLinkStyleButtonOptions(
-                    validateLink: (link) {
-                      // Treats all links as valid. When launching the URL,
-                      // `https://` is prefixed if the link is incomplete (e.g., `google.com` → `https://google.com`)
-                      // however this happens only within the editor.
-                      return true;
-                    },
-                  ),
-                ),
+                  _contentController.updateSelection(
+                    TextSelection.collapsed(
+                      offset: _contentController.selection.extentOffset + 1,
+                    ),
+                    quill.ChangeSource.local,
+                  );
+                },
+              ),
+            ],
+            buttonOptions: quill.QuillSimpleToolbarButtonOptions(
+              base: quill.QuillToolbarBaseButtonOptions(
+                afterButtonPressed: () {
+                  final isDesktop = {
+                    TargetPlatform.linux,
+                    TargetPlatform.windows,
+                    TargetPlatform.macOS,
+                  }.contains(defaultTargetPlatform);
+                  if (isDesktop) {
+                    _editorFocusNode.requestFocus();
+                  }
+                },
+              ),
+              linkStyle: quill.QuillToolbarLinkStyleButtonOptions(
+                validateLink: (link) {
+                  // Treats all links as valid. When launching the URL,
+                  // `https://` is prefixed if the link is incomplete (e.g., `google.com` → `https://google.com`)
+                  // however this happens only within the editor.
+                  return true;
+                },
+              ),
+            ),
           ),
         );
       },
@@ -872,7 +874,9 @@ class _EditorScreenState extends State<EditorScreen> {
                   Icons.unarchive_outlined,
                 ), // Icono cuando isSelected es true
                 color: dynamicIconColor,
-                tooltip: _isArchived ? AppLocalizations.of(context)!.unarchiveTooltip : AppLocalizations.of(context)!.archiveTooltip,
+                tooltip: _isArchived
+                    ? AppLocalizations.of(context)!.unarchiveTooltip
+                    : AppLocalizations.of(context)!.archiveTooltip,
                 onPressed: _toggleArchive,
               ),
               IconButton(
@@ -923,7 +927,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     ),
                     child: TextField(
                       controller: _titleController,
-                      autocorrect: true,  
+                      autocorrect: true,
                       enableSuggestions: true,
                       style: TextStyle(
                         fontSize: 24,
@@ -957,8 +961,6 @@ class _EditorScreenState extends State<EditorScreen> {
                           )!.editorPlaceholder,
                           expands: false,
                           padding: const EdgeInsets.only(bottom: 90),
-                          autocorrect: true,
-                          enableSuggestions: true,
 
                           customStyles: quill.DefaultStyles(
                             // Estilo para texto normal
@@ -993,7 +995,7 @@ class _EditorScreenState extends State<EditorScreen> {
                               const quill.VerticalSpacing(0, 0),
                               null,
                             ),
-                              h3: quill.DefaultTextBlockStyle(
+                            h3: quill.DefaultTextBlockStyle(
                               TextStyle(
                                 color: dynamicTextColor,
                                 fontSize: 22,
@@ -1073,41 +1075,42 @@ class _EditorScreenState extends State<EditorScreen> {
                           ),
 
                           embedBuilders: [
-  // 1. Builders personalizados primero
-  AudioEmbedBuilder(),
-  DrawingEmbedBuilder(),
-  TimeStampEmbedBuilder(),
+                            // 1. Builders personalizados primero
+                            AudioEmbedBuilder(),
+                            DrawingEmbedBuilder(),
+                            TimeStampEmbedBuilder(),
 
-  // 2. Builders de la librería según la plataforma con sus configuraciones internas
-  if (kIsWeb)
-    ...FlutterQuillEmbeds.editorWebBuilders(
-      imageEmbedConfig: QuillEditorImageEmbedConfig(
-        imageProviderBuilder: (context, imageUrl) {
-          if (imageUrl.startsWith('assets/')) {
-            return AssetImage(imageUrl);
-          }
-          return null;
-        },
-      ),
-      videoEmbedConfig: const QuillEditorWebVideoEmbedConfig(),
-    )
-  else
-    ...FlutterQuillEmbeds.editorBuilders(
-      imageEmbedConfig: QuillEditorImageEmbedConfig(
-        imageProviderBuilder: (context, imageUrl) {
-          if (imageUrl.startsWith('assets/')) {
-            return AssetImage(imageUrl);
-          }
-          return null;
-        },
-      ),
-      videoEmbedConfig: QuillEditorVideoEmbedConfig(
-        customVideoBuilder: (videoUrl, readOnly) {
-          return null;
-        },
-      ),
-    ),
-],
+                            // 2. Builders de la librería según la plataforma con sus configuraciones internas
+                            if (kIsWeb)
+                              ...FlutterQuillEmbeds.editorWebBuilders(
+                                imageEmbedConfig: QuillEditorImageEmbedConfig(
+                                  imageProviderBuilder: (context, imageUrl) {
+                                    if (imageUrl.startsWith('assets/')) {
+                                      return AssetImage(imageUrl);
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                videoEmbedConfig:
+                                    const QuillEditorWebVideoEmbedConfig(),
+                              )
+                            else
+                              ...FlutterQuillEmbeds.editorBuilders(
+                                imageEmbedConfig: QuillEditorImageEmbedConfig(
+                                  imageProviderBuilder: (context, imageUrl) {
+                                    if (imageUrl.startsWith('assets/')) {
+                                      return AssetImage(imageUrl);
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                videoEmbedConfig: QuillEditorVideoEmbedConfig(
+                                  customVideoBuilder: (videoUrl, readOnly) {
+                                    return null;
+                                  },
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ),
@@ -1148,13 +1151,19 @@ class _EditorScreenState extends State<EditorScreen> {
                           onPressed: _showBackgroundSheet,
                         ),
                         IconButton.outlined(
-                          icon: Icon(Icons.tune_outlined, color: dynamicIconColor),
+                          icon: Icon(
+                            Icons.tune_outlined,
+                            color: dynamicIconColor,
+                          ),
                           onPressed: _showTextTools,
                         ),
                         IconButton.outlined(
                           isSelected: _ttsState == TtsState.playing,
                           // Icono por defecto (cuando NO está seleccionado)
-                          icon: Icon(Icons.volume_up_outlined, color: dynamicIconColor),
+                          icon: Icon(
+                            Icons.volume_up_outlined,
+                            color: dynamicIconColor,
+                          ),
                           // Icono que se muestra cuando isSelected es true
                           selectedIcon: Icon(
                             Icons.stop_outlined,
@@ -1300,7 +1309,9 @@ class _EditorScreenState extends State<EditorScreen> {
                   children: [
                     ListTile(
                       leading: Icon(
-                        _isRecording ? Icons.stop_circle_outlined : Icons.mic_outlined,
+                        _isRecording
+                            ? Icons.stop_circle_outlined
+                            : Icons.mic_outlined,
                         color: _isRecording
                             ? Colors.red
                             : Theme.of(context).colorScheme.primary,

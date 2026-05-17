@@ -478,4 +478,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logout => 'Log out';
+
+  @override
+  String updatesTag(String selectedItems) {
+    return 'Tags updated in $selectedItems note';
+  }
 }

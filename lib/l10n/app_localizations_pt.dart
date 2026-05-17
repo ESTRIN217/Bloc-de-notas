@@ -481,6 +481,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get logout => 'Sair';
+
+  @override
+  String updatesTag(String selectedItems) {
+    return 'Etiquetas atualizadas em $selectedItems nota';
+  }
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -960,4 +965,9 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get logout => 'Sair';
+
+  @override
+  String updatesTag(String selectedItems) {
+    return 'Etiquetas atualizadas em $selectedItems nota';
+  }
 }

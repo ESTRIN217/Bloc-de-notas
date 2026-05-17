@@ -146,5 +146,5 @@
   "import": "Importar",
   "lastBackup": "Último backup: {lastLocalSync}",
   "logout": "Sair",
-  "updatesTag": "Etiquetas atualizadas em {selectedItems.length} nota"
+  "updatesTag": "Etiquetas atualizadas em {selectedItems} nota"
 }

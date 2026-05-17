@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'main.dart'; // Importante para poder navegar a MyHomePage
+import 'l10n/app_localizations.dart';
 
 class EntryAnimation extends StatefulWidget {
   final Widget child;

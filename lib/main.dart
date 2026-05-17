@@ -1990,6 +1990,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
               tooltip: AppLocalizations.of(context)!.addItem,
               child: const Icon(Icons.add),
             ),
+    ),
     );
   }
 

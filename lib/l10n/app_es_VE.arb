@@ -145,5 +145,6 @@
   "download": "Descargar",
   "import": "Importar",
   "lastBackup": "Último respaldo: {lastLocalSync}",
-  "logout": "Cerrar sesión"
+  "logout": "Cerrar sesión",
+  "updatesTag": "Etiquetas actualizadas en {selectedItems.length} nota"
 }

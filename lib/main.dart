@@ -672,7 +672,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     });
   }
 
-  //   Diálogo para asignar etiquetas en modo selección
+// Diálogo para asignar etiquetas en modo selección
   void _showAssignTagDialog() {
     showDialog(
       context: context,
@@ -691,43 +691,74 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                       return ListTile(
                         leading: const Icon(Icons.label_outline),
                         title: Text(tag),
-                        trailing: const Icon(Icons.add_circle_outline),
+                        // Cambié un poco el ícono para que tenga más sentido visual de "etiquetar/modificar"
+                        trailing: const Icon(Icons.sell_outlined), 
                         onTap: () {
                           setState(() {
                             for (var item in _selectedItems) {
-                              final index = _items.indexWhere(
-                                (i) => i.id == item.id,
-                              );
-                              if (index != -1) {
-                                final updatedTags = List<String>.from(
-                                  _items[index].tags,
-                                );
-                                if (!updatedTags.contains(tag)) {
+                              
+                              // 1. Buscar y actualizar en la lista principal (_items)
+                              final indexInItems = _items.indexWhere((i) => i.id == item.id);
+                              if (indexInItems != -1) {
+                                final updatedTags = List<String>.from(_items[indexInItems].tags);
+                                
+                                // Lógica de Toggle: Si la tiene, la quita. Si no la tiene, la pone.
+                                if (updatedTags.contains(tag)) {
+                                  updatedTags.remove(tag);
+                                } else {
                                   updatedTags.add(tag);
-                                  _items[index] = ListItem(
-                                    id: _items[index].id,
-                                    title: _items[index].title,
-                                    summary: _items[index].summary,
-                                    lastModified: DateTime.now(),
-                                    backgroundColor:
-                                        _items[index].backgroundColor,
-                                    backgroundImagePath:
-                                        _items[index].backgroundImagePath,
-                                    tags: updatedTags,
-                                    isArchived: _items[index].isArchived,
-                                  );
                                 }
+                                
+                                _items[indexInItems] = ListItem(
+                                  id: _items[indexInItems].id,
+                                  title: _items[indexInItems].title,
+                                  summary: _items[indexInItems].summary,
+                                  lastModified: DateTime.now(), // Actualizamos la fecha de modificación
+                                  backgroundColor: _items[indexInItems].backgroundColor,
+                                  backgroundImagePath: _items[indexInItems].backgroundImagePath,
+                                  tags: updatedTags,
+                                  isArchived: _items[indexInItems].isArchived,
+                                );
+                              }
+
+                              // 2. Buscar y actualizar en la lista de archivados (_archivedItems)
+                              final indexInArchived = _archivedItems.indexWhere((i) => i.id == item.id);
+                              if (indexInArchived != -1) {
+                                final updatedTags = List<String>.from(_archivedItems[indexInArchived].tags);
+                                
+                                if (updatedTags.contains(tag)) {
+                                  updatedTags.remove(tag);
+                                } else {
+                                  updatedTags.add(tag);
+                                }
+                                
+                                _archivedItems[indexInArchived] = ListItem(
+                                  id: _archivedItems[indexInArchived].id,
+                                  title: _archivedItems[indexInArchived].title,
+                                  summary: _archivedItems[indexInArchived].summary,
+                                  lastModified: DateTime.now(),
+                                  backgroundColor: _archivedItems[indexInArchived].backgroundColor,
+                                  backgroundImagePath: _archivedItems[indexInArchived].backgroundImagePath,
+                                  tags: updatedTags,
+                                  isArchived: _archivedItems[indexInArchived].isArchived,
+                                );
                               }
                             }
+                            
+                            // Guardamos ambas listas por si modificamos notas archivadas
                             _saveItems();
+                            _saveArchivedItems(); 
                             _filterItems();
                           });
+                          
                           Navigator.pop(context);
                           _exitSelectionMode();
+                          
+                          // Hacemos el mensaje del SnackBar más genérico ya que ahora quita y pone etiquetas
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Etiqueta "$tag" añadida a ${_selectedItems.length} notas',
+                                AppLocalizations.of(context)!.updatesTag(_selectedItems.length),
                               ),
                             ),
                           );

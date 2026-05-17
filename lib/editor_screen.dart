@@ -923,6 +923,8 @@ class _EditorScreenState extends State<EditorScreen> {
                     ),
                     child: TextField(
                       controller: _titleController,
+                      autocorrect: true,  
+                      enableSuggestions: true,
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -955,6 +957,8 @@ class _EditorScreenState extends State<EditorScreen> {
                           )!.editorPlaceholder,
                           expands: false,
                           padding: const EdgeInsets.only(bottom: 90),
+                          autocorrect: true,
+                          enableSuggestions: true,
 
                           customStyles: quill.DefaultStyles(
                             // Estilo para texto normal

@@ -359,5 +359,13 @@
   }
   },
   "logout": "Log out",
-  "@logout": {}
+  "@logout": {},
+  "updatesTag": "Tags updated in {selectedItems.length} note",
+  "@updatesTag": {
+  "placeholders": {
+  "selectedItems.length": {
+  "type": "String"
+  }
+  }
+}
 }

@@ -159,7 +159,7 @@ class _EntryScreenState extends State<EntryScreen> with SingleTickerProviderStat
               children: [
                 // Tu logotipo con abstracción geométrica y fondo transparente
                 Image.asset(
-                  'assets/notas.png', // Asegúrate de tener la ruta correcta en tu pubspec.yaml
+                  'assets/icon/notas.png', // Asegúrate de tener la ruta correcta en tu pubspec.yaml
                   width: 140,
                   height: 140,
                   errorBuilder: (context, error, stackTrace) {

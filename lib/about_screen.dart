@@ -88,55 +88,82 @@ class AboutScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 FutureBuilder<List<dynamic>>(
-                  future:
-                      Future.wait<dynamic>([
-                        PackageInfo.fromPlatform(),
-                        DeviceInfoPlugin().deviceInfo,
-                      ]).catchError((e) {
-                        // Si falla la carga, devolvemos valores por defecto para no bloquear la UI
-                        return <dynamic>[null, null];
-                      }),
-                  builder: (context, snapshot) {
-                    // 1. Valores por defecto iniciales
-                    String version = "...";
-                    String archLabel = "...";
+  future: Future.wait<dynamic>([
+    PackageInfo.fromPlatform(),
+    DeviceInfoPlugin().deviceInfo,
+  ]).catchError((e) {
+    // Si falla la carga, devolvemos valores por defecto para no bloquear la UI
+    return <dynamic>[null, null];
+  }),
+  builder: (context, snapshot) {
+    // 1. Valores por defecto iniciales
+    String platformLabel = "...";
+    String version = "...";
+    String archLabel = "...";
 
-                    // 2. Si hay datos (y no son nulos por el catchError)
-                    if (snapshot.hasData && snapshot.data![0] != null) {
-                      final PackageInfo? packageInfo = snapshot.data![0];
-                      final deviceData = snapshot.data![1];
+    // 2. Si hay datos (y no son nulos por el catchError)
+    if (snapshot.hasData && snapshot.data![0] != null) {
+      final PackageInfo? packageInfo = snapshot.data![0];
+      final deviceData = snapshot.data![1];
 
-                      version = packageInfo?.version ?? "...";
+      version = packageInfo?.version ?? "...";
 
-                      if (kIsWeb) {
-                        // Validación segura sin forzar el cast con "as"
-                        if (deviceData is WebBrowserInfo) {
-                          archLabel = deviceData.browserName.name.toUpperCase();
-                        } else {
-                          archLabel = "WEB";
-                        }
-                      } else if (deviceData is AndroidDeviceInfo) {
-                        archLabel = deviceData.supportedAbis.isNotEmpty
-                            ? deviceData.supportedAbis.first.toUpperCase()
-                            : "ANDROID";
-                      }
-                    }
-                    // 3. Si hay un error crítico en el Future
-                    else if (snapshot.hasError) {
-                      version = "Error";
-                      archLabel = "Error";
-                    }
+      if (kIsWeb) {
+        platformLabel = "WEB";
+        if (deviceData is WebBrowserInfo) {
+          final browserName = deviceData.browserName.name.toUpperCase();
+          final userAgent = deviceData.userAgent ?? "";
+          String browserVersion = "";
 
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildBadge(context, version),
-                        const SizedBox(width: 8),
-                        _buildBadge(context, archLabel),
-                      ],
-                    );
-                  },
-                ),
+          final regexMap = {
+            BrowserName.chrome: RegExp(r'Chrome\/([0-9\.]+)'),
+            BrowserName.firefox: RegExp(r'Firefox\/([0-9\.]+)'),
+            BrowserName.safari: RegExp(r'Version\/([0-9\.]+)'),
+            BrowserName.edge: RegExp(r'Edg\/([0-9\.]+)'),
+          };
+
+          final regex = regexMap[deviceData.browserName];
+          if (regex != null) {
+            final match = regex.firstMatch(userAgent);
+            if (match != null) {
+              browserVersion = match.group(1) ?? "";
+            }
+          }
+
+          if (browserVersion.isEmpty) {
+            browserVersion = (deviceData.appVersion ?? "").split(' ').first;
+          }
+
+          archLabel = "$browserName $browserVersion".trim();
+        } else {
+          archLabel = "UNKNOWN";
+        }
+      } else if (deviceData is AndroidDeviceInfo) {
+        platformLabel = "ANDROID";
+        archLabel = deviceData.supportedAbis.isNotEmpty
+            ? deviceData.supportedAbis.first.toUpperCase()
+            : "...";
+      }
+    }
+    // 3. Si hay un error crítico en el Future
+    else if (snapshot.hasError) {
+      platformLabel = "ERROR";
+      version = "Error";
+      archLabel = "Error";
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildBadge(context, platformLabel),
+        const SizedBox(width: 8),
+        _buildBadge(context, version),
+        const SizedBox(width: 8),
+        _buildBadge(context, archLabel),
+      ],
+    );
+  },
+),
               ],
             ),
           ),

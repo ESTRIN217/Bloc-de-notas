@@ -31,6 +31,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'update_widget.dart';
 import 'theme.dart';
 import 'note_item_widget.dart';
+import 'entry_animation.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
@@ -105,7 +106,7 @@ class MyApp extends StatelessWidget {
                 Locale('pt'),
                 Locale('pt', 'BR'),
               ],
-              home: const MyHomePage(),
+              home: const EntryScreen(),
             );
           },
         );
@@ -1579,7 +1580,34 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final bool isHomeView = !_isTrashView && 
+                            !_isArchiveView && 
+                            _selectedTagFilter == null && 
+                            _selectedColorFilter == null && 
+                            !_isSelectionMode;
+
+    // 2. Envolvemos el Scaffold con PopScope para interceptar el botón atrás
+    return PopScope(
+      canPop: isHomeView, // Si es 'true', sale de la app de una. Si es 'false', ejecuta lo de abajo.
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return; // Si ya se procesó el retroceso normal, no hacemos nada
+
+        // 3. Prioridad 1: Si hay elementos seleccionados, quitamos el modo selección primero
+        if (_isSelectionMode) {
+          _exitSelectionMode();
+        } 
+        // 4. Prioridad 2: Si está en otra vista o filtro, restablecemos los valores para volver a Inicio
+        else {
+          setState(() {
+            _isTrashView = false;
+            _isArchiveView = false;
+            _selectedTagFilter = null;
+            _selectedColorFilter = null;
+          });
+          _filterItems(); // Refrescamos la interfaz con la lista principal
+        }
+      },
+    child: Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: _buildAppBar(),
       drawer: Drawer(
@@ -1855,82 +1883,100 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
             const Divider(),
             const UpdateAvailableWidget(isDrawerTile: true),
             ListTile(
-              enabled: false,
-              leading: const Icon(Icons.info_outline, size: 20),
-              title: FutureBuilder<List<dynamic>>(
-                future: Future.wait([
-                  PackageInfo.fromPlatform(),
-                  DeviceInfoPlugin().deviceInfo,
-                ]),
-                builder: (context, snapshot) {
-                  // 1. Verificar si hubo un error (Crucial para depurar en Web/Codespaces)
-                  if (snapshot.hasError) {
-                    return Text(
-                      AppLocalizations.of(context)!.errorLoadingInfo,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    );
-                  }
+  enabled: false,
+  leading: const Icon(Icons.info_outline, size: 20),
+  title: FutureBuilder<List<dynamic>>(
+    future: Future.wait([
+      PackageInfo.fromPlatform(),
+      DeviceInfoPlugin().deviceInfo,
+    ]),
+    builder: (context, snapshot) {
+      // 1. Verificar si hubo un error
+      if (snapshot.hasError) {
+        return Text(
+          AppLocalizations.of(context)!.errorLoadingInfo,
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
 
-                  if (snapshot.hasData) {
-                    try {
-                      final PackageInfo packageInfo = snapshot.data![0];
-                      final deviceData = snapshot.data![1];
+      if (snapshot.hasData) {
+        try {
+          final PackageInfo packageInfo = snapshot.data![0];
+          final deviceData = snapshot.data![1];
 
-                      String platformDetail = "";
+          String platformDetail = "";
 
-                      if (kIsWeb) {
-                        // Verificación segura para Web
-                        if (deviceData is WebBrowserInfo) {
-                          final browser = deviceData.browserName.name
-                              .toUpperCase();
-                          // Usamos un fallback por si appVersion viene nulo o vacío
-                          final version = (deviceData.appVersion ?? "")
-                              .split(' ')
-                              .first;
-                          platformDetail = "$browser $version".trim();
-                        } else {
-                          platformDetail = "WEB";
-                        }
-                      } else {
-                        // Verificación segura para Android
-                        final androidInfo = deviceData as AndroidDeviceInfo;
-                        platformDetail = androidInfo.supportedAbis.first
-                            .toUpperCase();
-                      }
+          if (kIsWeb) {
+            if (deviceData is WebBrowserInfo) {
+              final browserName = deviceData.browserName.name.toUpperCase();
+              final userAgent = deviceData.userAgent ?? "";
+              String version = "";
 
-                      return Text(
-                        AppLocalizations.of(context)!.appVersionFull(
-                          packageInfo.version,
-                          packageInfo.buildNumber,
-                          platformDetail,
-                        ),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                        ),
-                      );
-                    } catch (e) {
-                      // Si el cast falla, mostramos un mensaje genérico en lugar de "Cargando..."
-                      return Text(
-                        AppLocalizations.of(context)!.formatError,
-                        style: TextStyle(fontSize: 12),
-                      );
-                    }
-                  }
+              // Expresiones regulares para extraer la versión real según el navegador
+              final regexMap = {
+                BrowserName.chrome: RegExp(r'Chrome\/([0-9\.]+)'),
+                BrowserName.firefox: RegExp(r'Firefox\/([0-9\.]+)'),
+                BrowserName.safari: RegExp(r'Version\/([0-9\.]+)'),
+                BrowserName.edge: RegExp(r'Edg\/([0-9\.]+)'),
+              };
 
-                  return Text(
-                    AppLocalizations.of(context)!.loading,
-                    style: TextStyle(fontSize: 12),
-                  );
-                },
-              ),
+              final regex = regexMap[deviceData.browserName];
+              if (regex != null) {
+                final match = regex.firstMatch(userAgent);
+                if (match != null) {
+                  version = match.group(1) ?? "";
+                }
+              }
+
+              // Fallback por si la detección por Regex falla
+              if (version.isEmpty) {
+                version = (deviceData.appVersion ?? "").split(' ').first;
+              }
+
+              platformDetail = "WEB ($browserName $version)".trim();
+            } else {
+              platformDetail = "WEB";
+            }
+          } else {
+            // Verificación segura para Android
+            final androidInfo = deviceData as AndroidDeviceInfo;
+            final arch = androidInfo.supportedAbis.isNotEmpty
+                ? androidInfo.supportedAbis.first.toUpperCase()
+                : "";
+            
+            platformDetail = arch.isNotEmpty ? "ANDROID ($arch)" : "ANDROID";
+          }
+
+          return Text(
+            AppLocalizations.of(context)!.appVersionFull(
+              packageInfo.version,
+              packageInfo.buildNumber,
+              platformDetail,
             ),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+            ),
+          );
+        } catch (e) {
+          return Text(
+            AppLocalizations.of(context)!.formatError,
+            style: const TextStyle(fontSize: 12),
+          );
+        }
+      }
+
+      return Text(
+        AppLocalizations.of(context)!.loading,
+        style: const TextStyle(fontSize: 12),
+      );
+    },
+  ),
+),
           ],
         ),
       ),
@@ -1948,7 +1994,10 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
   }
 
   Widget _buildItem(ListItem item, {bool isListView = true}) {
-  return NoteItemWidget(
+    return EntryAnimation(
+    key: ValueKey(item.id), // Asegúrate de mantener tus llaves para la lista
+    index: _filteredItems.indexOf(item),
+    child: NoteItemWidget(
     item: item,
     isListView: isListView,
     isSelected: _selectedItems.contains(item),
@@ -2012,6 +2061,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     },
     onLongPress: () => !_isSelectionMode ? _startSelectionMode(item) : null,
     onMorePressed: () => _startSelectionMode(item),
+  ),
   );
 }
 

@@ -222,7 +222,13 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
   }
 
   Widget _buildCloudSection(ColorScheme colorScheme) {
-    return Card.outlined(
+  // Bandera temporal para el estado de "Próximamente"
+  final bool isComingSoon = true; 
+
+  return Opacity(
+    // Si está en "Próximamente", reducimos la opacidad para dar el efecto gris/deshabilitado
+    opacity: isComingSoon ? 0.5 : 1.0,
+    child: Card.outlined(
       color: colorScheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -237,85 +243,115 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
               children: [
                 Icon(
                   Icons.cloud_outlined,
-                  color: colorScheme.primary,
+                  color: isComingSoon ? colorScheme.onSurfaceVariant : colorScheme.primary,
                   size: 28,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     AppLocalizations.of(context)!.cloudBackup,
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: isComingSoon ? colorScheme.onSurfaceVariant : null,
+                        ),
                   ),
                 ),
-                if (_isGoogleSignIn)
-                  Icon(Icons.check_circle_outlined, color: Colors.green[400]),
               ],
             ),
             const SizedBox(height: 16),
             Text(
-              _isGoogleSignIn
-                  ? AppLocalizations.of(context)!.signing
-                  : AppLocalizations.of(context)!.sing_in,
+              // Mensaje dinámico si está deshabilitado o el flujo normal
+              isComingSoon 
+                  ? "Esta función estará disponible en próximas actualizaciones." // O tu string de l10n
+                  : (_isGoogleSignIn 
+                      ? AppLocalizations.of(context)!.signing 
+                      : AppLocalizations.of(context)!.sing_in),
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
-            Text(
-              AppLocalizations.of(context)!.synchronization(_lastCloudSync),
-              style: TextStyle(
-                fontSize: 12,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 24),
-            if (!_isGoogleSignIn)
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _handleGoogleSignIn,
-                  icon: const Icon(Icons.login_outlined),
-                  label: Text(AppLocalizations.of(context)!.connectWithGoogle),
+            // Solo mostramos la última sincronización si no está en modo "Próximamente"
+            if (!isComingSoon) ...[
+              Text(
+                AppLocalizations.of(context)!.synchronization(_lastCloudSync),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurfaceVariant,
                 ),
-              )
-            else ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _backupToCloud,
-                      icon: const Icon(Icons.cloud_upload_outlined),
-                      label: Text(AppLocalizations.of(context)!.save),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _restoreFromCloud,
-                      icon: const Icon(Icons.cloud_download_outlined),
-                      label: Text(AppLocalizations.of(context)!.import),
-                    ),
-                  ),
-                ],
               ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton.icon(
-                  onPressed: _handleGoogleSignOut,
-                  icon: const Icon(Icons.logout_outlined),
-                  label: Text(
-                    AppLocalizations.of(context)!.logout,
+              const SizedBox(height: 24),
+            ],
+            
+            // Sección de botones o etiqueta de Próximamente
+            if (isComingSoon) ...[
+              const SizedBox(height: 16),
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  style: TextButton.styleFrom(
-                    foregroundColor: colorScheme.error,
+                  child: Text(
+                    "PRÓXIMAMENTE",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurfaceVariant,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                 ),
               ),
+            ] else ...[
+              // Tu lógica original de botones (SignIn / CloudActions)
+              if (!_isGoogleSignIn)
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: null, // _handleGoogleSignIn,
+                    icon: const Icon(Icons.login_outlined),
+                    label: Text(AppLocalizations.of(context)!.connectWithGoogle),
+                  ),
+                )
+              else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _backupToCloud,
+                        icon: const Icon(Icons.cloud_upload_outlined),
+                        label: Text(AppLocalizations.of(context)!.save),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _restoreFromCloud,
+                        icon: const Icon(Icons.cloud_download_outlined),
+                        label: Text(AppLocalizations.of(context)!.import),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton.icon(
+                    onPressed: _handleGoogleSignOut,
+                    icon: const Icon(Icons.logout_outlined),
+                    label: Text(AppLocalizations.of(context)!.logout),
+                    style: TextButton.styleFrom(
+                      foregroundColor: colorScheme.error,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildLocalSection(ColorScheme colorScheme) {
     return Card.outlined(

@@ -35,6 +35,7 @@ import 'drawing_embed.dart';
 import 'update_widget.dart';
 import 'theme.dart';
 import 'timestampembed.dart';
+import 'note_item_widget.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
@@ -159,7 +160,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _trashedItems = [];
     _archivedItems = [];
     _searchController.addListener(_filterItems);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
     _loadAllData();
+  });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Llamamos a nuestro nuevo método silencioso
       context.read<UpdaterProvider>().checkUpdateOnStartup();
@@ -202,628 +205,167 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   Future<void> _loadItems() async {
-    try {
-      // 1. Cargamos la preferencia de la vista (Lista o Cuadrícula)
-      final prefs = await SharedPreferences.getInstance();
-      final savedView = prefs.getBool('is_list_view');
-      if (savedView != null) {
-        setState(() {
-          _isListView = savedView;
-        });
-      }
-
-      // 2. Cargamos las notas
-      String? contents;
-      if (kIsWeb) {
-        final prefs = await SharedPreferences.getInstance();
-        contents = prefs.getString('notes');
-      } else {
-        final directory = await getApplicationDocumentsDirectory();
-        final file = File('${directory.path}/notes.json');
-        if (await file.exists()) {
-          contents = await file.readAsString();
-        }
-      }
-
-      if (contents != null && contents.isNotEmpty) {
-        final List<dynamic> jsonList = jsonDecode(contents);
-        setState(() {
-          _items = jsonList.map((json) => ListItem.fromJson(json)).toList();
-          _filteredItems = _items;
-          _sortFilteredItems();
-          _isLoading = false;
-        });
-      } else {
-        // CORRECCIÓN: Asignamos ambas notas a la lista al mismo tiempo
-        setState(() {
-          _items = [_createWelcomeNote(), _createExerciteNote()];
-          _filteredItems = _items;
-          _isLoading = false;
-        });
-        _saveItems(); // Guardamos una sola vez con ambas notas ya en la lista
-      }
-      // --- Cargar Archivados ---
-      String? archivedContents;
-      if (kIsWeb) {
-        final prefs = await SharedPreferences.getInstance();
-        archivedContents = prefs.getString('archived_notes');
-      } else {
-        final directory = await getApplicationDocumentsDirectory();
-        final file = File('${directory.path}/archived_notes.json');
-        if (await file.exists()) {
-          archivedContents = await file.readAsString();
-        }
-      }
-
-      if (archivedContents != null && archivedContents.isNotEmpty) {
-        final List<dynamic> jsonList = jsonDecode(archivedContents);
-        setState(() {
-          _archivedItems = jsonList
-              .map((json) => ListItem.fromJson(json))
-              .toList();
-        });
-      }
-      // --- Cargar Papelera ---
-      String? trashedContents;
-      if (kIsWeb) {
-        final prefs = await SharedPreferences.getInstance();
-        trashedContents = prefs.getString('trashed_notes');
-      } else {
-        final directory = await getApplicationDocumentsDirectory();
-        final file = File('${directory.path}/trashed_notes.json');
-        if (await file.exists()) {
-          trashedContents = await file.readAsString();
-        }
-      }
-
-      if (trashedContents != null && trashedContents.isNotEmpty) {
-        final List<dynamic> jsonList = jsonDecode(trashedContents);
-        setState(() {
-          _trashedItems = jsonList
-              .map((json) => ListItem.fromJson(json))
-              .toList();
-        });
-      }
-    } catch (e) {
-      debugPrint("Error loading items: $e");
-
-      // Manejo de error: también cargamos ambas notas
+  try {
+    // 1. Cargamos la preferencia de la vista (Lista o Cuadrícula)
+    final prefs = await SharedPreferences.getInstance();
+    final savedView = prefs.getBool('is_list_view');
+    if (savedView != null) {
       setState(() {
-        _items = [_createWelcomeNote(), _createExerciteNote()];
+        _isListView = savedView;
+      });
+    }
+
+    // Obtenemos el código de idioma actual (ej. 'es' o 'en')
+    final String languageCode = Localizations.localeOf(context).languageCode;
+
+    // 2. Cargamos las notas activas
+    String? contents;
+    if (kIsWeb) {
+      contents = prefs.getString('notes');
+    } else {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/notes.json');
+      if (await file.exists()) {
+        contents = await file.readAsString();
+      }
+    }
+
+    if (contents != null && contents.isNotEmpty) {
+      final List<dynamic> jsonList = jsonDecode(contents);
+      setState(() {
+        _items = jsonList.map((json) => ListItem.fromJson(json)).toList();
+        _filteredItems = _items;
+        _sortFilteredItems();
+        _isLoading = false;
+      });
+    } else {
+      // NUEVA CARGA: Si no hay notas guardadas, leemos los assets JSON traducidos
+      final defaultNotes = await loadDefaultNotesFromAssets(languageCode);
+      setState(() {
+        _items = defaultNotes;
         _filteredItems = _items;
         _isLoading = false;
       });
-      _saveItems();
+      _saveItems(); // Guardamos el JSON local inicializado por primera vez
     }
+
+    // --- Cargar Archivados ---
+    String? archivedContents;
+    if (kIsWeb) {
+      archivedContents = prefs.getString('archived_notes');
+    } else {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/archived_notes.json');
+      if (await file.exists()) {
+        archivedContents = await file.readAsString();
+      }
+    }
+
+    if (archivedContents != null && archivedContents.isNotEmpty) {
+      final List<dynamic> jsonList = jsonDecode(archivedContents);
+      setState(() {
+        _archivedItems = jsonList
+            .map((json) => ListItem.fromJson(json))
+            .toList();
+      });
+    }
+
+    // --- Cargar Papelera ---
+    String? trashedContents;
+    if (kIsWeb) {
+      trashedContents = prefs.getString('trashed_notes');
+    } else {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/trashed_notes.json');
+      if (await file.exists()) {
+        trashedContents = await file.readAsString();
+      }
+    }
+
+    if (trashedContents != null && trashedContents.isNotEmpty) {
+      final List<dynamic> jsonList = jsonDecode(trashedContents);
+      setState(() {
+        _trashedItems = jsonList
+            .map((json) => ListItem.fromJson(json))
+            .toList();
+      });
+    }
+  } catch (e) {
+    debugPrint("Error loading items: $e");
+
+    // Manejo de error: Fallback seguro cargando desde los assets JSON
+    final String languageCode = Localizations.localeOf(context).languageCode;
+    final defaultNotes = await loadDefaultNotesFromAssets(languageCode);
+    setState(() {
+      _items = defaultNotes;
+      _filteredItems = _items;
+      _isLoading = false;
+    });
+    _saveItems();
   }
+}
+  
 
-  ListItem _createWelcomeNote() {
-    final welcomeNote = ListItem(
-      id: 'welcome_note',
-      title: AppLocalizations.of(context)!.welcomeNoteTitle, 
-      summary: jsonEncode([
-        {"insert": "¡Bienvenido a Bloc de notas!"},
-        {
-          "insert": "\n",
-          "attributes": {"header": 1, "align": "center"},
-        },
+/// Carga el JSON traducido basándose en el Locale actual y devuelve las notas por defecto.
+Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
+  try {
+    
+    String assetPath;
+    switch (languageCode) {
+      case 'en':
+        assetPath = 'assets/lang/notes_en.json';
+        break;
+      case 'pt':
+        assetPath = 'assets/lang/notes_pt.json';
+        break;
+      case 'es':
+      default:
+        assetPath = 'assets/lang/notes_es.json'; // Respaldo nativo si es cualquier otro idioma
+        break;
+    }
 
-        {
-          "insert":
-              "Tu nuevo espacio para organizar ideas, código y tareas.\n\n",
-        },
+    // 2. Leer el string crudo del archivo de assets
+    String jsonString = await rootBundle.loadString(assetPath);
 
-        {
-          "insert": "Funciones destacadas:",
-          "attributes": {"bold": true},
-        },
-        {"insert": "\n"},
-        {"insert": "Soporte para código"},
-        {
-          "insert": "\n",
-          "attributes": {"list": "bullet"},
-        },
-        {"insert": "Exportación a PDF y Markdown"},
-        {
-          "insert": "\n",
-          "attributes": {"list": "bullet"},
-        },
-        {"insert": "\n"},
-        {
-          "insert":
-              "Esta es una nota de ejemplo para ayudarte a explorar las funciones.",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"blockquote": true},
-        },
+    // 3. Decodificar a un mapa nativo de Dart
+    Map<String, dynamic> notesData = jsonDecode(jsonString);
+    List<ListItem> defaultNotes = [];
 
-        {
-          "insert": "\nEstilos de Texto:",
-          "attributes": {"bold": true, "underline": true},
-        },
-        {"insert": "\n"},
-        {
-          "insert": "Texto en negrita",
-          "attributes": {"bold": true},
-        },
-        {"insert": ", "},
-        {
-          "insert": "cursiva",
-          "attributes": {"italic": true},
-        },
-        {"insert": " y "},
-        {
-          "insert": "color de fondo",
-          "attributes": {"background": "#FFEB3B"},
-        },
-        {"insert": ".\n\n"},
+    // 4. Mapear y procesar la Nota de Bienvenida (welcome_note)
+    if (notesData.containsKey('welcome_note')) {
+      final welcome = notesData['welcome_note'];
+      defaultNotes.add(
+        ListItem(
+          id: 'welcome_note',
+          title: welcome['title'],
+          // Convertimos la lista estructurada del Delta de vuelta a un String JSON plano
+          summary: jsonEncode(welcome['summary']),
+          lastModified: DateTime.now(),
+          backgroundColor: welcome['backgroundColor'] ?? 4294959234, // Amber/Amarillo suave
+        ),
+      );
+    }
 
-        {"insert": "Listas y Organización"},
-        {
-          "insert": "\n",
-          "attributes": {"header": 2},
-        },
-        {"insert": "Tarea pendiente"},
-        {
-          "insert": "\n",
-          "attributes": {"list": "unchecked"},
-        },
-        {"insert": "Tarea completada"},
-        {
-          "insert": "\n",
-          "attributes": {"list": "checked"},
-        },
-        {"insert": "\n\nvoid main() {"},
-        {
-          "insert": "\n",
-          "attributes": {"code-block": true},
-        },
-        {"insert": "  print('Hola desde Bloc de notas');"},
-        {
-          "insert": "\n",
-          "attributes": {"code-block": true},
-        },
-        {"insert": "}"},
-        {
-          "insert": "\n",
-          "attributes": {"code-block": true},
-        },
+    // 5. Mapear y procesar la Nota de Ejercicios (exercise_note)
+    if (notesData.containsKey('exercise_note')) {
+      final exercise = notesData['exercise_note'];
+      defaultNotes.add(
+        ListItem(
+          id: 'exercite_note', // Mantiene el ID que ya usabas
+          title: exercise['title'],
+          summary: jsonEncode(exercise['summary']),
+          lastModified: DateTime.now(),
+          backgroundColor: exercise['backgroundColor'] ?? 4294967295, // Blanco
+        ),
+      );
+    }
 
-        {"insert": "\nEnlace útil: "},
-        {
-          "insert": "Repositorio Flutter Quill",
-          "attributes": {"link": "https://pub.dev/packages/flutter_quill"},
-        },
-        {"insert": "\n"},
-      ]),
-      lastModified: DateTime.now(),
-      // El color amber[200] le da un toque de "post-it" clásico muy bueno
-      backgroundColor: Colors.amber[200]!.toARGB32(),
-    );
-    return welcomeNote;
+    return defaultNotes;
+  } catch (e) {
+    if (kDebugMode) print('Error cargando notas por defecto: $e');
+    return []; // Retorna lista vacía ante cualquier error de lectura
   }
-
-  ListItem _createExerciteNote() {
-    final exerciteNote = ListItem(
-      id: 'exercite_note',
-      title: AppLocalizations.of(context)!.exerciseNoteTitle, 
-      summary: jsonEncode([
-        {
-          "insert": "RUTINA MAESTRA: FUERZA Y RESISTENCIA",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert": "\n",
-          "attributes": {"header": 1},
-        },
-        {
-          "insert":
-              "Objetivo: Hipertrofia, potencia y capacidad cardiovascular.",
-          "attributes": {"bold": true},
-        },
-        {"insert": "\n"},
-        {
-          "insert": "Programación Semanal: L, M, J, V",
-          "attributes": {"bold": true},
-        },
-        {"insert": "\nBloque 1: Fuerza y Potencia (Lo más difícil primero)"},
-        {
-          "insert": "\n",
-          "attributes": {"header": 3},
-        },
-        {
-          "insert": "Dominadas (Barras):",
-          "attributes": {"bold": true},
-        },
-        {"insert": " 3 series de 8 si quieres subir el volumen. "},
-        {
-          "insert": "Es el ejercicio que más energía consume.",
-          "attributes": {"italic": true},
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert":
-              "Flexiones en Pica (Pike Push-ups): 3 series de 5 repeticiones",
-          "attributes": {"bold": true},
-        },
-        {"insert": ". Si puedes, pon los pies en la silla para que pesen más."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Flexiones de Diamante:",
-          "attributes": {"bold": true},
-        },
-        {"insert": " 3 series de 8 repeticiones. "},
-        {
-          "insert": "Aíslan el tríceps cuando aún tienes fuerza.",
-          "attributes": {"italic": true},
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {"insert": "Bloque 2: Resistencia de Empuje (Pecho y Hombros)"},
-        {
-          "insert": "\n",
-          "attributes": {"header": 3},
-        },
-        {
-          "insert": "Dominadas Australianas (Remo invertido):",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              " 3 series de 10 a 12 repeticiones,Nota: Intenta que el pecho toque la barra y baja con control.",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Flexiones Inclinadas (Pies en silla):",
-          "attributes": {"bold": true},
-        },
-        {"insert": " 3 series de 12 repeticiones."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Flexiones de Puños:",
-          "attributes": {"bold": true},
-        },
-        {"insert": " 20 repeticiones."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Flexiones Normales:",
-          "attributes": {"bold": true},
-        },
-        {"insert": " 3 series de 10 repeticiones."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Deltoides Frontales (Hold o dinámicas):",
-          "attributes": {"bold": true},
-        },
-        {"insert": " "},
-        {
-          "insert": "15 repeticiones",
-          "attributes": {"bold": true},
-        },
-        {"insert": "."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {"insert": "Bloque 3: Tren Inferior (Pierna)"},
-        {
-          "insert": "\n",
-          "attributes": {"header": 3},
-        },
-        {
-          "insert": "Sentadillas (Squats):",
-          "attributes": {"bold": true},
-        },
-        {"insert": " "},
-        {
-          "insert": "30 repeticiones",
-          "attributes": {"bold": true},
-        },
-        {"insert": ". Busca profundidad."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Sentadillas Explosivas:",
-          "attributes": {"bold": true},
-        },
-        {"insert": " 3 series de 15 repeticiones."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Zancadas Búlgaras (Pie en silla):",
-          "attributes": {"bold": true},
-        },
-        {"insert": " 3 series de 10 repeticiones por cada pierna."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Zancadas Frontales:",
-          "attributes": {"bold": true},
-        },
-        {"insert": " "},
-        {
-          "insert": "40 repeticiones",
-          "attributes": {"bold": true},
-        },
-        {"insert": " (20 por pierna)."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Butt Bridge (Puente de glúteo):",
-          "attributes": {"bold": true},
-        },
-        {"insert": " "},
-        {
-          "insert": "30 repeticiones",
-          "attributes": {"bold": true},
-        },
-        {"insert": ". Aprieta 2 segundos arriba."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Pierna adentro y fuera: 30 repeticiones.",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {"insert": "Bloque 4: Core y Cardio Final"},
-        {
-          "insert": "\n",
-          "attributes": {"header": 3},
-        },
-        {
-          "insert": "Elevaciones de Pierna:",
-          "attributes": {"bold": true},
-        },
-        {"insert": " "},
-        {
-          "insert": "25 repeticiones",
-          "attributes": {"bold": true},
-        },
-        {"insert": ". No dejes que los pies toquen el suelo."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Escaladores (Mountain Climbers):",
-          "attributes": {"bold": true},
-        },
-        {"insert": " "},
-        {
-          "insert": "100 repeticiones",
-          "attributes": {"bold": true},
-        },
-        {"insert": ". Hazlas rápidas para quemar."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Planchas:",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              " 3 series de 1 minuto (Descansa solo 30 segundos entre series).",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {"insert": "Bloque 5: Estiramiento y Flexibilidad"},
-        {
-          "insert": "\n",
-          "attributes": {"header": 3},
-        },
-        {
-          "insert":
-              "Para que la recuperación sea efectiva, mantén cada postura de estiramiento entre ",
-        },
-        {
-          "insert": "20 y 30 segundos",
-          "attributes": {"bold": true},
-        },
-        {"insert": ", respirando profundamente por la nariz.\n"},
-        {
-          "insert": "Flujo Gato-Vaca:",
-          "attributes": {"bold": true},
-        },
-        {"insert": " 10 ciclos (para movilizar la columna tras el core)."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Postura del Niño (Child’s Pose):",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              " Con los brazos bien estirados al frente para relajar la espalda baja y los hombros.",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Estiramiento de Pectorales en pared:",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              " Apoya el antebrazo en el marco de una puerta o pared y gira el cuerpo hacia el lado opuesto. Vital después de tantas flexiones.",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Estiramiento de Tríceps:",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              " Pasa el codo por detrás de la cabeza y empuja suavemente.",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Perro Boca Abajo (Downward Dog):",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              " Estira toda la cadena posterior (isquiotibiales, gemelos y espalda).",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert":
-              "Estiramiento de Flexores de la Cadera (Cobra o Lunge bajo):",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              " Crucial para evitar dolores de espalda si pasas mucho tiempo sentado programando.",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {
-          "insert": "Estiramiento de Muñecas:",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              " De rodillas, apoya las palmas en el suelo con los dedos mirando hacia tus rodillas y balancéate suavemente hacia atrás.",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "ordered"},
-        },
-        {"insert": "¿Cómo progresar con esta lista?"},
-        {
-          "insert": "\n",
-          "attributes": {"header": 3},
-        },
-        {
-          "insert": "Descansos:",
-          "attributes": {"bold": true},
-        },
-        {"insert": " Si buscas "},
-        {
-          "insert": "condición física (quema de grasa y resistencia)",
-          "attributes": {"bold": true},
-        },
-        {"insert": ", intenta descansar solo 45-60 segundos entre ejercicios."},
-        {
-          "insert": "\n",
-          "attributes": {"list": "bullet"},
-        },
-        {
-          "insert": "Aumento de dificultad:",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              " Cuando sientas que las 20 flexiones normales son fáciles, hazlas más lentas (3 segundos para bajar, 1 segundo para subir). Eso se llama \"tiempo bajo tensión\" y es brutal para el músculo.",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "bullet"},
-        },
-        {
-          "insert": "Frecuencia:",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              " Puedes hacer esto 3 o 4 veces por semana, dejando un día de descanso en medio para que el músculo se recupere y crezca.",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "bullet"},
-        },
-        {
-          "insert": "Hidratación",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              ": Al subir las repeticiones en pierna y los escaladores, vas a sudar mucho más. Bebe agua a sorbos pequeños durante los descansos.",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "bullet"},
-        },
-        {
-          "insert": "Escucha a tus muñecas",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              ": Como usas la variante de puños y diamante, si sientes mucha presión, puedes rotar un poco la posición de las manos. La variante de puños es excelente para mantener la muñeca neutra (recta), así que úsala a tu favor si sientes molestias.",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "bullet"},
-        },
-        {
-          "insert": "Consistencia",
-          "attributes": {"bold": true},
-        },
-        {
-          "insert":
-              ": Intenta mantener este orden por al menos 4 semanas antes de volver a subir las repeticiones. El cuerpo necesita tiempo para adaptarse mecánicamente a los nuevos ángulos.",
-        },
-        {
-          "insert": "\n",
-          "attributes": {"list": "bullet"},
-        },
-      ]),
-      lastModified: DateTime.now(),
-    );
-    return exerciteNote;
-  }
+}
 
   //   Guardar Etiquetas
   Future<void> _saveTags() async {
@@ -2367,7 +1909,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                       return Text(
                         AppLocalizations.of(context)!.appVersionFull(
                           packageInfo.version,
-                          packageInfo.buildNumber,
                           platformDetail,
                         ),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -2410,387 +1951,73 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
   }
 
-  bool _isColorDark(int? colorValue) {
-    if (colorValue == null) {
-      return Theme.of(context).brightness == Brightness.dark;
-    }
-    return Color(colorValue).computeLuminance() < 0.5;
-  }
-
   Widget _buildItem(ListItem item, {bool isListView = true}) {
-    final isSelected = _selectedItems.contains(item);
-    final bool canReorder =
-        _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
-
-    // Determinamos si el fondo actual es oscuro
-    final isDarkBackground = _isColorDark(item.backgroundColor);
-
-    // Si el fondo es oscuro -> texto blanco. Si es claro -> texto negro.
-    final dynamicTextColor = isDarkBackground ? Colors.white : Colors.black87;
-    final dynamicIconColor = isDarkBackground ? Colors.white : Colors.black87;
-
-    // 1. Creamos un controlador temporal solo para renderizar el documento actual
-    final previewController = quill.QuillController(
-      document: item.document,
-      selection: const TextSelection.collapsed(offset: 0),
-      readOnly: true,
-    );
-
-    // 2. Configuramos el editor en modo lectura
-    final richTextPreview = IgnorePointer(
-      // IgnorePointer asegura que el toque pase al InkWell de la tarjeta
-      child: quill.QuillEditor.basic(
-        controller: previewController,
-        config: quill.QuillEditorConfig(
-          showCursor: false,
-          padding: EdgeInsets.zero,
-          scrollable: false,
-
-          // AQUÍ ESTÁ EL CAMBIO CLAVE:
-          customStyles: quill.DefaultStyles(
-            // Estilo para texto normal
-            paragraph: quill.DefaultTextBlockStyle(
-              TextStyle(color: dynamicTextColor, fontSize: 16),
-              const quill.HorizontalSpacing(0, 0),
-              const quill.VerticalSpacing(0, 0),
-              const quill.VerticalSpacing(0, 0),
-              null,
-            ),
-            // Estilo para Títulos Grandes (H1)
-            h1: quill.DefaultTextBlockStyle(
-              TextStyle(
-                color: dynamicTextColor,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
-              const quill.HorizontalSpacing(0, 0),
-              const quill.VerticalSpacing(10, 0),
-              const quill.VerticalSpacing(0, 0),
-              null,
-            ),
-            // Estilo para Títulos Medianos (H2)
-            h2: quill.DefaultTextBlockStyle(
-              TextStyle(
-                color: dynamicTextColor,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-              const quill.HorizontalSpacing(0, 0),
-              const quill.VerticalSpacing(8, 0),
-              const quill.VerticalSpacing(0, 0),
-              null,
-            ),
-            h3: quill.DefaultTextBlockStyle(
-              TextStyle(
-                color: dynamicTextColor,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-              const quill.HorizontalSpacing(0, 0),
-              const quill.VerticalSpacing(8, 0),
-              const quill.VerticalSpacing(0, 0),
-              null,
-            ),
-            // Estilo para Listas (Bullets y Checkboxes)
-            lists: quill.DefaultListBlockStyle(
-              TextStyle(color: dynamicTextColor, fontSize: 16),
-              const quill.HorizontalSpacing(0, 0),
-              const quill.VerticalSpacing(0, 0),
-              const quill.VerticalSpacing(0, 0),
-              null,
-              null, // Algunos versiones requieren un parámetro extra aquí para el checkbox
-            ),
-            // Estilo para el texto pequeño
-            small: TextStyle(color: dynamicTextColor, fontSize: 12),
-            // 1. Citas (Blockquotes) - La línea con la barra lateral
-            quote: quill.DefaultTextBlockStyle(
-              TextStyle(
-                color: dynamicTextColor,
-                fontSize: 16,
-                fontStyle: FontStyle.italic,
-              ),
-              const quill.HorizontalSpacing(16, 0), // Espacio para la barra
-              const quill.VerticalSpacing(8, 8),
-              const quill.VerticalSpacing(0, 0),
-              // Esto es para que la barra lateral no sea blanca si no quieres
-              BoxDecoration(
-                border: Border(
-                  left: BorderSide(
-                    width: 4,
-                    color: dynamicTextColor.withValues(alpha: 0.3),
-                  ),
+  return NoteItemWidget(
+    item: item,
+    isListView: isListView,
+    isSelected: _selectedItems.contains(item),
+    isSelectionMode: _isSelectionMode,
+    canReorder: _sortMethod == SortMethod.custom && _searchController.text.isEmpty,
+    itemIndex: _filteredItems.indexOf(item),
+    moreButtonTooltip: AppLocalizations.of(context)!.select,
+    onTap: () {
+      if (_isSelectionMode) {
+        _toggleSelection(item);
+      } else if (_isTrashView) {
+        // MOSTRAR DIÁLOGO EN PAPELERA
+        showModalBottomSheet(
+          context: context,
+          builder: (context) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.restore_outlined),
+                  title: Text(AppLocalizations.of(context)!.restoreNote),
+                  onTap: () {
+                    setState(() {
+                      _trashedItems.removeWhere((i) => i.id == item.id);
+                      if (item.isArchived) {
+                        _archivedItems.add(item);
+                      } else {
+                        _items.add(item);
+                      }
+                      _saveItems();
+                      _saveArchivedItems();
+                      _saveTrashedItems();
+                      _filterItems();
+                    });
+                    Navigator.pop(context);
+                  },
                 ),
-              ),
-            ),
-
-            // 2. Enlaces (Links)
-            link: TextStyle(
-              color: isDarkBackground
-                  ? Colors.blue[300]
-                  : Colors.blue[700], // Azul legible según fondo
-              decoration: TextDecoration.underline,
-            ),
-
-            // 4. Marcadores de listas (Los puntitos o números)
-            indent: quill.DefaultTextBlockStyle(
-              TextStyle(color: dynamicTextColor),
-              const quill.HorizontalSpacing(0, 0),
-              const quill.VerticalSpacing(0, 0),
-              const quill.VerticalSpacing(0, 0),
-              null,
-            ),
-
-            // 5. Estilo "Leading" (Para asegurar que el checkbox/bullet use el color)
-            leading: quill.DefaultTextBlockStyle(
-              TextStyle(color: dynamicTextColor),
-              const quill.HorizontalSpacing(0, 0),
-              const quill.VerticalSpacing(0, 0),
-              const quill.VerticalSpacing(0, 0),
-              null,
-            ),
-          ),
-
-          embedBuilders: [
-  // 1. Builders personalizados primero
-  AudioEmbedBuilder(),
-  DrawingEmbedBuilder(),
-  TimeStampEmbedBuilder(),
-
-  // 2. Builders de la librería según la plataforma con sus configuraciones internas
-  if (kIsWeb)
-    ...FlutterQuillEmbeds.editorWebBuilders(
-      imageEmbedConfig: QuillEditorImageEmbedConfig(
-        imageProviderBuilder: (context, imageUrl) {
-          if (imageUrl.startsWith('assets/')) {
-            return AssetImage(imageUrl);
-          }
-          return null;
-        },
-      ),
-      videoEmbedConfig: const QuillEditorWebVideoEmbedConfig(),
-    )
-  else
-    ...FlutterQuillEmbeds.editorBuilders(
-      imageEmbedConfig: QuillEditorImageEmbedConfig(
-        imageProviderBuilder: (context, imageUrl) {
-          if (imageUrl.startsWith('assets/')) {
-            return AssetImage(imageUrl);
-          }
-          return null;
-        },
-      ),
-      videoEmbedConfig: QuillEditorVideoEmbedConfig(
-        customVideoBuilder: (videoUrl, readOnly) {
-          return null;
-        },
-      ),
-    ),
-],
-        ),
-      ),
-    );
-
-    final contentColumn = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (item.title.isNotEmpty)
-          Text(
-            item.title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: dynamicTextColor,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        if (item.title.isNotEmpty && item.document.length > 1)
-          const SizedBox(height: 8),
-        if (item.document.length > 1)
-          isListView
-              ? ClipRect(
-                  // Corta el texto que sobrepase el alto máximo
-                  child: ConstrainedBox(
-                    // Limitamos la altura en la vista de lista (aprox. 9-10 líneas)
-                    constraints: const BoxConstraints(maxHeight: 180),
-                    child: richTextPreview,
+                ListTile(
+                  leading: const Icon(
+                    Icons.delete_forever_outlined,
+                    color: Colors.red,
                   ),
-                )
-              : Expanded(
-                  // En GridView, el Expanded tomará el espacio restante
-                  child: ClipRect(child: richTextPreview),
+                  title: Text(AppLocalizations.of(context)!.deleteForever),
+                  onTap: () {
+                    setState(() {
+                      _cleanupImagesForItems([item]);
+                      _trashedItems.removeWhere((i) => i.id == item.id);
+                      _saveTrashedItems();
+                      _filterItems();
+                    });
+                    Navigator.pop(context);
+                  },
                 ),
-        //   Visualización de etiquetas al final de la tarjeta
-        if (item.tags.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 4,
-            runSpacing: 4,
-            children: item.tags
-                .map(
-                  (tag) => Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: dynamicTextColor.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Text(
-                      tag,
-                      style: TextStyle(fontSize: 10, color: dynamicTextColor),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
-      ],
-    );
-    final Widget dragIcon = Padding(
-      padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
-      child: Icon(Icons.drag_handle, color: dynamicIconColor),
-    );
-
-    return Card.outlined(
-      clipBehavior: Clip.antiAlias,
-      color: isSelected
-          ? Theme.of(context).colorScheme.primaryContainer
-          : (item.backgroundColor != null
-                ? Color(item.backgroundColor!)
-                : Theme.of(context)
-                      .colorScheme
-                      .surfaceContainerLow), // Fondo sutil MD3 para tarjetas
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          // Usamos outlineVariant para un borde suave y elegante
-          color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.outlineVariant,
-          width: 1,
-        ),
-      ),
-      child: InkWell(
-        onTap: () {
-          if (_isSelectionMode) {
-            _toggleSelection(item);
-          } else if (_isTrashView) {
-            // MOSTRAR DIÁLOGO EN PAPELERA
-            showModalBottomSheet(
-              context: context,
-              builder: (context) => SafeArea(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.restore_outlined), // Icono outlined
-                      title: Text(AppLocalizations.of(context)!.restoreNote),
-                      onTap: () {
-                        setState(() {
-                          // 1. Eliminamos el ítem de la papelera comparando por ID (más seguro)
-                          _trashedItems.removeWhere((i) => i.id == item.id);
-
-      // 2. Verificamos si debe volver a archivados o a la lista principal
-      if (item.isArchived) {
-        _archivedItems.add(item);
-      } else {
-        _items.add(item);
-      }
-
-      // 3. Persistimos los cambios en todas las listas
-      _saveItems();
-      _saveArchivedItems();
-      _saveTrashedItems();
-
-      // 4. Actualizamos la interfaz
-      _filterItems();
-    });
-    Navigator.pop(context);
-  },
-),
-ListTile(
-  leading: const Icon(
-    Icons.delete_forever_outlined, // Icono outlined
-    color: Colors.red,
-  ),
-  title: Text(AppLocalizations.of(context)!.deleteForever),
-  onTap: () {
-    setState(() {
-      // Limpieza definitiva del ítem individual
-      _cleanupImagesForItems([item]);
-      _trashedItems.removeWhere((i) => i.id == item.id);
-      
-      _saveTrashedItems();
-      _filterItems();
-    });
-    Navigator.pop(context);
-  },
-),
-                  ],
-                ),
-              ),
-            );
-          } else {
-            _navigateToEditor(item);
-          }
-        },
-        onLongPress: () => !_isSelectionMode ? _startSelectionMode(item) : null,
-        child: Ink(
-          // Usar Ink para que la decoración no tape el efecto visual
-          decoration: item.backgroundImagePath != null && !kIsWeb
-              ? BoxDecoration(
-                  image: DecorationImage(
-                    image: FileImage(File(item.backgroundImagePath!)),
-                    fit: BoxFit.cover,
-                    // ColorFilter opcional para asegurar legibilidad del texto
-                    colorFilter: ColorFilter.mode(
-                      Colors.black.withValues(alpha: 0.1),
-                      BlendMode.darken,
-                    ),
-                  ),
-                )
-              : null,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: contentColumn,
-                ),
-              ),
-              if (!_isSelectionMode) ...[
-                if (isListView) ...[
-                  // En LISTA: Mostramos el icono de arrastre si el orden es personalizado
-                  if (canReorder)
-                    ReorderableDragStartListener(
-                      index: _filteredItems.indexOf(item),
-                      child: dragIcon,
-                    ),
-                ] else ...[
-                  // En GRIDVIEW: Ocultamos el arrastre y mostramos los tres puntos para selección
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: IconButton(
-                      icon: Icon(Icons.more_vert, color: dynamicIconColor),
-                      onPressed: () => _startSelectionMode(item),
-                      tooltip: AppLocalizations.of(context)!.select,
-                    ),
-                  ),
-                ],
               ],
-            ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
+        );
+      } else {
+        _navigateToEditor(item);
+      }
+    },
+    onLongPress: () => !_isSelectionMode ? _startSelectionMode(item) : null,
+    onMorePressed: () => _startSelectionMode(item),
+  );
+}
 
   Widget _buildListView() {
     final bool canReorder =

@@ -271,6 +271,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
+                  enabled: false
                   onPressed: _handleGoogleSignIn,
                   icon: const Icon(Icons.login_outlined),
                   label: Text(AppLocalizations.of(context)!.connectWithGoogle),

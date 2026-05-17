@@ -55,6 +55,10 @@ android {
 
     // 4. Unificamos los bloques buildTypes en uno solo
     buildTypes {
+        getByName("debug") {
+            // Asigna la firma de producción al entorno debug
+            signingConfig = signingConfigs.getByName("release")
+        }
         getByName("release") {
             // Aquí le asignamos la configuración de firma que creamos arriba
             signingConfig = signingConfigs.getByName("release")

@@ -14,6 +14,7 @@ class NoteItemWidget extends StatelessWidget {
   final bool isSelected;
   final bool isSelectionMode;
   final bool canReorder;
+  final bool isTrashView;
   final int itemIndex;
   final String? moreButtonTooltip;
   final VoidCallback onTap;
@@ -27,6 +28,7 @@ class NoteItemWidget extends StatelessWidget {
     required this.isSelected,
     required this.isSelectionMode,
     required this.canReorder,
+    required this.isTrashView,
     required this.itemIndex,
     required this.onTap,
     required this.onLongPress,
@@ -300,6 +302,7 @@ class NoteItemWidget extends StatelessWidget {
                       child: dragIcon,
                     ),
                 ] else ...[
+                  if (!isTrashView) ...[
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: IconButton(
@@ -308,6 +311,7 @@ class NoteItemWidget extends StatelessWidget {
                       tooltip: moreButtonTooltip,
                     ),
                   ),
+                  ],
                 ],
               ],
             ],

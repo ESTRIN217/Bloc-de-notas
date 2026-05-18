@@ -1167,20 +1167,20 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     _exitSelectionMode();
   }
 
+// --- COMPARTIR COMO PDF EN MAIN.DART ---
   Future<void> _shareAsPdf() async {
     final pdf = pw.Document();
     final header = AppLocalizations.of(context)!.misNotasExportadas;
     final untitledText = AppLocalizations.of(context)!.untitled;
 
     List<pw.Widget> pdfContent = [pw.Header(level: 0, child: pw.Text(header))];
-
+    
     for (var item in _selectedItems) {
-      // 1. Convertir el delta del documento a widgets de PDF compatibles
       final converter = PDFConverter(
         document: item.document.toDelta(),
         pageFormat: PDFPageFormat(
-          width: 595, // Ancho (A4)
-          height: 841, // Alto
+          width: 595,
+          height: 841,
           marginTop: 20,
           marginBottom: 20,
           marginLeft: 20,
@@ -1188,10 +1188,8 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
         ),
         fallbacks: [],
       );
-
-      // Obtenemos un solo widget (puede ser null)
+      
       final pw.Widget? richTextWidget = await converter.generateWidget();
-
       pdfContent.add(pw.SizedBox(height: 15));
       pdfContent.add(
         pw.Text(
@@ -1201,7 +1199,6 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
       );
       pdfContent.add(pw.Divider());
 
-      // CORRECCIÓN: Validamos que no sea nulo y usamos add() en vez de addAll()
       if (richTextWidget != null) {
         pdfContent.add(richTextWidget);
       }
@@ -1210,51 +1207,55 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     }
 
     pdf.addPage(pw.MultiPage(build: (pw.Context context) => pdfContent));
+    
+    final String baseName = "mis_notas_${DateTime.now().millisecondsSinceEpoch}.pdf";
+    final pdfBytes = await pdf.save();
 
-    final output = await getTemporaryDirectory();
-    final file = File(
-      "${output.path}/mis_notas_${DateTime.now().millisecondsSinceEpoch}.pdf",
-    );
-    await file.writeAsBytes(await pdf.save());
+    if (kIsWeb) {
+      // Solución Web: Creamos el XFile directo desde los bytes en memoria
+      final xFile = XFile.fromData(
+        pdfBytes,
+        name: baseName,
+        mimeType: 'application/pdf',
+      );
+      await SharePlus.instance.share(
+        ShareParams(text: 'Te comparto mis notas', files: [xFile]),
+      );
+    } else {
+      // Solución nativa Móvil existente usando almacenamiento temporal
+      final output = await getTemporaryDirectory();
+      final file = File("${output.path}/$baseName");
+      await file.writeAsBytes(pdfBytes);
 
-    await SharePlus.instance.share(
-      ShareParams(text: 'Te comparto mis notas', files: [XFile(file.path)]),
-    );
-
+      await SharePlus.instance.share(
+        ShareParams(text: 'Te comparto mis notas', files: [XFile(file.path)]),
+      );
+    }
     _exitSelectionMode();
   }
 
+  // --- COMPARTIR COMO HTML EN MAIN.DART ---
   Future<void> _shareAsHtml() async {
-    final String shareHtmlMessage = AppLocalizations.of(
-      context,
-    )!.shareHtmlMessage;
+    final String shareHtmlMessage = AppLocalizations.of(context)!.shareHtmlMessage;
     try {
       String combinedHtmlContent = '';
       String titlehtml = '';
-
-      // Iteramos sobre todas las notas seleccionadas
+      
       for (var item in _selectedItems) {
-        // 1. Extraemos el Delta directamente del documento y lo pasamos a JSON
         final List<dynamic> deltaOps = item.document.toDelta().toJson();
-
-        // 2. Configuramos el convertidor
         final converter = QuillDeltaToHtmlConverter(
           deltaOps.cast<Map<String, dynamic>>(),
           ConverterOptions(
             converterOptions: OpConverterOptions(inlineStylesFlag: true),
           ),
         );
-
         final String htmlContent = converter.convert();
 
-        // 3. Agregamos el título como H1 y el contenido al string combinado, separando con una línea <hr>
         combinedHtmlContent += '<h1>${item.title}</h1>\n$htmlContent\n<hr>\n';
         titlehtml += AppLocalizations.of(context)!.titleHtml;
       }
 
-      // 4. Crear el documento HTML completo
-      final String fullHtml =
-          '''
+      final String fullHtml = '''
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1275,42 +1276,51 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
 </html>
 ''';
 
-      // 5. Obtener el directorio temporal
-      final directory = await getTemporaryDirectory();
+      final String baseName = "notas_${DateTime.now().millisecondsSinceEpoch}.html";
 
-      // Generamos un nombre genérico ya que pueden ser varias notas
-      final File file = File(
-        '${directory.path}/notas_${DateTime.now().millisecondsSinceEpoch}.html',
-      );
+      if (kIsWeb) {
+        // Solución Web: Transformamos el String HTML a bytes UTF-8 planos
+        final htmlBytes = Uint8List.fromList(utf8.encode(fullHtml));
+        final xFile = XFile.fromData(
+          htmlBytes,
+          name: baseName,
+          mimeType: 'text/html',
+        );
+        await SharePlus.instance.share(
+          ShareParams(text: shareHtmlMessage, files: [xFile]),
+        );
+      } else {
+        // Solución nativa Móvil existente
+        final directory = await getTemporaryDirectory();
+        final File file = File('${directory.path}/$baseName');
+        await file.writeAsString(fullHtml);
 
-      // 6. Escribir el contenido en el archivo
-      await file.writeAsString(fullHtml);
-
-      // 7. Compartir el archivo usando la sintaxis correcta de SharePlus
-      await SharePlus.instance.share(
-        ShareParams(text: shareHtmlMessage, files: [XFile(file.path)]),
-      );
-
-      // 8. Salir del modo de selección
+        await SharePlus.instance.share(
+          ShareParams(text: shareHtmlMessage, files: [XFile(file.path)]),
+        );
+      }
       _exitSelectionMode();
     } catch (e) {
-      if (kDebugMode) {
-        print('Error al generar el archivo HTML: $e');
-      }
+      if (kDebugMode) print('Error al generar el archivo HTML: $e');
     }
   }
 
   void _shareAsJson() {
-    final content = _selectedItems
-        .map((item) {
-          // Extraemos el Delta del documento y lo convertimos a un String JSON
-          final rawJson = jsonEncode(item.document.toDelta().toJson());
-          return "${item.title}\n$rawJson";
-        })
-        .join('\n\n---\n\n');
+    // 1. Convertimos los ítems seleccionados a sus mapas JSON completos usando toJson()
+    final jsonList = _selectedItems.map((item) => item.toJson()).toList();
+    
+    // 2. Usamos un encoder con indentación para que el formato JSON sea legible y estético
+    const encoder = JsonEncoder.withIndent('  ');
+    
+    // 3. Si solo hay una nota seleccionada, compartimos su objeto individual. 
+    // Si hay varias, compartimos la lista completa de notas en un array JSON.
+    final String content = jsonList.length == 1 
+        ? encoder.convert(jsonList.first) 
+        : encoder.convert(jsonList);
 
+    // 4. Enviamos el texto estructurado a través de tu canal habitual de SharePlus
     SharePlus.instance.share(ShareParams(text: content));
-
+    
     _exitSelectionMode();
   }
 
@@ -2035,6 +2045,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     isSelected: _selectedItems.contains(item),
     isSelectionMode: _isSelectionMode,
     canReorder: _sortMethod == SortMethod.custom && _searchController.text.isEmpty,
+    isTrashView: _isTrashView,
     itemIndex: _filteredItems.indexOf(item),
     moreButtonTooltip: AppLocalizations.of(context)!.select,
     onTap: () {

@@ -400,23 +400,20 @@ class _EditorScreenState extends State<EditorScreen> {
     );
   }
 
+// --- COMPARTIR COMO PDF DESDE EL EDITOR ---
   Future<void> _shareAsPdf() async {
     final title = _titleController.text;
     final pdfExportHeader = AppLocalizations.of(context)!.pdfExportHeader;
     final untitledText = AppLocalizations.of(context)!.untitled;
-    final shareNoteMessage = AppLocalizations.of(
-      context,
-    )!.shareNoteMessage(title);
-
+    final shareNoteMessage = AppLocalizations.of(context)!.shareNoteMessage(title);
     final pdf = pw.Document();
     final delta = _contentController.document.toDelta();
 
     final converter = PDFConverter(
       document: delta,
-      // Usa PDFPageFormat proporcionado por el paquete
       pageFormat: PDFPageFormat(
-        width: 595, // Ancho en puntos (A4)
-        height: 841, // Alto en puntos
+        width: 595,
+        height: 841,
         marginTop: 20,
         marginBottom: 20,
         marginLeft: 20,
@@ -437,15 +434,10 @@ class _EditorScreenState extends State<EditorScreen> {
               pw.SizedBox(height: 15),
               pw.Text(
                 title.isEmpty ? untitledText : title,
-                style: pw.TextStyle(
-                  fontWeight: pw.FontWeight.bold,
-                  fontSize: 18,
-                ),
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18),
               ),
               pw.Divider(),
-
-              ?richTextWidget,
-
+              if (richTextWidget != null) richTextWidget,
               pw.SizedBox(height: 10),
             ],
           ),
@@ -453,37 +445,49 @@ class _EditorScreenState extends State<EditorScreen> {
       ),
     );
 
-    final output = await getTemporaryDirectory();
-    final fileName = title.replaceAll(RegExp(r'[^\w\s]+'), '_');
-    final file = File(
-      "${output.path}/${fileName}_${DateTime.now().millisecondsSinceEpoch}.pdf",
-    );
+    String fileName = title.replaceAll(RegExp(r'[^\w\s]+'), '_');
+    if (fileName.trim().isEmpty) fileName = "Nota";
+    final String fullFileName = "${fileName}_${DateTime.now().millisecondsSinceEpoch}.pdf";
+    final pdfBytes = await pdf.save();
 
-    await file.writeAsBytes(await pdf.save());
+    if (kIsWeb) {
+      // Solución Web libre de dart:io
+      final xFile = XFile.fromData(
+        pdfBytes,
+        name: fullFileName,
+        mimeType: 'application/pdf',
+      );
+      await SharePlus.instance.share(
+        ShareParams(text: shareNoteMessage, files: [xFile]),
+      );
+    } else {
+      // Solución Móvil basada en path_provider
+      final output = await getTemporaryDirectory();
+      final file = File("${output.path}/$fullFileName");
+      await file.writeAsBytes(pdfBytes);
 
-    await SharePlus.instance.share(
-      ShareParams(text: shareNoteMessage, files: [XFile(file.path)]),
-    );
+      await SharePlus.instance.share(
+        ShareParams(text: shareNoteMessage, files: [XFile(file.path)]),
+      );
+    }
   }
 
+  // --- COMPARTIR COMO HTML DESDE EL EDITOR ---
   Future<void> shareAsHtml(
     quill.QuillController controller,
     String noteTitle,
   ) async {
     try {
       final deltaOps = controller.document.toDelta().toJson();
-
       final converter = QuillDeltaToHtmlConverter(
         deltaOps,
         ConverterOptions(
           converterOptions: OpConverterOptions(inlineStylesFlag: true),
         ),
       );
-
       final String htmlContent = converter.convert();
 
-      final String fullHtml =
-          '''
+      final String fullHtml = '''
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -503,8 +507,6 @@ class _EditorScreenState extends State<EditorScreen> {
 </html>
 ''';
 
-      final directory = await getTemporaryDirectory();
-
       String fileName = noteTitle
           .replaceAll(RegExp(r'[^\w\s]+'), '')
           .trim()
@@ -512,38 +514,70 @@ class _EditorScreenState extends State<EditorScreen> {
       if (fileName.isEmpty) {
         fileName = 'Nota_Sin_Titulo';
       }
+      final String fullFileName = "$fileName.html";
 
-      final File file = File('${directory.path}/$fileName.html');
+      if (kIsWeb) {
+        // Solución Web libre de dart:io
+        final htmlBytes = Uint8List.fromList(utf8.encode(fullHtml));
+        final xFile = XFile.fromData(
+          htmlBytes,
+          name: fullFileName,
+          mimeType: 'text/html',
+        );
+        await SharePlus.instance.share(
+          ShareParams(
+            subject: 'Archivo HTML: $noteTitle',
+            text: 'Te comparto esta nota exportada desde Bloc de notas.',
+            files: [xFile],
+          ),
+        );
+      } else {
+        // Solución Móvil basada en path_provider
+        final directory = await getTemporaryDirectory();
+        final File file = File('${directory.path}/$fullFileName');
+        await file.writeAsString(fullHtml);
 
-      await file.writeAsString(fullHtml);
-
-      // CORRECCIÓN: Actualizado a la sintaxis moderna de SharePlus
-      await SharePlus.instance.share(
-        ShareParams(
-          subject: 'Archivo HTML: $noteTitle',
-          text: 'Te comparto esta nota exportada desde Bloc de notas.',
-          files: [XFile(file.path)],
-        ),
-      );
+        await SharePlus.instance.share(
+          ShareParams(
+            subject: 'Archivo HTML: $noteTitle',
+            text: 'Te comparto esta nota exportada desde Bloc de notas.',
+            files: [XFile(file.path)],
+          ),
+        );
+      }
     } catch (e) {
       if (kDebugMode) {
-        print('Error al exportar desde el editor: $e');
+        print('Error al exportar HTML desde el editor: $e');
       }
     }
   }
 
   void _shareAsJson() {
-    // 1. Obtenemos el título del controlador
+    // 1. Obtenemos el título y el contenido en formato Delta JSON
     final title = _titleController.text;
+    final summaryJson = jsonEncode(_contentController.document.toDelta().toJson());
 
-    // 2. Convertimos el contenido de Flutter Quill a JSON (Delta)
-    final rawJson = jsonEncode(_contentController.document.toDelta().toJson());
+    // 2. Creamos una instancia temporal con toda la información real y actualizada
+    final currentItem = ListItem(
+      id: widget.item.id,
+      title: title,
+      summary: summaryJson,
+      lastModified: DateTime.now(),
+      backgroundColor: _backgroundColorValue,
+      backgroundImagePath: _backgroundImagePath,
+      tags: _currentTags,
+      isArchived: _isArchived,
+    );
 
-    // 3. Compartimos con el formato híbrido: Título + Separador + JSON
+    // 3. Usamos un encoder con indentación para que el JSON quede ordenado y legible
+    const encoder = JsonEncoder.withIndent('  ');
+    final String jsonContent = encoder.convert(currentItem.toJson());
+
+    // 4. Enviamos el texto estructurado completo
     SharePlus.instance.share(
       ShareParams(
-        text: '$title\n\n$rawJson',
-        subject: title, // Esto ayuda en apps como Gmail para poner el asunto
+        text: jsonContent,
+        subject: title.isNotEmpty ? title : AppLocalizations.of(context)!.untitled,
       ),
     );
   }

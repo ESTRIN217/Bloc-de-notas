@@ -437,7 +437,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18),
               ),
               pw.Divider(),
-              if (richTextWidget != null) richTextWidget,
+              ?richTextWidget,
               pw.SizedBox(height: 10),
             ],
           ),

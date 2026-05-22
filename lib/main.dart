@@ -215,7 +215,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       });
     }
 
-    // Obtenemos el código de idioma actual (ej. 'es' o 'en')
     
 
     // 2. Cargamos las notas activas
@@ -628,7 +627,9 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
           _archivedItems.cast<ListItem?>().firstWhere(
             (i) => i?.id == originalItem.id,
             orElse: () => null,
-          );
+          ) ??
+          _favoriteItems.cast<ListItem?>().firstWhere((i) => i?.id == originalItem.id,
+          orElse: () => null);
           
       setState(() {
         _items.removeWhere((i) => i.id == originalItem.id);
@@ -649,14 +650,17 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
         final int indexInArchived = _archivedItems.indexWhere(
           (i) => i.id == result.id,
         );
+        final int indexInFavorites = _favoriteItems.indexWhere((i) => i.id == result.id);
 
         // 2. Si la nota quedó vacía, la eliminamos y salimos
         if (result.title.trim().isEmpty && result.document.length <= 1) {
           if (indexInItems != -1) _items.removeAt(indexInItems);
           if (indexInArchived != -1) _archivedItems.removeAt(indexInArchived);
+          if (indexInFavorites != -1) _favoriteItems.removeAt(indexInFavorites);
           _filterItems();
           _saveItems();
           _saveArchivedItems();
+          _saveFavoriteItems();
           return;
         }
 
@@ -681,7 +685,6 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
             _items.insert(0, result); // Nueva nota va al principio
           }
         }
-        final int indexInFavorites = _favoriteItems.indexWhere((i) => i.id == result.id);
     
     if (result.isFavorite) {
       if (indexInFavorites != -1) {
@@ -698,10 +701,11 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
       }
     }
     
-        _saveFavoriteItems();
+        
         _filterItems();
         _saveItems();
         _saveArchivedItems();
+        _saveFavoriteItems();
       });
       _loadAllData();
     }

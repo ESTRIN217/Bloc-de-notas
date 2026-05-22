@@ -286,45 +286,47 @@ class NoteItemWidget extends StatelessWidget {
                 )
               : null,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: contentColumn,
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: contentColumn,
+      ),
+    ),
+    if (!isSelectionMode)
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isListView) ...[
+            if (canReorder)
+              ReorderableDragStartListener(
+                index: itemIndex,
+                child: dragIcon,
+              ),
+          ] else ...[
+            if (!isTrashView)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: IconButton(
+                  icon: Icon(Icons.more_vert, color: dynamicIconColor),
+                  onPressed: onMorePressed,
+                  tooltip: moreButtonTooltip,
                 ),
               ),
-              if (!isSelectionMode) ...[
-                if (isListView) ...[
-                  if (canReorder)
-                    ReorderableDragStartListener(
-                      index: itemIndex,
-                      child: dragIcon,
-                    ),
-                ] else ...[
-                  if (!isTrashView) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: IconButton(
-                      icon: Icon(Icons.more_vert, color: dynamicIconColor),
-                      onPressed: onMorePressed,
-                      tooltip: moreButtonTooltip,
-                    ),
-                  ),
-                  ],
-                ],
-                if (item.isFavorite && !isTrashView) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Icon(
-                      Icons.star_outline, // Mantenemos el estilo outlined
-                      color: dynamicIconColor, 
-                    ),
-                  ),
-                  ],
-              ],
-            ],
-          ),
+          ],
+          if (item.isFavorite && !isTrashView)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0), // Cambiado left por top para separación vertical
+              child: Icon(
+                Icons.star_outline,
+                color: dynamicIconColor,
+              ),
+            ),
+        ],
+      ),
+  ],
+),
         ),
       ),
     );

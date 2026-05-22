@@ -938,10 +938,10 @@ class _EditorScreenState extends State<EditorScreen> {
               IconButton(
                 isSelected: _isFavorite,
                 icon: const Icon(
-                  Icons.star,
+                  Icons.star_outline,
                 ), // Icono por defecto (sin seleccionar)
                 selectedIcon: const Icon(
-                  Icons.star_outline
+                  Icons.star
                 ), // Icono cuando isSelected es true
                 color: dynamicIconColor,
                 tooltip: _isFavorite

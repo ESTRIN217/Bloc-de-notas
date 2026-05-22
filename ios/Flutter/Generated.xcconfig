@@ -1,6 +1,7 @@
 // This is a generated file; do not edit or check into version control.
 FLUTTER_ROOT=/home/codespace/flutter
 FLUTTER_APPLICATION_PATH=/workspaces/Bloc-de-notas
+FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/workspaces/Bloc-de-notas/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_TARGET=lib/main.dart
 FLUTTER_BUILD_DIR=build

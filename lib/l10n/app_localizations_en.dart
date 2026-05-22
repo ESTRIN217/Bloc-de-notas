@@ -483,4 +483,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String updatesTag(String selectedItems) {
     return 'Tags updated in $selectedItems note';
   }
+
+  @override
+  String get favorites => 'Favorites';
+
+  @override
+  String get unfavoriteTooltip => 'Unfavorites';
+
+  @override
+  String get noteFavorite => 'Note added to Favorites';
+
+  @override
+  String get noteUnfavorite => 'Note unfavorites';
 }

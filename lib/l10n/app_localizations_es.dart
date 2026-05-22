@@ -486,6 +486,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String updatesTag(String selectedItems) {
     return 'Etiquetas actualizadas en $selectedItems nota';
   }
+
+  @override
+  String get favorites => 'Favoritos';
+
+  @override
+  String get unfavoriteTooltip => 'Desfavoritos';
+
+  @override
+  String get noteFavorite => 'Nota añadida a favoritos';
+
+  @override
+  String get noteUnfavorite => 'Nota desfavoritos';
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
@@ -970,4 +982,16 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
   String updatesTag(String selectedItems) {
     return 'Etiquetas actualizadas en $selectedItems nota';
   }
+
+  @override
+  String get favorites => 'Favoritos';
+
+  @override
+  String get unfavoriteTooltip => 'Desfavoritos';
+
+  @override
+  String get noteFavorite => 'Nota añadida a favoritos';
+
+  @override
+  String get noteUnfavorite => 'Nota desfavoritos';
 }

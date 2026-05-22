@@ -486,6 +486,18 @@ class AppLocalizationsPt extends AppLocalizations {
   String updatesTag(String selectedItems) {
     return 'Etiquetas atualizadas em $selectedItems nota';
   }
+
+  @override
+  String get favorites => 'Favoritos';
+
+  @override
+  String get unfavoriteTooltip => 'Desfavoritos';
+
+  @override
+  String get noteFavorite => 'Nota adicionada aos favoritos';
+
+  @override
+  String get noteUnfavorite => 'Nota favorita';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -970,4 +982,16 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String updatesTag(String selectedItems) {
     return 'Etiquetas atualizadas em $selectedItems nota';
   }
+
+  @override
+  String get favorites => 'Favoritos';
+
+  @override
+  String get unfavoriteTooltip => 'Desfavoritos';
+
+  @override
+  String get noteFavorite => 'Nota adicionada aos favoritos';
+
+  @override
+  String get noteUnfavorite => 'Nota favorita';
 }

@@ -82,6 +82,7 @@ class _EditorScreenState extends State<EditorScreen> {
   }();
   final FocusNode _editorFocusNode = FocusNode();
   final ScrollController _editorScrollController = ScrollController();
+  
 
   @override
   void initState() {
@@ -940,7 +941,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   Icons.star,
                 ), // Icono por defecto (sin seleccionar)
                 selectedIcon: const Icon(
-                  Icons.star_outline),
+                  Icons.star_outline
                 ), // Icono cuando isSelected es true
                 color: dynamicIconColor,
                 tooltip: _isFavorite

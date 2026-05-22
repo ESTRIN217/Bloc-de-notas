@@ -977,6 +977,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tags updated in {selectedItems} note'**
   String updatesTag(String selectedItems);
+
+  /// No description provided for @favorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get favorites;
+
+  /// No description provided for @unfavoriteTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfavorites'**
+  String get unfavoriteTooltip;
+
+  /// No description provided for @noteFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Note added to Favorites'**
+  String get noteFavorite;
+
+  /// No description provided for @noteUnfavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Note unfavorites'**
+  String get noteUnfavorite;
 }
 
 class _AppLocalizationsDelegate

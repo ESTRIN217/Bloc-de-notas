@@ -380,7 +380,7 @@ class AboutScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ),
     ],
     );
   }

@@ -1448,13 +1448,11 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     });
   }
 
-  void _onReorder(int oldIndex, int newIndex) {
+  void _onReorderItem(int oldIndex, int newIndex) {
     setState(() {
       if (_searchController.text.isNotEmpty) return;
 
-      if (oldIndex < newIndex) {
-        newIndex -= 1;
-      }
+      
       final item = _items.removeAt(oldIndex);
       _items.insert(newIndex, item);
 
@@ -2246,7 +2244,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
             child: _buildItem(item),
           );
         },
-        onReorder: _onReorder,
+        onReorderItem: _onReorderItem,
       );
     }
     return ListView.builder(

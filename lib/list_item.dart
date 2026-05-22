@@ -12,6 +12,7 @@ class ListItem {
   final String? backgroundImagePath;
   final List<String> tags;
   final bool isArchived;
+  final bool isFavorite;
 
   ListItem({
     required this.id,
@@ -22,6 +23,7 @@ class ListItem {
     this.backgroundImagePath,
     this.tags = const [],
     this.isArchived = false,
+    this.isFavorite = false,
   });
 
   factory ListItem.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class ListItem {
       backgroundImagePath: json['backgroundImagePath'],
       tags: List<String>.from(json['tags'] ?? []), // <-- NUEVO
       isArchived: json['isArchived'],
+      isFavorite: json['isFavorite'],
     );
   }
 
@@ -47,6 +50,7 @@ class ListItem {
       'backgroundImagePath': backgroundImagePath,
       'tags': tags,
       'isArchived': isArchived,
+      'isFavorite': isFavorite,
     };
   }
 

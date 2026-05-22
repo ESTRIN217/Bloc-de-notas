@@ -367,5 +367,13 @@
   "type": "String"
   }
   }
-}
+  },
+  "favorites": "Favorites",
+  "@favorites": {},
+  "unfavoriteTooltip": "Unfavorites",
+  "@unfavoriteTooltip": {},
+  "noteFavorite": "Note added to Favorites",
+  "@noteFavorite": {},
+  "noteUnfavorite": "Note unfavorites",
+  "@noteUnfavorite": {}
 }

@@ -217,7 +217,7 @@ class NoteItemWidget extends StatelessWidget {
               : Expanded(
                   child: ClipRect(child: richTextPreview),
                 ),
-        if (item.tags.isNotEmpty) ...[
+        if (item.tags.isNotEmpty && !isTrashView) ...[
           const SizedBox(height: 8),
           Wrap(
             spacing: 4,
@@ -313,6 +313,15 @@ class NoteItemWidget extends StatelessWidget {
                   ),
                   ],
                 ],
+                if (item.isFavorite && !isTrashView) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Icon(
+                      Icons.star_outline, // Mantenemos el estilo outlined
+                      color: dynamicIconColor, 
+                    ),
+                  ),
+                  ],
               ],
             ],
           ),

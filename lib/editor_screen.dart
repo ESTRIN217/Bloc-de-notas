@@ -52,6 +52,7 @@ class _EditorScreenState extends State<EditorScreen> {
   List<String> _currentTags = [];
   List<String> _availableGlobalTags = [];
   bool _isArchived = false; // NUEVO: Estado de archivo
+  bool _isFavorite = false;
   final quill.QuillController _controller = () {
     return quill.QuillController.basic(
       config: quill.QuillControllerConfig(
@@ -94,6 +95,7 @@ class _EditorScreenState extends State<EditorScreen> {
     _backgroundImagePath = widget.item.backgroundImagePath;
     _currentTags = List.from(widget.item.tags); // Inicializamos las etiquetas
     _isArchived = widget.item.isArchived; // Cargar estado inicial
+    _isFavorite = widget.item.isFavorite;
     _initTts();
     _loadGlobalTags();
   }
@@ -141,6 +143,37 @@ class _EditorScreenState extends State<EditorScreen> {
           onPressed: () {
             setState(() {
               _isArchived = !_isArchived;
+            });
+          },
+        ),
+      ),
+    );
+  }
+  void _toggleFavorite() {
+    setState(() {
+      _isFavorite = !_isFavorite; // Cambiar el estado actual
+    });
+
+    // Limpiamos cualquier snackbar previo para evitar acumulación
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          _isFavorite
+              ? AppLocalizations.of(context)!.noteFavorite
+              : AppLocalizations.of(context)!.noteUnfavorite,
+        ),
+        duration: const Duration(
+          seconds: 4,
+        ), // Damos tiempo suficiente para reaccionar
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: AppLocalizations.of(context)!.undo,
+          // Si el usuario presiona "Deshacer", revertimos el cambio de estado
+          onPressed: () {
+            setState(() {
+              _isFavorite = !_isFavorite;
             });
           },
         ),
@@ -206,6 +239,7 @@ class _EditorScreenState extends State<EditorScreen> {
       backgroundImagePath: _backgroundImagePath,
       tags: _currentTags, // NUEVO: Pasamos las etiquetas al guardar
       isArchived: _isArchived, // NUEVO: Guardar el estado de archivo
+      isFavorite: _isFavorite,
     );
     Navigator.pop(context, updatedItem);
   }
@@ -567,6 +601,7 @@ class _EditorScreenState extends State<EditorScreen> {
       backgroundImagePath: _backgroundImagePath,
       tags: _currentTags,
       isArchived: _isArchived,
+      isFavorite: _isFavorite,
     );
 
     // 3. Usamos un encoder con indentación para que el JSON quede ordenado y legible
@@ -899,6 +934,20 @@ class _EditorScreenState extends State<EditorScreen> {
             elevation: 0,
             title: null,
             actions: [
+              IconButton(
+                isSelected: _isFavorite,
+                icon: const Icon(
+                  Icons.star,
+                ), // Icono por defecto (sin seleccionar)
+                selectedIcon: const Icon(
+                  Icons.star_outline),
+                ), // Icono cuando isSelected es true
+                color: dynamicIconColor,
+                tooltip: _isFavorite
+                    ? AppLocalizations.of(context)!.unfavoriteTooltip
+                    : AppLocalizations.of(context)!.favorites,
+                onPressed: _toggleFavorite,
+              ),
               IconButton(
                 isSelected: _isArchived,
                 icon: const Icon(

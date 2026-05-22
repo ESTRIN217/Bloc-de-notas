@@ -304,10 +304,36 @@ class AboutScreen extends StatelessWidget {
       ),
     );
   }
+  Widget _buildIconContainer(BuildContext context, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
+    );
+  }
+  Widget _buildFaIconContainer(BuildContext context, FaIconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: FaIcon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
+    );
+  }
 
   /// Grupo de enlaces (Repositorio, Licencia)
   Widget _buildLinkGroup(BuildContext context) {
-    return Card.outlined(
+    return Column(
+        children: [
+          Card.outlined(
       elevation: 0,
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       color: Theme.of(context).colorScheme.surface,
@@ -322,14 +348,30 @@ class AboutScreen extends StatelessWidget {
       child: Column(
         children: [
           ListTile(
-            leading: const FaIcon(FontAwesomeIcons.github),
+            leading: _buildFaIconContainer(context, FontAwesomeIcons.github),
             title: Text(AppLocalizations.of(context)!.repositorio),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _openUrl('https://github.com/ESTRIN217/Bloc-de-notas'),
           ),
-          const Divider(height: 1, indent: 56),
+        ],
+      ),
+    ),
+    Card.outlined(
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      color: Theme.of(context).colorScheme.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outlineVariant,
+          width: 1.0,
+        ),
+      ),
+      child: Column(
+        children: [
           ListTile(
-            leading: const Icon(Icons.description_outlined),
+            leading: _buildIconContainer(context, Icons.description_outlined),
             title: Text(AppLocalizations.of(context)!.mit_license),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _openUrl(
@@ -338,6 +380,8 @@ class AboutScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+    ],
     );
   }
 }

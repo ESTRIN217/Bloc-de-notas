@@ -141,8 +141,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   String? _selectedTagFilter;
   //   Variables para Archivo
   late List<ListItem> _archivedItems;
+  late List<ListItem> _favoriteItems;
   bool _isArchiveView = false;
   int? _selectedColorFilter;
+  bool _isFavoriteView = false;
   
   BackupService get _backupService => BackupService();
 
@@ -155,6 +157,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _filteredItems = [];
     _trashedItems = [];
     _archivedItems = [];
+    _favoriteItems = [];
     _searchController.addListener(_filterItems);
     WidgetsBinding.instance.addPostFrameCallback((_) {
     _loadAllData();
@@ -262,6 +265,25 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       final List<dynamic> jsonList = jsonDecode(archivedContents);
       setState(() {
         _archivedItems = jsonList
+            .map((json) => ListItem.fromJson(json))
+            .toList();
+      });
+    }
+    String? favoriteContents;
+    if (kIsWeb) {
+      favoriteContents = prefs.getString('favorite_notes');
+    } else {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/favorite_notes.json');
+      if (await file.exists()) {
+        favoriteContents = await file.readAsString();
+      }
+    }
+
+    if (favoriteContents != null && favoriteContents.isNotEmpty) {
+      final List<dynamic> jsonList = jsonDecode(favoriteContents);
+      setState(() {
+        _favoriteItems = jsonList
             .map((json) => ListItem.fromJson(json))
             .toList();
       });
@@ -407,6 +429,24 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
       debugPrint("Error saving archived items: $e");
     }
   }
+  Future<void> _saveFavoriteItems() async {
+    try {
+      final List<Map<String, dynamic>> jsonList = _favoriteItems
+          .map((item) => item.toJson())
+          .toList();
+      final contents = jsonEncode(jsonList);
+      if (kIsWeb) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('favorite_notes', contents);
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/favorite_notes.json');
+        await file.writeAsString(contents);
+      }
+    } catch (e) {
+      debugPrint("Error saving favoritos items: $e");
+    }
+  }
 
   void _filterItems() {
     final query = _searchController.text.toLowerCase();
@@ -416,6 +456,8 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
       sourceList = _trashedItems;
     } else if (_isArchiveView) {
       sourceList = _archivedItems;
+    } else if (_isFavoriteView) {
+      sourceList = _favoriteItems;
     } else {
       sourceList = _items;
     }
@@ -463,6 +505,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
               tags: item.tags,
               isArchived:
                   targetStatus, // Actualizamos la variable según el destino
+              isFavorite: item.isFavorite,
             ),
           )
           .toList();
@@ -586,13 +629,16 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
             (i) => i?.id == originalItem.id,
             orElse: () => null,
           );
+          
       setState(() {
         _items.removeWhere((i) => i.id == originalItem.id);
         _archivedItems.removeWhere((i) => i.id == originalItem.id);
+        _favoriteItems.removeWhere((i) => i.id == originalItem.id);
         _trashedItems.add(itemToDelete!); // Movemos a papelera
         _filterItems();
         _saveItems();
         _saveArchivedItems();
+        _saveFavoriteItems();
         _saveTrashedItems();
       });
       _showUndoSnackbar([?itemToDelete]); // Mostramos SnackBar
@@ -635,7 +681,24 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
             _items.insert(0, result); // Nueva nota va al principio
           }
         }
-
+        final int indexInFavorites = _favoriteItems.indexWhere((i) => i.id == result.id);
+    
+    if (result.isFavorite) {
+      if (indexInFavorites != -1) {
+        // Si ya era favorito, actualizamos sus datos modificados (título, texto, etc.)
+        _favoriteItems[indexInFavorites] = result;
+      } else {
+        // Si se marcó como favorito dentro del editor por primera vez
+        _favoriteItems.insert(0, result);
+      }
+    } else {
+      // Si se desmarcó como favorito dentro del editor
+      if (indexInFavorites != -1) {
+        _favoriteItems.removeAt(indexInFavorites);
+      }
+    }
+    
+        _saveFavoriteItems();
         _filterItems();
         _saveItems();
         _saveArchivedItems();
@@ -718,6 +781,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                                   backgroundImagePath: _items[indexInItems].backgroundImagePath,
                                   tags: updatedTags,
                                   isArchived: _items[indexInItems].isArchived,
+                                  isFavorite: _items[indexInItems].isFavorite,
                                 );
                               }
 
@@ -741,6 +805,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                                   backgroundImagePath: _archivedItems[indexInArchived].backgroundImagePath,
                                   tags: updatedTags,
                                   isArchived: _archivedItems[indexInArchived].isArchived,
+                                  isFavorite: _archivedItems[indexInItems].isFavorite,
                                 );
                               }
                             }
@@ -1045,9 +1110,11 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
         // Enviar a la papelera desde el inicio
         _items.removeWhere((item) => itemsToDelete.contains(item));
         _archivedItems.removeWhere((item) => itemsToDelete.contains(item));
+        _favoriteItems.removeWhere((item) => itemsToDelete.contains(item));
         _trashedItems.addAll(itemsToDelete);
         _saveItems();
         _saveArchivedItems();
+        _saveFavoriteItems();
         _saveTrashedItems();
         _showUndoSnackbar(itemsToDelete);
       }
@@ -1407,6 +1474,13 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
         title: Text('${_selectedItems.length}'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.star_outline),
+            tooltip: _isFavoriteView
+            ? AppLocalizations.of(context)!.unfavoriteTooltip
+            : AppLocalizations.of(context)!.favorites,
+            onPressed: _toggleFavoriteSelectedItems,
+          ),
+          IconButton(
             isSelected: !_isArchiveView,
             icon: Icon(
               Icons.unarchive_outlined,
@@ -1623,6 +1697,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
   Widget build(BuildContext context) {
     final bool isHomeView = !_isTrashView && 
                             !_isArchiveView && 
+                            !_isFavoriteView &&
                             _selectedTagFilter == null && 
                             _selectedColorFilter == null && 
                             !_isSelectionMode;
@@ -1642,6 +1717,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
           setState(() {
             _isTrashView = false;
             _isArchiveView = false;
+            _isFavoriteView = false;
             _selectedTagFilter = null;
             _selectedColorFilter = null;
           });
@@ -1704,7 +1780,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
 
                 // Cambia el icono a uno relleno (opcional) si está seleccionado para más feedback visual
                 leading: Icon(
-                  !_isTrashView && _selectedTagFilter == null && !_isArchiveView
+                  !_isTrashView && _selectedTagFilter == null && !_isArchiveView && !_isFavoriteView
                       ? Icons
                             .home // Icono relleno
                       : Icons.home_outlined, // Tu icono outlined por defecto
@@ -1718,12 +1794,45 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                 selected:
                     !_isTrashView &&
                     _selectedTagFilter == null &&
-                    !_isArchiveView,
+                    !_isArchiveView && !_isFavoriteView,
 
                 onTap: () {
                   setState(() {
                     _isTrashView = false;
                     _isArchiveView = false;
+                    _isFavoriteView = false;
+                    _selectedTagFilter = null;
+                  });
+                  _filterItems();
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: ListTile(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                selectedTileColor: Theme.of(
+                    context,
+                  ).colorScheme.secondaryContainer,
+
+                  // Color del texto e iconos cuando está seleccionado
+                  selectedColor: Theme.of(
+                    context,
+                  ).colorScheme.onSecondaryContainer,
+                leading: Icon(
+                _isFavoriteView
+                  ? Icons.star
+                  : Icons.star_outline),
+                title: Text(AppLocalizations.of(context)!.favorites),
+                selected: _isFavoriteView,
+                onTap: () {
+                  setState(() {
+                    _isArchiveView = false;
+                    _isFavoriteView = true;
+                    _isTrashView = false;
                     _selectedTagFilter = null;
                   });
                   _filterItems();
@@ -1783,6 +1892,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                     setState(() {
                       _isTrashView = false;
                       _isArchiveView = false;
+                      _isFavoriteView = false;
                       _selectedTagFilter = tag;
                     });
                     _filterItems();
@@ -1817,6 +1927,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                 onTap: () {
                   setState(() {
                     _isArchiveView = true;
+                    _isFavoriteView = false;
                     _isTrashView = false;
                     _selectedTagFilter = null;
                   });
@@ -1849,6 +1960,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                   setState(() {
                     _isTrashView = true;
                     _isArchiveView = false;
+                    _isFavoriteView = false;
                     _selectedTagFilter =
                         null; // Opcional: quitar filtro al ir a papelera
                   });
@@ -2070,8 +2182,15 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                       } else {
                         _items.add(item);
                       }
+                      if (item.isFavorite) {
+                          // Insertamos para evitar duplicados por seguridad
+                          if (!_favoriteItems.any((i) => i.id == item.id)) {
+                             _favoriteItems.insert(0, item);
+                          }
+                       }
                       _saveItems();
                       _saveArchivedItems();
+                      _saveFavoriteItems();
                       _saveTrashedItems();
                       _filterItems();
                     });
@@ -2291,6 +2410,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     setState(() {
       _isTrashView = false;
       _isArchiveView = false;
+      _isFavoriteView = false;
       // Si se toca la misma etiqueta, se deselecciona (vuelve el icono import)
       // Si se toca una nueva, se activa el filtro (aparecen los tres puntos)
       _selectedTagFilter = (_selectedTagFilter == tag) ? null : tag;
@@ -2350,5 +2470,53 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
       ),
     );
   }
-  
+  void _toggleFavoriteSelectedItems() async {
+  if (_selectedItems.isEmpty) return;
+
+  setState(() {
+    for (var selectedItem in _selectedItems) {
+      // 1. Localizar el ítem en la lista de notas activas o archivadas
+      final int indexInItems = _items.indexWhere((i) => i.id == selectedItem.id);
+      final int indexInArchived = _archivedItems.indexWhere((i) => i.id == selectedItem.id);
+      
+      final bool newFavoriteStatus = !selectedItem.isFavorite;
+
+      // 2. Crear una nueva instancia con el estado de favorito invertido
+      final updatedItem = ListItem(
+        id: selectedItem.id,
+        title: selectedItem.title,
+        summary: selectedItem.summary,
+        lastModified: selectedItem.lastModified,
+        backgroundColor: selectedItem.backgroundColor,
+        backgroundImagePath: selectedItem.backgroundImagePath,
+        tags: selectedItem.tags,
+        isArchived: selectedItem.isArchived,
+        isFavorite: newFavoriteStatus,
+      );
+
+      // 3. Reemplazar en la lista de origen
+      if (indexInItems != -1) _items[indexInItems] = updatedItem;
+      if (indexInArchived != -1) _archivedItems[indexInArchived] = updatedItem;
+
+      // 4. Sincronizar la lista/categoría especial de favoritos
+      if (newFavoriteStatus) {
+        // Evitamos duplicados
+        if (!_favoriteItems.any((i) => i.id == selectedItem.id)) {
+          _favoriteItems.insert(0, updatedItem);
+        }
+      } else {
+        _favoriteItems.removeWhere((i) => i.id == selectedItem.id);
+      }
+    }
+
+    // 5. Persistir todos los cambios en los archivos correspondientes
+    _saveItems();
+    _saveArchivedItems();
+    _saveFavoriteItems();
+    
+    // Limpiar selección y refrescar UI
+    _exitSelectionMode();
+    _filterItems();
+  });
+}
 }

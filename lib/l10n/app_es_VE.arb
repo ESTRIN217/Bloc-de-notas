@@ -146,5 +146,9 @@
   "import": "Importar",
   "lastBackup": "Último respaldo: {lastLocalSync}",
   "logout": "Cerrar sesión",
-  "updatesTag": "Etiquetas actualizadas en {selectedItems} nota"
+  "updatesTag": "Etiquetas actualizadas en {selectedItems} nota",
+  "favorites": "Favoritos",
+  "unfavoriteTooltip": "Desfavoritos",
+  "noteFavorite": "Nota añadida a favoritos",
+  "noteUnfavorite": "Nota desfavoritos"
 }

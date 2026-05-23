@@ -19,19 +19,19 @@ import 'package:provider/provider.dart';
 import 'package:flutter_reorderable_grid_view/widgets/widgets.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'list_item.dart';
-import 'editor_screen.dart';
-import 'settings_screen.dart';
-import 'theme_provider.dart';
-import 'updater_provider.dart';
+import 'presentation/widgets/list_item.dart';
+import 'presentation/screens/editor_screen.dart';
+import 'presentation/screens/settings_screen.dart';
+import 'providers/theme_provider.dart';
+import 'providers/updater_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'update_widget.dart';
-import 'theme.dart';
-import 'note_item_widget.dart';
-import 'entry_animation.dart';
+import 'presentation/widgets/update_widget.dart';
+import 'theme/theme.dart';
+import 'presentation/widgets/note_item_widget.dart';
+import 'presentation/animations/entry_animation.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
@@ -126,8 +126,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _isListView = true;
   SortMethod _sortMethod = SortMethod.custom;
   late List<ListItem> _items;
-  late List<ListItem> _filteredItems;
-  final TextEditingController _searchController = TextEditingController();
 
   bool _isSelectionMode = false;
   final List<ListItem> _selectedItems = [];
@@ -145,6 +143,26 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _isArchiveView = false;
   int? _selectedColorFilter;
   bool _isFavoriteView = false;
+  // AÑADE ESTO:
+List<ListItem> get _currentSourceItems {
+  switch (_currentView) {
+    case ViewType.archived:
+      return _archivedItems;
+    case ViewType.favorite:
+      return _favoriteItems;
+    case ViewType.trash:
+      return _trashedItems;
+    case ViewType.tags:
+      // Filtra dinámicamente por la etiqueta seleccionada en la barra lateral
+      if (_selectedTag != null) {
+        return _items.where((item) => item.tags.contains(_selectedTag)).toList();
+      }
+      return _items;
+    case ViewType.notes:
+    default:
+      return _items;
+  }
+}
   
   BackupService get _backupService => BackupService();
 
@@ -154,11 +172,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _backupService.isSignedIn();
     WidgetsBinding.instance.addObserver(this);
     _items = [];
-    _filteredItems = [];
     _trashedItems = [];
     _archivedItems = [];
     _favoriteItems = [];
-    _searchController.addListener(_filterItems);
     WidgetsBinding.instance.addPostFrameCallback((_) {
     _loadAllData();
   });
@@ -170,10 +186,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    _searchController.dispose();
     // Retiramos el observador para evitar fugas de memoria
     WidgetsBinding.instance.removeObserver(this);
-    _searchController.dispose(); // Asumo que ya tienes esto
     super.dispose();
   }
 
@@ -233,17 +247,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       final List<dynamic> jsonList = jsonDecode(contents);
       setState(() {
         _items = jsonList.map((json) => ListItem.fromJson(json)).toList();
-        _filteredItems = _items;
-        _sortFilteredItems();
-        _isLoading = false;
+        
       });
     } else {
       // NUEVA CARGA: Si no hay notas guardadas, leemos los assets JSON traducidos
       final defaultNotes = await loadDefaultNotesFromAssets(languageCode);
       setState(() {
         _items = defaultNotes;
-        _filteredItems = _items;
-        _isLoading = false;
+        
       });
       _saveItems(); // Guardamos el JSON local inicializado por primera vez
     }
@@ -308,6 +319,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             .toList();
       });
     }
+    setState(() {
+        _isLoading = false;
+      });
+       
   } catch (e) {
     debugPrint("Error loading items: $e");
 
@@ -315,9 +330,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     final defaultNotes = await loadDefaultNotesFromAssets(languageCode);
     setState(() {
       _items = defaultNotes;
-      _filteredItems = _items;
       _isLoading = false;
     });
+     
     _saveItems();
   }
 }
@@ -447,44 +462,6 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     }
   }
 
-  void _filterItems() {
-    final query = _searchController.text.toLowerCase();
-
-    List<ListItem> sourceList;
-    if (_isTrashView) {
-      sourceList = _trashedItems;
-    } else if (_isArchiveView) {
-      sourceList = _archivedItems;
-    } else if (_isFavoriteView) {
-      sourceList = _favoriteItems;
-    } else {
-      sourceList = _items;
-    }
-
-    setState(() {
-      _filteredItems = sourceList.where((item) {
-        final titleMatch = item.title.toLowerCase().contains(query);
-        final summaryMatch = item.document.toPlainText().toLowerCase().contains(
-          query,
-        );
-        final matchesSearch = titleMatch || summaryMatch;
-
-        // Filtro de Etiquetas
-        final matchesTag =
-            _selectedTagFilter == null ||
-            item.tags.contains(_selectedTagFilter);
-
-        //   Filtro de Color
-        final matchesColor =
-            _selectedColorFilter == null ||
-            item.backgroundColor == _selectedColorFilter;
-
-        return matchesSearch && matchesTag && matchesColor;
-      }).toList();
-      _sortFilteredItems();
-    });
-  }
-
   void _archiveSelectedItems() async {
     // 1. Guardamos una copia de los elementos y el estado de la vista para el "Deshacer"
     final itemsToMove = List<ListItem>.from(_selectedItems);
@@ -527,7 +504,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
       _saveItems();
       _saveArchivedItems();
       _exitSelectionMode();
-      _filterItems();
+       
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -559,28 +536,12 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
               }
               _saveItems();
               _saveArchivedItems();
-              _filterItems();
+               
             });
           },
         ),
       ),
     );
-  }
-
-  void _sortFilteredItems() {
-    if (_sortMethod == SortMethod.alphabetical) {
-      _filteredItems.sort(
-        (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
-      );
-    } else if (_sortMethod == SortMethod.byDate) {
-      _filteredItems.sort((a, b) => b.lastModified.compareTo(a.lastModified));
-    } else if (_sortMethod == SortMethod.custom) {
-      _filteredItems.sort((a, b) {
-        final aIndex = _items.indexOf(a);
-        final bIndex = _items.indexOf(b);
-        return aIndex.compareTo(bIndex);
-      });
-    }
   }
 
   void _toggleView() async {
@@ -636,7 +597,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
         _archivedItems.removeWhere((i) => i.id == originalItem.id);
         _favoriteItems.removeWhere((i) => i.id == originalItem.id);
         _trashedItems.add(itemToDelete!); // Movemos a papelera
-        _filterItems();
+         
         _saveItems();
         _saveArchivedItems();
         _saveFavoriteItems();
@@ -657,7 +618,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
           if (indexInItems != -1) _items.removeAt(indexInItems);
           if (indexInArchived != -1) _archivedItems.removeAt(indexInArchived);
           if (indexInFavorites != -1) _favoriteItems.removeAt(indexInFavorites);
-          _filterItems();
+           
           _saveItems();
           _saveArchivedItems();
           _saveFavoriteItems();
@@ -702,7 +663,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     }
     
         
-        _filterItems();
+         
         _saveItems();
         _saveArchivedItems();
         _saveFavoriteItems();
@@ -817,7 +778,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                             // Guardamos ambas listas por si modificamos notas archivadas
                             _saveItems();
                             _saveArchivedItems(); 
-                            _filterItems();
+                             
                           });
                           
                           Navigator.pop(context);
@@ -1053,7 +1014,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                         updateTags(_trashedItems);
 
                         _saveTags();
-                        _filterItems();
+                         
                       });
                       Navigator.pop(context);
                     }
@@ -1092,7 +1053,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
               _saveItems();
               _saveArchivedItems(); 
               _saveTrashedItems();
-              _filterItems();
+               
             });
           },
         ),
@@ -1123,7 +1084,6 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
         _showUndoSnackbar(itemsToDelete);
       }
       _exitSelectionMode();
-      _filterItems();
     });
   }
 
@@ -1423,7 +1383,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
   void _setCustomSort() {
     setState(() {
       _sortMethod = SortMethod.custom;
-      _filterItems();
+       
     });
     Navigator.pop(context);
   }
@@ -1435,7 +1395,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
       _items.sort(
         (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
       );
-      _filterItems();
+       
     });
   }
 
@@ -1444,19 +1404,18 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     setState(() {
       _sortMethod = SortMethod.byDate;
       _items.sort((a, b) => b.lastModified.compareTo(a.lastModified));
-      _filterItems();
+       
     });
   }
 
   void _onReorderItem(int oldIndex, int newIndex) {
+    if (_currentView != ViewType.notes) return;
     setState(() {
-      if (_searchController.text.isNotEmpty) return;
-
       
       final item = _items.removeAt(oldIndex);
       _items.insert(newIndex, item);
 
-      _filteredItems = List.from(_items);
+       
       _saveItems();
     });
   }
@@ -1540,15 +1499,39 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
       ];
     } else {
       // VISTA NORMAL, ARCHIVO O ETIQUETAS
-      titleWidget = SearchBar(
-        controller: _searchController,
-        hintText: AppLocalizations.of(context)!.search,
-        leading: const Icon(Icons.search_outlined),
-        elevation: WidgetStateProperty.all(0),
-        backgroundColor: WidgetStateProperty.all(
-          Theme.of(context).colorScheme.surfaceContainerHigh,
-        ),
-        constraints: const BoxConstraints(minHeight: 48, maxHeight: 48),
+      titleWidget = GestureDetector(
+  onTap: () async {
+    // Obtenemos los colores únicos para enviarlos al Delegate [cite: 314]
+    final uniqueColors = [..._items, ..._archivedItems]
+        .where((item) => item.backgroundColor != null)
+        .map((item) => item.backgroundColor!)
+        .toSet()
+        .toList();
+
+    final ListItem? selectedNote = await showSearch<ListItem?>(
+      context: context,
+      delegate: CustomSearchDelegate(
+        allNotes: _items, // O la lista que quieras buscar
+        availableTags: _availableTags,
+        availableColors: uniqueColors,
+      ),
+    );
+
+    // Si el usuario seleccionó una nota desde la búsqueda, la abrimos
+    if (selectedNote != null) {
+      _navigateToEditor(selectedNote);
+    }
+  },
+  child: SearchBar(
+    enabled: false, // Lo desactivamos para que actúe solo como un botón visual
+    hintText: AppLocalizations.of(context)!.search,
+    leading: const Icon(Icons.search_outlined),
+    elevation: WidgetStateProperty.all(0),
+    backgroundColor: WidgetStateProperty.all(
+      Theme.of(context).colorScheme.surfaceContainerHigh,
+    ),
+    constraints: const BoxConstraints(minHeight: 48, maxHeight: 48),
+  ),
       );
 
       actions = [
@@ -1649,7 +1632,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                 _isTrashView = false;
                 _selectedTagFilter = null; // Opcional: resetear otros filtros
               });
-              _filterItems();
+               
             },
           ),
           const SizedBox(width: 8),
@@ -1664,7 +1647,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                 onSelected: (selected) {
                   _onTagSelected(tag);
                   setState(() => _selectedTagFilter = selected ? tag : null);
-                  _filterItems();
+                   
                 },
               ),
             ),
@@ -1685,7 +1668,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                   setState(
                     () => _selectedColorFilter = selected ? colorValue : null,
                   );
-                  _filterItems();
+                   
                 },
               ),
             ),
@@ -1723,7 +1706,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
             _selectedTagFilter = null;
             _selectedColorFilter = null;
           });
-          _filterItems(); // Refrescamos la interfaz con la lista principal
+          
         }
       },
     child: Scaffold(
@@ -1805,7 +1788,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                     _isFavoriteView = false;
                     _selectedTagFilter = null;
                   });
-                  _filterItems();
+                   
                   Navigator.pop(context);
                 },
               ),
@@ -1837,7 +1820,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                     _isTrashView = false;
                     _selectedTagFilter = null;
                   });
-                  _filterItems();
+                   
                   Navigator.pop(context);
                 },
               ),
@@ -1897,7 +1880,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                       _isFavoriteView = false;
                       _selectedTagFilter = tag;
                     });
-                    _filterItems();
+                     
                     Navigator.pop(context);
                   },
                 ),
@@ -1933,7 +1916,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                     _isTrashView = false;
                     _selectedTagFilter = null;
                   });
-                  _filterItems();
+                   
                   Navigator.pop(context);
                 },
               ),
@@ -1966,7 +1949,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                     _selectedTagFilter =
                         null; // Opcional: quitar filtro al ir a papelera
                   });
-                  _filterItems();
+                   
                   Navigator.pop(context);
                 },
               ),
@@ -2152,15 +2135,15 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
   Widget _buildItem(ListItem item, {bool isListView = true}) {
     return EntryAnimation(
     key: ValueKey(item.id), // Asegúrate de mantener tus llaves para la lista
-    index: _filteredItems.indexOf(item),
+    index: _currentSourceItems.indexOf(item),
     child: NoteItemWidget(
     item: item,
     isListView: isListView,
     isSelected: _selectedItems.contains(item),
     isSelectionMode: _isSelectionMode,
-    canReorder: _sortMethod == SortMethod.custom && _searchController.text.isEmpty,
+    canReorder: _sortMethod == SortMethod.custom,
     isTrashView: _isTrashView,
-    itemIndex: _filteredItems.indexOf(item),
+    itemIndex: _currentSourceItems.indexOf(item),
     moreButtonTooltip: AppLocalizations.of(context)!.select,
     onTap: () {
       if (_isSelectionMode) {
@@ -2194,7 +2177,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                       _saveArchivedItems();
                       _saveFavoriteItems();
                       _saveTrashedItems();
-                      _filterItems();
+                       
                     });
                     Navigator.pop(context);
                   },
@@ -2210,7 +2193,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                       _cleanupImagesForItems([item]);
                       _trashedItems.removeWhere((i) => i.id == item.id);
                       _saveTrashedItems();
-                      _filterItems();
+                       
                     });
                     Navigator.pop(context);
                   },
@@ -2231,13 +2214,13 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
 
   Widget _buildListView() {
     final bool canReorder =
-        _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
+        _sortMethod == SortMethod.custom ;
     if (canReorder) {
       return ReorderableListView.builder(
         buildDefaultDragHandles: false,
-        itemCount: _filteredItems.length,
+        itemCount: _currentSourceItems.length,
         itemBuilder: (context, index) {
-          final item = _filteredItems[index];
+          final item = _currentSourceItems[index];
           return Container(
             key: ValueKey(item.id),
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -2248,9 +2231,9 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
       );
     }
     return ListView.builder(
-      itemCount: _filteredItems.length,
+      itemCount: _currentSourceItems.length,
       itemBuilder: (context, index) {
-        final item = _filteredItems[index];
+        final item = _currentSourceItems[index];
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: _buildItem(item, isListView: true),
@@ -2261,7 +2244,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
 
   Widget _buildGridView() {
     final bool canReorder =
-        _sortMethod == SortMethod.custom && _searchController.text.isEmpty;
+        _sortMethod == SortMethod.custom ;
     final scrollController = ScrollController(); // Sincronización obligatoria
 
     if (canReorder) {
@@ -2281,7 +2264,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
         onReorder: (ReorderedListFunction<ListItem> reorderCallback) {
           setState(() {
             _items = reorderCallback(_items);
-            _filteredItems = List.from(_items);
+             
             _saveItems();
           });
         },
@@ -2300,12 +2283,12 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
             children: children,
           );
         },
-        children: _filteredItems.map((item) {
+        children: _currentSourceItems.map((item) {
           return Container(
             key: ValueKey(item.id), // Clave única obligatoria
             child: _buildItem(item, isListView: false),
-          );
-        }).toList(),
+      );
+      }).toList(),
       );
     }
 
@@ -2318,9 +2301,9 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
         mainAxisSpacing: 16,
         childAspectRatio: 0.75,
       ),
-      itemCount: _filteredItems.length,
+      itemCount: _currentSourceItems.length,
       itemBuilder: (context, index) =>
-          _buildItem(_filteredItems[index], isListView: false),
+          _buildItem(_currentSourceItems[index], isListView: false),
     );
   }
 
@@ -2396,7 +2379,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                 _cleanupImagesForItems(_trashedItems);
                 _trashedItems.clear();
                 _saveTrashedItems();
-                _filterItems();
+                 
               });
               Navigator.pop(context);
             },
@@ -2416,7 +2399,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
       // Si se toca la misma etiqueta, se deselecciona (vuelve el icono import)
       // Si se toca una nueva, se activa el filtro (aparecen los tres puntos)
       _selectedTagFilter = (_selectedTagFilter == tag) ? null : tag;
-      _filterItems();
+       
     });
   }
 
@@ -2459,7 +2442,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                 _saveArchivedItems();
                 _saveTrashedItems();
 
-                _filterItems(); // Refrescar la UI[cite: 1]
+                  // Refrescar la UI[cite: 1]
               });
               Navigator.pop(context);
             },
@@ -2518,7 +2501,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     
     // Limpiar selección y refrescar UI
     _exitSelectionMode();
-    _filterItems();
+     
   });
 }
 }

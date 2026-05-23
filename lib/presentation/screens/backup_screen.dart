@@ -9,7 +9,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html; // Para la descarga en Web
-import 'backup_service.dart';
+import 'services/backup_service.dart';
 import 'l10n/app_localizations.dart';
 
 class BackupSyncScreen extends StatefulWidget {

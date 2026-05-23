@@ -1,0 +1,153 @@
+import 'package:flutter/material.dart';
+import 'package:bloc_de_notas/l10n/app_localizations.dart';
+import 'presentation/widgets/list_item.dart';
+import 'services/search_service.dart';
+import 'presentation/widgets/note_item_widget.dart'; // Tu widget actual para mostrar notas 
+
+class CustomSearchDelegate extends SearchDelegate<ListItem?> {
+  final List<ListItem> allNotes;
+  final List<String> availableTags;
+  final List<int> availableColors;
+
+  // Variables de estado interno para los filtros
+  String? selectedTag;
+  int? selectedColor;
+
+  CustomSearchDelegate({
+    required this.allNotes,
+    required this.availableTags,
+    required this.availableColors,
+  });
+
+  // Forzamos el input para que respete Material Design 3 sin líneas molestas
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    final theme = Theme.of(context);
+    return theme.copyWith(
+      inputDecorationTheme: const InputDecorationTheme(
+        border: InputBorder.none,
+      ),
+    );
+  }
+
+  @override
+  String get searchFieldLabel => "Buscar..."; // Aquí puedes usar AppLocalizations si puedes inyectar el context previamente
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      if (query.isNotEmpty)
+        IconButton(
+          icon: const Icon(Icons.clear_outlined),
+          onPressed: () => query = '',
+        ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back_outlined),
+      onPressed: () => close(context, null), // Cierra la búsqueda
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return _buildBody(context);
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return _buildBody(context);
+  }
+
+  Widget _buildBody(BuildContext context) {
+    final results = SearchService.filterNotes(
+      sourceList: allNotes,
+      query: query,
+      selectedTag: selectedTag,
+      selectedColor: selectedColor,
+    );
+
+    return Column(
+      children: [
+        _buildFilterChips(context),
+        Expanded(
+          child: results.isEmpty
+              ? Center(
+                  child: Text(AppLocalizations.of(context)!.search ?? 'Sin resultados'),
+                )
+              : ListView.builder(
+                  itemCount: results.length,
+                  itemBuilder: (context, index) {
+                    final item = results[index];
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: NoteItemWidget(
+                        item: item,
+                        isListView: true,
+                        isSelected: false,
+                        isSelectionMode: false,
+                        canReorder: false,
+                        isTrashView: false,
+                        itemIndex: index,
+                        onTap: () {
+                          close(context, item); // Retorna la nota para abrirla en main.dart
+                        },
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterChips(BuildContext context) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              // Chips de Etiquetas
+              ...availableTags.map((tag) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(tag),
+                      selected: selectedTag == tag,
+                      onSelected: (selected) {
+                        setState(() {
+                          selectedTag = selected ? tag : null;
+                        });
+                        query = query; // Truco en Flutter para obligar a reconstruir results
+                      },
+                    ),
+                  )),
+              // Chips de Colores
+              ...availableColors.map((colorValue) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      avatar: CircleAvatar(
+                        backgroundColor: Color(colorValue),
+                        radius: 10,
+                      ),
+                      label: Text(AppLocalizations.of(context)!.colorFilterLabel), // Tus traducciones [cite: 321]
+                      selected: selectedColor == colorValue,
+                      onSelected: (selected) {
+                        setState(() {
+                          selectedColor = selected ? colorValue : null;
+                        });
+                        query = query; // Refrescar resultados
+                      },
+                    ),
+                  )),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}

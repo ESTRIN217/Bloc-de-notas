@@ -1406,7 +1406,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
   }
 
   void _onReorderItem(int oldIndex, int newIndex) {
-    if (_currentView != ViewType.notes) return;
+    if (!_isTrashView) return;
     setState(() {
       
       final item = _items.removeAt(oldIndex);

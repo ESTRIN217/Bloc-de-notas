@@ -123,18 +123,10 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-enum ViewType {
-  notes,
-  archived,
-  favorite,
-  trash,
-  tags,
-}
 
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _isListView = true;
   SortMethod _sortMethod = SortMethod.custom;
-  final ViewType _currentView = ViewType.notes;
   late List<ListItem> _items;
 
   bool _isSelectionMode = false;
@@ -153,25 +145,19 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _isArchiveView = false;
   int? _selectedColorFilter;
   bool _isFavoriteView = false;
-  // AÑADE ESTO:
-List<ListItem> get _currentSourceItems {
-  switch (_currentView) {
-    case ViewType.archived:
-      return _archivedItems;
-    case ViewType.favorite:
-      return _favoriteItems;
-    case ViewType.trash:
-      return _trashedItems;
-    case ViewType.tags:
-      // Filtra dinámicamente por la etiqueta seleccionada en la barra lateral
-      if (_selectedTagFilter != null) {
-        return _items.where((item) => item.tags.contains(_selectedTagFilter!)).toList();
-      }
-      return _items;
-    case ViewType.notes:
-      return _items;
+  List<ListItem> get _currentSourceItems {
+  if (_isTrashView) return _trashedItems;
+  if (_isArchiveView) return _archivedItems;
+  if (_isFavoriteView) return _favoriteItems;
+  
+  // Filtra dinámicamente por la etiqueta seleccionada en la barra lateral
+  if (_selectedTagFilter != null) {
+    return _items.where((item) => item.tags.contains(_selectedTagFilter!)).toList();
   }
-}
+  
+  // Vista por defecto (Inicio)
+  return _items;
+  }
   
   BackupService get _backupService => BackupService();
 

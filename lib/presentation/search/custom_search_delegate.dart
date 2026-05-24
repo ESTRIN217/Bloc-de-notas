@@ -63,93 +63,97 @@ class CustomSearchDelegate extends SearchDelegate<ListItem?> {
   }
 
   Widget _buildBody(BuildContext context) {
-    final results = SearchService.filterNotes(
-      sourceList: allNotes,
-      query: query,
-      selectedTag: selectedTag,
-      selectedColor: selectedColor,
-    );
+    // 1. Envolvemos TODA la pantalla en el StatefulBuilder
+    return StatefulBuilder(
+      builder: (context, setBodyState) {
+        
+        // 2. Ahora results se calcula CADA VEZ que haces tap en un chip
+        final results = SearchService.filterNotes(
+          sourceList: allNotes,
+          query: query,
+          selectedTag: selectedTag,
+          selectedColor: selectedColor,
+        );
 
-    return Column(
-      children: [
-        _buildFilterChips(context),
-        Expanded(
-          child: results.isEmpty
-              ? Center(
-                  child: Text(AppLocalizations.of(context)!.search),
-                )
-              : ListView.builder(
-                  itemCount: results.length,
-                  itemBuilder: (context, index) {
-                    final item = results[index];
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: NoteItemWidget(
-                        item: item,
-                        isListView: true,
-                        isSelected: false,
-                        isSelectionMode: false,
-                        canReorder: false,
-                        isTrashView: false,
-                        itemIndex: index,
-                        onTap: () {
-                          close(context, item); // Retorna la nota para abrirla en main.dart
-                        },
-                        onLongPress: () {},
-                        onMorePressed: () {},
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
+        return Column(
+          children: [
+            // 3. Le pasamos el setBodyState a los chips para que puedan actualizar toda la vista
+            _buildFilterChips(context, setBodyState),
+            Expanded(
+              child: results.isEmpty
+                  ? Center(
+                      child: Text(AppLocalizations.of(context)!.search),
+                    )
+                  : ListView.builder(
+                      itemCount: results.length,
+                      itemBuilder: (context, index) {
+                        final item = results[index];
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: NoteItemWidget(
+                            item: item,
+                            isListView: true,
+                            isSelected: false,
+                            isSelectionMode: false,
+                            canReorder: false,
+                            isTrashView: false,
+                            itemIndex: index,
+                            onTap: () {
+                              close(context, item);
+                            },
+                            onLongPress: () {},
+                            onMorePressed: () {},
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildFilterChips(BuildContext context) {
-    return StatefulBuilder(
-      builder: (context, setState) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              // Chips de Etiquetas
-              ...availableTags.map((tag) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(tag),
-                      selected: selectedTag == tag,
-                      onSelected: (selected) {
-                        setState(() {
-                          selectedTag = selected ? tag : null;
-                        });
-                        query = query; // Truco en Flutter para obligar a reconstruir results
-                      },
-                    ),
-                  )),
-              // Chips de Colores
-              ...availableColors.map((colorValue) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      avatar: CircleAvatar(
-                        backgroundColor: Color(colorValue),
-                        radius: 10,
-                      ),
-                      label: Text(AppLocalizations.of(context)!.colorFilterLabel), // Tus traducciones [cite: 321]
-                      selected: selectedColor == colorValue,
-                      onSelected: (selected) {
-                        setState(() {
-                          selectedColor = selected ? colorValue : null;
-                        });
-                        query = query; // Refrescar resultados
-                      },
-                    ),
-                  )),
-            ],
-          ),
-        );
-      },
+  // Actualizamos el widget de chips para recibir la función de estado principal
+  Widget _buildFilterChips(BuildContext context, StateSetter setBodyState) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          // Chips de Etiquetas
+          ...availableTags.map((tag) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  label: Text(tag),
+                  selected: selectedTag == tag,
+                  onSelected: (selected) {
+                    // Usamos el estado del body para redibujar toda la pantalla
+                    setBodyState(() {
+                      selectedTag = selected ? tag : null;
+                    });
+                  },
+                ),
+              )),
+          // Chips de Colores
+          ...availableColors.map((colorValue) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  avatar: CircleAvatar(
+                    backgroundColor: Color(colorValue),
+                    radius: 10,
+                  ),
+                  label: Text(AppLocalizations.of(context)!.colorFilterLabel), 
+                  selected: selectedColor == colorValue,
+                  onSelected: (selected) {
+                    setBodyState(() {
+                      selectedColor = selected ? colorValue : null;
+                    });
+                  },
+                ),
+              )),
+        ],
+      ),
     );
   }
 }

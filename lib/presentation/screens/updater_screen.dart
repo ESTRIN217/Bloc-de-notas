@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'updater_provider.dart';
-import 'l10n/app_localizations.dart';
+import 'package:bloc_de_notas/providers/updater_provider.dart';
+import 'package:bloc_de_notas/l10n/app_localizations.dart';
 // Para detectar Android/iOS
 import 'package:flutter/foundation.dart' show kIsWeb; // Para detectar si es Web
 import 'package:device_info_plus/device_info_plus.dart';

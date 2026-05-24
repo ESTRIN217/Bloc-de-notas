@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'list_item.dart';
-import 'audioembedbuilder.dart';
-import 'drawing_embed.dart';
-import 'timestampembed.dart';
+import 'package:bloc_de_notas/embeds/audioembedbuilder.dart';
+import 'package:bloc_de_notas/embeds/drawing_embed.dart';
+import 'package:bloc_de_notas/embeds/timestampembed.dart';
 
 class NoteItemWidget extends StatelessWidget {
   final ListItem item;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
-import 'presentation/widgets/list_item.dart';
-import 'services/search_service.dart';
-import 'presentation/widgets/note_item_widget.dart'; // Tu widget actual para mostrar notas 
+import 'package:bloc_de_notas/presentation/widgets/list_item.dart';
+import 'package:bloc_de_notas/services/search_service.dart';
+import 'package:bloc_de_notas/presentation/widgets/note_item_widget.dart'; // Tu widget actual para mostrar notas 
 
 class CustomSearchDelegate extends SearchDelegate<ListItem?> {
   final List<ListItem> allNotes;
@@ -76,7 +76,7 @@ class CustomSearchDelegate extends SearchDelegate<ListItem?> {
         Expanded(
           child: results.isEmpty
               ? Center(
-                  child: Text(AppLocalizations.of(context)!.search ?? 'Sin resultados'),
+                  child: Text(AppLocalizations.of(context)!.search),
                 )
               : ListView.builder(
                   itemCount: results.length,
@@ -95,6 +95,8 @@ class CustomSearchDelegate extends SearchDelegate<ListItem?> {
                         onTap: () {
                           close(context, item); // Retorna la nota para abrirla en main.dart
                         },
+                        onLongPress: () {},
+                        onMorePressed: () {},
                       ),
                     );
                   },

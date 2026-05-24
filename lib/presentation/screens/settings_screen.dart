@@ -2,18 +2,18 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:provider/provider.dart';
-import 'theme_provider.dart';
-import 'about_screen.dart';
-import 'l10n/app_localizations.dart';
-import 'updater_screen.dart';
+import 'package:bloc_de_notas/providers/theme_provider.dart';
+import 'package:bloc_de_notas/presentation/screens/about_screen.dart';
+import 'package:bloc_de_notas/l10n/app_localizations.dart';
+import 'package:bloc_de_notas/presentation/screens/updater_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'update_widget.dart';
-import 'updater_provider.dart';
-import 'backup_screen.dart';
+import 'package:bloc_de_notas/presentation/widgets/update_widget.dart';
+import 'package:bloc_de_notas/providers/updater_provider.dart';
+import 'package:bloc_de_notas/presentation/screens/backup_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});

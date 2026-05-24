@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'l10n/app_localizations.dart';
+import 'package:bloc_de_notas/l10n/app_localizations.dart';
 // 1. Definimos el Embed Personalizado
 class DrawingBlockEmbed extends quill.CustomBlockEmbed {
   const DrawingBlockEmbed(String data) : super('drawing', data);

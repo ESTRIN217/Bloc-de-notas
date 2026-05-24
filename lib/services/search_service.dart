@@ -1,4 +1,4 @@
-import 'presentation/widgets/list_item.dart';
+import 'package:bloc_de_notas/presentation/widgets/list_item.dart';
 
 class SearchService {
   static List<ListItem> filterNotes({

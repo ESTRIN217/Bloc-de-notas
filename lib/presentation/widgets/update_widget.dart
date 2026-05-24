@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'updater_provider.dart';
-import 'updater_screen.dart';
-import 'l10n/app_localizations.dart';
+import 'package:bloc_de_notas/providers/updater_provider.dart';
+import 'package:bloc_de_notas/presentation/screens/updater_screen.dart';
+import 'package:bloc_de_notas/l10n/app_localizations.dart';
 
 class UpdateAvailableWidget extends StatelessWidget {
   final bool isDrawerTile;

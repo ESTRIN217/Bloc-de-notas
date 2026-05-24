@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bloc_de_notas/backup_service.dart';
+import 'package:bloc_de_notas/services/backup_service.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 // Solo se usa si !kIsWeb
@@ -32,6 +32,7 @@ import 'presentation/widgets/update_widget.dart';
 import 'theme/theme.dart';
 import 'presentation/widgets/note_item_widget.dart';
 import 'presentation/animations/entry_animation.dart';
+import 'presentation/search/custom_search_delegate.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
@@ -122,9 +123,18 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+enum ViewType {
+  notes,
+  archived,
+  favorite,
+  trash,
+  tags,
+}
+
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _isListView = true;
   SortMethod _sortMethod = SortMethod.custom;
+  final ViewType _currentView = ViewType.notes;
   late List<ListItem> _items;
 
   bool _isSelectionMode = false;
@@ -154,12 +164,11 @@ List<ListItem> get _currentSourceItems {
       return _trashedItems;
     case ViewType.tags:
       // Filtra dinámicamente por la etiqueta seleccionada en la barra lateral
-      if (_selectedTag != null) {
-        return _items.where((item) => item.tags.contains(_selectedTag)).toList();
+      if (_selectedTagFilter != null) {
+        return _items.where((item) => item.tags.contains(_selectedTagFilter!)).toList();
       }
       return _items;
     case ViewType.notes:
-    default:
       return _items;
   }
 }
@@ -603,7 +612,9 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
         _saveFavoriteItems();
         _saveTrashedItems();
       });
-      _showUndoSnackbar([?itemToDelete]); // Mostramos SnackBar
+      if (itemToDelete != null) {
+        _showUndoSnackbar([itemToDelete]); // Mostramos SnackBar
+      }
     } else if (result is ListItem) {
       setState(() {
         // 1. Buscamos la posición original en ambas listas

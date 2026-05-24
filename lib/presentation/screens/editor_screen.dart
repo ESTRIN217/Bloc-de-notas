@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:io' as io show Directory, File;
-import 'package:bloc_de_notas/audioembedbuilder.dart';
+import 'package:bloc_de_notas/embeds/audioembedbuilder.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -16,15 +16,15 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'list_item.dart';
+import 'package:bloc_de_notas/presentation/widgets/list_item.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:path/path.dart' as path;
 import 'package:record/record.dart';
-import 'drawing_embed.dart';
+import 'package:bloc_de_notas/embeds/drawing_embed.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; // IMPORTANTE AÑADIR
-import 'timestampembed.dart';
+import 'package:bloc_de_notas/embeds/timestampembed.dart';
 
 enum TtsState { playing, stopped }
 

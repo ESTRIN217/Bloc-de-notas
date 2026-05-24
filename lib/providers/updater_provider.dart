@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'l10n/app_localizations.dart';
+import 'package:bloc_de_notas/l10n/app_localizations.dart';
 
 class UpdaterProvider with ChangeNotifier {
   bool _autoUpdate = false;

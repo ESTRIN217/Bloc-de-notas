@@ -2099,8 +2099,8 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                              _archivedItems.add(item);
                           }
                       } else {
-                        if (!_Items.any((i) => i.id == item.id)) {
-                             _Items.add(item);
+                        if (!_items.any((i) => i.id == item.id)) {
+                             _items.add(item);
                           }
                       }
                       if (item.isFavorite) {
@@ -2324,19 +2324,6 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
         ],
       ),
     );
-  }
-
-  // Ejemplo de la función que maneja el cambio de filtro
-  void _onTagSelected(String? tag) {
-    setState(() {
-      _isTrashView = false;
-      _isArchiveView = false;
-      _isFavoriteView = false;
-      // Si se toca la misma etiqueta, se deselecciona (vuelve el icono import)
-      // Si se toca una nueva, se activa el filtro (aparecen los tres puntos)
-      _selectedTagFilter = (_selectedTagFilter == tag) ? null : tag;
-       
-    });
   }
 
   void _confirmDeleteTag(String tag) {

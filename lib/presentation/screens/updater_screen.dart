@@ -115,7 +115,7 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                         ? Icons.hourglass_empty
                         : (updater.hasUpdate
                               ? Icons.download_outlined
-                              : Icons.refresh_rounde)),
+                              : Icons.refresh_rounded)),
                   title: Text(
                     updater.hasUpdate
                         ? AppLocalizations.of(context)!.ultima(updater.currentVersion)
@@ -183,7 +183,6 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
       ),
 ),
 ],
-          ),
         ],
       ),
     );

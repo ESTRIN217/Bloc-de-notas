@@ -6,10 +6,7 @@ import 'package:bloc_de_notas/providers/theme_provider.dart';
 import 'package:bloc_de_notas/presentation/screens/about_screen.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:bloc_de_notas/presentation/screens/updater_screen.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:bloc_de_notas/presentation/widgets/update_widget.dart';
 import 'package:bloc_de_notas/providers/updater_provider.dart';
@@ -38,9 +35,9 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   SettingsSectionTitle(title: AppLocalizations.of(context)!.apariencia),
 
+                  if (isDynamicColorSupported) ...[
                   SettingsCardGroup(
                     child: 
-                      if (isDynamicColorSupported) ...[
                         SizedBox(
                     height: 72,
                     child: Center(
@@ -54,8 +51,9 @@ class SettingsScreen extends StatelessWidget {
                           ),
                         ),
                         ),
-                    ],
+                    
                   ),
+                ],
                   SettingsCardGroup(
                     child: Column(
                     children: [
@@ -142,10 +140,10 @@ class SettingsScreen extends StatelessWidget {
                   ),
 
                   SettingsSectionTitle(title: AppLocalizations.of(context)!.informacion),
+                  if (!kIsWeb)
                   SettingsCardGroup(
                     child:
                       // Solo se mostrará si NO es Web
-                      if (!kIsWeb)
                         ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
                           leading: SettingsIconContainer(icon: Icons.update),
@@ -200,9 +198,10 @@ class SettingsScreen extends StatelessWidget {
                         child:
                           const UpdateAvailableWidget(),
                           ),
+                          if (updater.latestChangelog != null) ...[
                       SettingsCardGroup(
                         child:
-                          if (updater.latestChangelog != null) ...[
+                          
                             Padding(
                               padding: const EdgeInsets.all(16.0),
                               child: MarkdownBody(
@@ -226,13 +225,13 @@ class SettingsScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          ],
+                          
                           
                           ),
                         ],
-                      ),
+                      
                     ],
-                ],
+                ]
               );
             },
           );

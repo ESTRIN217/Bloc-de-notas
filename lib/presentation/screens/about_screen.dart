@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/foundation.dart' show kIsWeb; // Para detectar si es Web
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:bloc_de_notas/presentation/widgets/settings_ui_widgets.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -31,7 +32,7 @@ class AboutScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.only(bottom: 24, top: 8),
         children: [
           // 1. Cabecera de la Aplicación
           _buildHeaderCard(context),
@@ -44,7 +45,7 @@ class AboutScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // 3. Título de sección y Enlaces
-          _buildSectionTitle(context, AppLocalizations.of(context)!.enlaces),
+          SettingsSectionTitle(title: AppLocalizations.of(context)!.enlaces),
           _buildLinkGroup(context),
 
           const SizedBox(height: 32),
@@ -155,11 +156,11 @@ class AboutScreen extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildBadge(context, platformLabel),
+        SettingsBadge(text: platformLabel),
         const SizedBox(width: 8),
-        _buildBadge(context, version),
+        SettingsBadge(text: version),
         const SizedBox(width: 8),
-        _buildBadge(context, archLabel),
+        SettingsBadge(text: archLabel),
       ],
     );
   },
@@ -271,64 +272,6 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  /// Etiquetas pequeñas para la versión
-  Widget _buildBadge(BuildContext context, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.onSecondaryContainer,
-        ),
-      ),
-    );
-  }
-
-  /// Títulos de sección (como los de la pantalla de ajustes)
-  Widget _buildSectionTitle(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, bottom: 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-      ),
-    );
-  }
-  Widget _buildIconContainer(BuildContext context, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
-    );
-  }
-  Widget _buildFaIconContainer(BuildContext context, FaIconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: FaIcon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
-    );
-  }
-
   /// Grupo de enlaces (Repositorio, Licencia)
   Widget _buildLinkGroup(BuildContext context) {
     return Column(
@@ -348,7 +291,8 @@ class AboutScreen extends StatelessWidget {
       child: Column(
         children: [
           ListTile(
-            leading: _buildFaIconContainer(context, FontAwesomeIcons.github),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+            leading: const SettingsFaIconContainer(icon: FontAwesomeIcons.github),
             title: Text(AppLocalizations.of(context)!.repositorio),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _openUrl('https://github.com/ESTRIN217/Bloc-de-notas'),
@@ -371,7 +315,8 @@ class AboutScreen extends StatelessWidget {
       child: Column(
         children: [
           ListTile(
-            leading: _buildIconContainer(context, Icons.description_outlined),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+            leading: SettingsIconContainer(icon: Icons.description_outlined),
             title: Text(AppLocalizations.of(context)!.mit_license),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _openUrl(

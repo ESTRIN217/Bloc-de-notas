@@ -7,6 +7,7 @@ import 'package:bloc_de_notas/l10n/app_localizations.dart';
 // Para detectar Android/iOS
 import 'package:flutter/foundation.dart' show kIsWeb; // Para detectar si es Web
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:bloc_de_notas/presentation/widgets/settings_ui_widgets.dart';
 
 class UpdaterScreen extends StatefulWidget {
   const UpdaterScreen({super.key});
@@ -30,19 +31,11 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
         centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.only(bottom: 24, top: 8),
         children: [
-          _buildSectionTitle(
-            context,
-            AppLocalizations.of(context)!.version_actual,
-          ),
-          _buildGroup(
-  context,
-  child: ListTile(
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 20,
-      vertical: 8,
-    ),
+          SettingsSectionTitle(title: AppLocalizations.of(context)!.version_actual),
+          SettingsCardGroup(
+            child: ListTile(
     title: Text(AppLocalizations.of(context)!.appVersion(updater.currentVersion),
       style: const TextStyle(
         fontWeight: FontWeight.bold,
@@ -73,52 +66,40 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
   ),
 ),
 
-          const SizedBox(height: 16),
-
-          _buildSectionTitle(
-            context,
-            AppLocalizations.of(context)!.ajuste_de_actulizacion,
-          ),
-          _buildGroup(
-            context,
-            child: Column(
-              children: [
-                _buildSwitchTile(
-                  context,
-                  title: AppLocalizations.of(
-                    context,
-                  )!.buscar_actualizaciones_automaticamente,
-                  icon: Icons.refresh_rounded,
-                  value: updater.autoUpdate,
-                  onChanged: (val) =>
-                      context.read<UpdaterProvider>().toggleAutoUpdate(val),
+          SettingsSectionTitle(title: AppLocalizations.of(context)!.ajuste_de_actulizacion),
+          SettingsCardGroup(
+            child: SizedBox(
+                    height: 72,
+                    child: Center(
+                      child: SettingsSwitchTile(
+                        title: AppLocalizations.of(context)!.buscar_actualizaciones_automaticamente,
+                        icon: Icons.refresh_rounded,
+                        value: updater.autoUpdate,
+                        onChanged: (val) => context.read<UpdaterProvider>().toggleAutoUpdate(val),
+                      ),
+                      ),
                 ),
-                const Divider(height: 1, indent: 70, endIndent: 20),
-                _buildSwitchTile(
-                  context,
-                  title: AppLocalizations.of(
-                    context,
-                  )!.habilitar_notificaciones_de_actualizacion,
+                ),
+                SettingsCardGroup(
+                  child: SizedBox(
+                    height: 72,
+                    child: Center(
+                      child: SettingsSwitchTile(
+                  title: AppLocalizations.of(context)!.habilitar_notificaciones_de_actualizacion,
                   icon: Icons.notifications_none_rounded,
                   value: updater.notifications,
                   onChanged: (val) =>
                       context.read<UpdaterProvider>().toggleNotifications(val),
                 ),
-              ],
-            ),
+              ),
+              ),
           ),
 
-          const SizedBox(height: 16),
-
-          _buildSectionTitle(
-            context,
-            AppLocalizations.of(context)!.buscar_actualizaciones,
-          ),
-          _buildGroup(
-            context,
-            child: Column(
-              children: [
+          SettingsSectionTitle(title: AppLocalizations.of(context)!.buscar_actualizaciones),
+          SettingsCardGroup(
+            child: 
                 ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
                   onTap: updater.isChecking
                       ? null
                       : () {
@@ -130,155 +111,81 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                             );
                           }
                         },
-                  leading: _buildIconContainer(
-                    context,
-                    updater.isChecking
+                  leading: SettingsIconContainer(icon: updater.isChecking
                         ? Icons.hourglass_empty
                         : (updater.hasUpdate
                               ? Icons.download_outlined
-                              : Icons.refresh_rounded),
-                  ),
+                              : Icons.refresh_rounde)),
                   title: Text(
                     updater.hasUpdate
                         ? AppLocalizations.of(context)!.ultima(updater.currentVersion)
                         : AppLocalizations.of(context)!.buscar_actualizaciones,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
+                  trailing: const Icon(Icons.chevron_right),
                 ),
-
-                // Botón Toggle para el Changelog (Solo visible si hay actualización)
+                ),
                 if (updater.hasUpdate && updater.latestChangelog != null) ...[
-                  const Divider(height: 1),
-                  TextButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _showChangelog = !_showChangelog;
-                      });
-                    },
-                    icon: Icon(
-                      _showChangelog ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    ),
-                    label: Text(
-                      _showChangelog
-                          ? AppLocalizations.of(context)!.ocultarRegistroDeCambios
-                          : AppLocalizations.of(context)!.verRegistroDeCambios,
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                      ),
-                    ),
-                  ),
-
-                  // Contenido del Changelog
-                  AnimatedCrossFade(
-                    firstChild: const SizedBox(width: double.infinity),
-                    secondChild: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: MarkdownBody(
-                        data: updater.latestChangelog!,
-                        styleSheet: MarkdownStyleSheet.fromTheme(
-                          Theme.of(context),
-                          
-                        ),
-                        selectable:
-                          true, // Permite al usuario seleccionar y copiar texto
-                      // Hace que los enlaces en el markdown funcionen
-                      onTapLink: (text, href, title) async {
-                        if (href != null) {
-                          final uri = Uri.parse(href);
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(
-                              uri,
-                              mode: LaunchMode.externalApplication,
-                            );
-                          }
-                        }
-                      },
-                      ),
-                    ),
-                    crossFadeState: _showChangelog
-                        ? CrossFadeState.showSecond
-                        : CrossFadeState.showFirst,
-                    duration: const Duration(milliseconds: 300),
-                  ),
-                ],
-              ],
+               SettingsCardGroup(
+                 child:
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+        child: TextButton.icon(
+          onPressed: () {
+            setState(() {
+              _showChangelog = !_showChangelog;
+            });
+          },
+          icon: Icon(
+            _showChangelog ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+          ),
+          label: Text(
+            _showChangelog
+                ? AppLocalizations.of(context)!.ocultarRegistroDeCambios
+                : AppLocalizations.of(context)!.verRegistroDeCambios,
+          ),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            minimumSize: const Size(double.infinity, 50),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
             ),
+          ),
+        ),
+      ),
+      ),
+      SettingsCardGroup(
+        child:
+      // Contenido del Changelog con su propia animación
+      AnimatedCrossFade(
+        firstChild: const SizedBox(width: double.infinity),
+        secondChild: Padding(
+          // Modificado aquí también para mantener consistencia si lo deseas
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+          child: MarkdownBody(
+            data: updater.latestChangelog!,
+            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
+            selectable: true,
+            onTapLink: (text, href, title) async {
+              if (href != null) {
+                final uri = Uri.parse(href);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              }
+            },
+          ),
+        ),
+        crossFadeState: _showChangelog
+            ? CrossFadeState.showSecond
+            : CrossFadeState.showFirst,
+        duration: const Duration(milliseconds: 300),
+      ),
+),
+],
           ),
         ],
       ),
-    );
-  }
-
-  // --- Funciones de Ayuda de Diseño ---
-  Widget _buildSectionTitle(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8, bottom: 8, top: 12),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.bold,
-          fontSize: 13,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGroup(BuildContext context, {required Widget child}) {
-    return Card.outlined(
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-      color: Theme.of(context).colorScheme.surface,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.outlineVariant,
-          width: 1.0,
-        ),
-      ),
-      child: child,
-    );
-  }
-
-  Widget _buildIconContainer(BuildContext context, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
-    );
-  }
-
-  Widget _buildSwitchTile(
-    BuildContext context, {
-    required String title,
-    required IconData icon,
-    required bool value,
-    required Function(bool) onChanged,
-  }) {
-    return SwitchListTile(
-      secondary: _buildIconContainer(context, icon),
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
-      ),
-      value: value,
-      onChanged: onChanged,
-      thumbIcon: WidgetStateProperty.resolveWith<Icon?>((states) {
-        if (states.contains(WidgetState.selected)) {
-          return const Icon(Icons.check);
-        }
-        return const Icon(Icons.close);
-      }),
     );
   }
 }

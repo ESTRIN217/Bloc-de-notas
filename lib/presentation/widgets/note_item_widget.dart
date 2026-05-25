@@ -248,11 +248,6 @@ class NoteItemWidget extends StatelessWidget {
       ],
     );
 
-    final Widget dragIcon = Padding(
-      padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
-      child: Icon(Icons.drag_handle, color: dynamicIconColor),
-    );
-
     return Card.outlined(
       clipBehavior: Clip.antiAlias,
       color: isSelected
@@ -302,7 +297,10 @@ class NoteItemWidget extends StatelessWidget {
             if (canReorder)
               ReorderableDragStartListener(
                 index: itemIndex,
-                child: dragIcon,
+                child: Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Icon(Icons.drag_handle, color: dynamicIconColor),
+    ),
               ),
           ] else ...[
             if (!isTrashView)

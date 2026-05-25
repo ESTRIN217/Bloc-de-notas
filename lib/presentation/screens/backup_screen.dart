@@ -11,6 +11,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html; // Para la descarga en Web
 import 'package:bloc_de_notas/services/backup_service.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
+import 'package:bloc_de_notas/presentation/widgets/settings_ui_widgets.dart';
 
 class BackupSyncScreen extends StatefulWidget {
   const BackupSyncScreen({super.key});
@@ -211,10 +212,11 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
       body: _isLoading
           ? _buildSkeletonBody(colorScheme)
           : ListView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.only(bottom: 24, top: 8),
               children: [
+                SettingsSectionTitle(title: AppLocalizations.of(context)!.cloudBackup),
                 _buildCloudSection(colorScheme),
-                const SizedBox(height: 24),
+                SettingsSectionTitle(title: AppLocalizations.of(context)!.localBackup),
                 _buildLocalSection(colorScheme),
               ],
             ),
@@ -228,12 +230,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
   return Opacity(
     // Si está en "Próximamente", reducimos la opacidad para dar el efecto gris/deshabilitado
     opacity: isComingSoon ? 0.5 : 1.0,
-    child: Card.outlined(
-      color: colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: colorScheme.outlineVariant),
-      ),
+    child: SettingsCardGroup(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -241,11 +238,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.cloud_outlined,
-                  color: isComingSoon ? colorScheme.onSurfaceVariant : colorScheme.primary,
-                  size: 28,
-                ),
+                SettingsIconContainer(icon: Icons.cloud_outlined),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -354,12 +347,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
 }
 
   Widget _buildLocalSection(ColorScheme colorScheme) {
-    return Card.outlined(
-      color: colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: colorScheme.outlineVariant),
-      ),
+    return SettingsCardGroup(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -367,11 +355,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.phone_android_outlined,
-                  color: colorScheme.primary,
-                  size: 28,
-                ),
+                SettingsIconContainer(icon: Icons.phone_android_outlined),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -463,12 +447,7 @@ class _BackupSyncScreenState extends State<BackupSyncScreen> {
     required bool hasSubtitle,
     required bool hasTwoButtons,
   }) {
-    return Card.outlined(
-      color: colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: colorScheme.outlineVariant),
-      ),
+    return SettingsCardGroup(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

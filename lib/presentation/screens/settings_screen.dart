@@ -14,6 +14,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:bloc_de_notas/presentation/widgets/update_widget.dart';
 import 'package:bloc_de_notas/providers/updater_provider.dart';
 import 'package:bloc_de_notas/presentation/screens/backup_screen.dart';
+import 'package:bloc_de_notas/presentation/widgets/settings_ui_widgets.dart';
+import 'package:bloc_de_notas/presentation/widgets/changelog_widget.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -34,49 +36,32 @@ class SettingsScreen extends StatelessWidget {
               return ListView(
                 padding: const EdgeInsets.only(bottom: 24, top: 8),
                 children: [
-                  _buildSectionTitle(
-                    context,
-                    AppLocalizations.of(context)!.apariencia,
-                  ),
+                  SettingsSectionTitle(title: AppLocalizations.of(context)!.apariencia),
 
-                  _buildSettingsGroup(
-                    context,
-                    children: [
+                  SettingsCardGroup(
+                    child: 
                       if (isDynamicColorSupported) ...[
-                        SwitchListTile(
-                          title: Text(
-                            AppLocalizations.of(context)!.useDynamicColors,
-                          ),
-                          // Aplicamos el fondo al icono de la paleta
-                          secondary: _buildIconContainer(
-                            context,
-                            Icons.palette_outlined,
-                          ),
-                          value: themeProvider.useDynamicColors,
+                        SizedBox(
+                    height: 72,
+                    child: Center(
+                      child: SettingsSwitchTile(
+                          title: AppLocalizations.of(context)!.useDynamicColors,
+                           icon: Icons.palette_outlined,
+                            value: themeProvider.useDynamicColors,
                           onChanged: (value) {
                             themeProvider.setUseDynamicColors(value);
                           },
-                          thumbIcon: WidgetStateProperty.resolveWith<Icon?>((
-                            Set<WidgetState> states,
-                          ) {
-                            if (states.contains(WidgetState.selected)) {
-                              return const Icon(Icons.check);
-                            }
-                            return const Icon(Icons.close);
-                          }),
+                          ),
                         ),
-                      ],
+                        ),
                     ],
                   ),
-                  _buildSettingsGroup(
-                    context,
+                  SettingsCardGroup(
+                    child: Column(
                     children: [
                       ListTile(
                         // Aplicamos el fondo al icono del modo oscuro
-                        leading: _buildIconContainer(
-                          context,
-                          Icons.dark_mode_outlined,
-                        ),
+                        leading: SettingsIconContainer(icon: Icons.dark_mode_outlined),
                         title: Text(AppLocalizations.of(context)!.themeMode),
                       ),
                       Padding(
@@ -106,18 +91,14 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       ),
                     ],
+                    ),
                   ),
 
-                  _buildSectionTitle(
-                    context,
-                    AppLocalizations.of(context)!.idioma,
-                  ),
-                  _buildSettingsGroup(
-                    context,
-                    children: [
+                  SettingsSectionTitle(title: AppLocalizations.of(context)!.idioma),
+                  SettingsCardGroup(
+                    child: 
                       ListTile(
-                        // Aplicamos el fondo al icono de idioma
-                        leading: _buildIconContainer(context, Icons.language),
+                        leading: SettingsIconContainer(icon: Icons.language),
                         title: Text(
                           themeProvider.isSystemLocale
                               ? AppLocalizations.of(context)!
@@ -134,20 +115,21 @@ class SettingsScreen extends StatelessWidget {
                               ? AppLocalizations.of(context)!.ingles
                               : '🌐 ${themeProvider.locale.languageCode.toUpperCase()}',
                         ),
+                        trailing: const Icon(Icons.chevron_right),
                         subtitle: Text(AppLocalizations.of(context)!.idioma),
                         onTap: () {
                           _showLanguageDialog(context, themeProvider);
                         },
                       ),
-                    ],
                   ),
-                  _buildSectionTitle(context, AppLocalizations.of(context)!.titleSeccionBackup,),
-                  _buildSettingsGroup(
-                    context,
-                    children: [
+                  SettingsSectionTitle(title: AppLocalizations.of(context)!.titleSeccionBackup),
+                  SettingsCardGroup(
+                    child:
                       ListTile(
-                        leading: _buildIconContainer(context, Icons.cloud_download_outlined),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+                        leading: SettingsIconContainer(icon: Icons.cloud_download_outlined),
                         title: Text(AppLocalizations.of(context)!.backupSyncTitle),
+                        trailing: const Icon(Icons.chevron_right),
                         onTap: () {
                           Navigator.push(
                               context,
@@ -157,23 +139,20 @@ class SettingsScreen extends StatelessWidget {
                             );
                         },
                       ),
-                    ]
                   ),
 
-                  _buildSectionTitle(
-                    context,
-                    AppLocalizations.of(context)!.informacion,
-                  ),
-                  _buildSettingsGroup(
-                    context,
-                    children: [
+                  SettingsSectionTitle(title: AppLocalizations.of(context)!.informacion),
+                  SettingsCardGroup(
+                    child:
                       // Solo se mostrará si NO es Web
                       if (!kIsWeb)
                         ListTile(
-                          leading: _buildIconContainer(context, Icons.update),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+                          leading: SettingsIconContainer(icon: Icons.update),
                           title: Text(
                             AppLocalizations.of(context)!.actualizador,
                           ),
+                          trailing: const Icon(Icons.chevron_right),
                           onTap: () {
                             Navigator.push(
                               context,
@@ -183,36 +162,28 @@ class SettingsScreen extends StatelessWidget {
                             );
                           },
                         ),
-                    ],
                   ),
-                  _buildSettingsGroup(
-                    context,
-                    children: [
+                  SettingsCardGroup(
+                    child:
                       ListTile(
-                        // Aplicamos el fondo al icono de GitHub (FontAwesome también funciona con IconData)
-                        leading: _buildIconContainer(
-                          context,
-                          Icons.verified_outlined,
-                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+                        leading: SettingsIconContainer(icon: Icons.verified_outlined),
                         title: Text(
                           AppLocalizations.of(context)!.registro_de_cambio,
                         ),
+                        trailing: const Icon(Icons.chevron_right),
                         onTap: () {
                           _showChangelogBottomSheet(context);
                         },
                       ),
-                    ],
                   ),
-                  _buildSettingsGroup(
-                    context,
-                    children: [
+                  SettingsCardGroup(
+                    child:
                       ListTile(
-                        // Aplicamos el fondo al icono de información
-                        leading: _buildIconContainer(
-                          context,
-                          Icons.info_outline_rounded,
-                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+                        leading: SettingsIconContainer(icon: Icons.info_outline_rounded),
                         title: Text(AppLocalizations.of(context)!.sobre),
+                        trailing: const Icon(Icons.chevron_right),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -222,20 +193,16 @@ class SettingsScreen extends StatelessWidget {
                           );
                         },
                       ),
-                    ],
                   ),
-                  if (!kIsWeb &&
-                      updater
-                          .hasUpdate) // Aquí usamos un helper, pero mejor usar el provider directamente:
-                    // NUEVA SECCIÓN DE ACTUALIZACIÓN (Solo visible si hay actualización y no es web)
                     if (!kIsWeb && updater.hasUpdate) ...[
-                      _buildSectionTitle(context, 'Actualización'),
-                      _buildSettingsGroup(
-                        context,
-                        children: [
+                      SettingsSectionTitle(title:'Actualización' ),
+                      SettingsCardGroup(
+                        child:
                           const UpdateAvailableWidget(),
+                          ),
+                      SettingsCardGroup(
+                        child:
                           if (updater.latestChangelog != null) ...[
-                            const Divider(height: 1),
                             Padding(
                               padding: const EdgeInsets.all(16.0),
                               child: MarkdownBody(
@@ -260,6 +227,8 @@ class SettingsScreen extends StatelessWidget {
                               ),
                             ),
                           ],
+                          
+                          ),
                         ],
                       ),
                     ],
@@ -269,60 +238,6 @@ class SettingsScreen extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-
-  // --- FUNCIONES DE AYUDA ---
-
-  Widget _buildSectionTitle(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: 32.0,
-        right: 32.0,
-        bottom: 8.0,
-        top: 16.0,
-      ),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSettingsGroup(
-    BuildContext context, {
-    required List<Widget> children,
-  }) {
-    return Card.outlined(
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-      color: Theme.of(context).colorScheme.surface,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.outlineVariant,
-          width: 1.0,
-        ),
-      ),
-      child: Column(children: children),
-    );
-  }
-
-  Widget _buildIconContainer(BuildContext context, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
     );
   }
 
@@ -418,166 +333,6 @@ class SettingsScreen extends StatelessWidget {
       builder: (BuildContext context) {
         return const ChangelogSheet();
       },
-    );
-  }
-}
-
-class ChangelogSheet extends StatelessWidget {
-  const ChangelogSheet({super.key});
-
-  /// Obtiene la lista de releases desde la API de GitHub
-  Future<List<dynamic>> _fetchReleases() async {
-    final url = Uri.parse(
-      'https://api.github.com/repos/ESTRIN217/Bloc-de-notas/releases',
-    );
-
-    try {
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        throw Exception('Error al cargar releases: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error de conexión: $e');
-    }
-  }
-
-  Future<void> _launchGitHub() async {
-    final url = Uri.parse('https://github.com/ESTRIN217/Bloc-de-notas');
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      throw 'No se pudo abrir $url';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: const Text('Registro de cambios'),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-      ),
-      body: FutureBuilder<List<dynamic>>(
-        future: _fetchReleases(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Ocurrió un error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
-              child: Text('No hay registros de cambios disponibles.'),
-            );
-          }
-
-          final releases = snapshot.data!;
-
-          return ListView.builder(
-            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 100),
-            itemCount: releases.length,
-            itemBuilder: (context, index) {
-              final release = releases[index];
-              final String version = release['tag_name'] ?? 'v?';
-              final String title = release['name'] ?? 'Sin título';
-              final String body = release['body'] ?? '';
-              final String date = release['published_at'].toString().substring(
-                0,
-                10,
-              );
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Cabecera de la versión
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildBadge(context, version),
-                        Text(
-                          date,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      title,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // --- Renderizador de Markdown ---
-                    MarkdownBody(
-                      data: body,
-                      selectable:
-                          true, // Permite al usuario seleccionar y copiar texto
-                      styleSheet:
-                          MarkdownStyleSheet.fromTheme(
-                            Theme.of(context),
-                          ).copyWith(
-                            // Ajusta el espacio entre párrafos si es necesario
-                            pPadding: const EdgeInsets.only(bottom: 8),
-                          ),
-                      // Hace que los enlaces en el markdown funcionen
-                      onTapLink: (text, href, title) async {
-                        if (href != null) {
-                          final uri = Uri.parse(href);
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(
-                              uri,
-                              mode: LaunchMode.externalApplication,
-                            );
-                          }
-                        }
-                      },
-                    ),
-
-                    // ---------------------------------
-                    const Divider(height: 32),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _launchGitHub,
-        icon: const FaIcon(FontAwesomeIcons.github),
-        label: const Text('Ver en GitHub'),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    );
-  }
-
-  /// Etiquetas pequeñas para la versión
-  Widget _buildBadge(BuildContext context, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.onSecondaryContainer,
-        ),
-      ),
     );
   }
 }

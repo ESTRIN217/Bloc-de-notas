@@ -1039,18 +1039,24 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
             setState(() {
               for (var item in deletedItems) {
                 _trashedItems.removeWhere((i) => i.id == item.id);
+                
                 if (item.isArchived) {
-                  _archivedItems.add(
-                    item,
-                  ); // Si era archivada, vuelve a archivados
+                  _archivedItems.add(item); // Si era archivada, vuelve a archivados
                 } else {
                   _items.add(item); // Si no, va al inicio
+                }
+
+                // Sincronización al restaurar: Si era favorita, la devolvemos a favoritos
+                if (item.isFavorite) {
+                  if (!_favoriteItems.any((i) => i.id == item.id)) {
+                    _favoriteItems.add(item);
+                  }
                 }
               }
               _saveItems();
               _saveArchivedItems(); 
+              _saveFavoriteItems(); // Guardamos los cambios en favoritos
               _saveTrashedItems();
-               
             });
           },
         ),
@@ -1058,25 +1064,27 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     );
   }
 
-  // Modifica _deleteSelectedItems para que maneje la papelera
   void _deleteSelectedItems() async {
     final itemsToDelete = List<ListItem>.from(_selectedItems);
+    final idsToDelete = itemsToDelete.map((item) => item.id).toSet();
 
     setState(() {
       if (_isTrashView) {
         // Eliminación definitiva desde la papelera
         _cleanupImagesForItems(itemsToDelete);
-        _trashedItems.removeWhere((item) => itemsToDelete.contains(item));
+        _trashedItems.removeWhere((item) => idsToDelete.contains(item.id));
         _saveTrashedItems();
       } else {
-        // Enviar a la papelera desde el inicio
-        _items.removeWhere((item) => itemsToDelete.contains(item));
-        _archivedItems.removeWhere((item) => itemsToDelete.contains(item));
-        _favoriteItems.removeWhere((item) => itemsToDelete.contains(item));
+        // Enviar a la papelera comparando por ID para mantener la sincronización
+        _items.removeWhere((item) => idsToDelete.contains(item.id));
+        _archivedItems.removeWhere((item) => idsToDelete.contains(item.id));
+        _favoriteItems.removeWhere((item) => idsToDelete.contains(item.id));
+        
         _trashedItems.addAll(itemsToDelete);
+        
         _saveItems();
         _saveArchivedItems();
-        _saveFavoriteItems();
+        _saveFavoriteItems(); // Guardamos el estado de favoritos actualizado
         _saveTrashedItems();
         _showUndoSnackbar(itemsToDelete);
       }
@@ -1508,7 +1516,10 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     final ListItem? selectedNote = await showSearch<ListItem?>(
       context: context,
       delegate: CustomSearchDelegate(
-        allNotes: _items, // O la lista que quieras buscar
+        allNotes: [
+      ..._items, 
+      ..._archivedItems
+    ],
         availableTags: _availableTags,
         availableColors: uniqueColors,
       ),
@@ -1596,82 +1607,6 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
       ),
       title: titleWidget,
       actions: actions,
-      bottom: _isTrashView
-          ? null
-          : PreferredSize(
-              preferredSize: const Size.fromHeight(56),
-              child: _buildFilterChips(),
-            ),
-    );
-  }
-
-  // Widget auxiliar para los chips de filtro
-  Widget _buildFilterChips() {
-    // Obtenemos los colores únicos presentes en las notas actuales
-    final uniqueColors = [..._items, ..._archivedItems]
-        .where((item) => item.backgroundColor != null)
-        .map((item) => item.backgroundColor!)
-        .toSet()
-        .toList();
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          // Chip de "Archivadas"
-          FilterChip(
-            label: Text(AppLocalizations.of(context)!.archivados),
-            selected: _isArchiveView,
-            onSelected: (selected) {
-              setState(() {
-                _isArchiveView = selected;
-                _isTrashView = false;
-                _selectedTagFilter = null; // Opcional: resetear otros filtros
-              });
-               
-            },
-          ),
-          const SizedBox(width: 8),
-
-          // Chips de Etiquetas
-          ..._availableTags.map(
-            (tag) => Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: FilterChip(
-                label: Text(tag),
-                selected: _selectedTagFilter == tag,
-                onSelected: (selected) {
-                  _onTagSelected(tag);
-                  setState(() => _selectedTagFilter = selected ? tag : null);
-                   
-                },
-              ),
-            ),
-          ),
-
-          // Chips de Colores
-          ...uniqueColors.map(
-            (colorValue) => Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: FilterChip(
-                avatar: CircleAvatar(
-                  backgroundColor: Color(colorValue),
-                  radius: 10,
-                ),
-                label: Text(AppLocalizations.of(context)!.colorFilterLabel),
-                selected: _selectedColorFilter == colorValue,
-                onSelected: (selected) {
-                  setState(
-                    () => _selectedColorFilter = selected ? colorValue : null,
-                  );
-                   
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -2160,14 +2095,18 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                     setState(() {
                       _trashedItems.removeWhere((i) => i.id == item.id);
                       if (item.isArchived) {
-                        _archivedItems.add(item);
+                        if (!_archivedItems.any((i) => i.id == item.id)) {
+                             _archivedItems.add(item);
+                          }
                       } else {
-                        _items.add(item);
+                        if (!_Items.any((i) => i.id == item.id)) {
+                             _Items.add(item);
+                          }
                       }
                       if (item.isFavorite) {
                           // Insertamos para evitar duplicados por seguridad
                           if (!_favoriteItems.any((i) => i.id == item.id)) {
-                             _favoriteItems.insert(0, item);
+                             _favoriteItems.add(item);
                           }
                        }
                       _saveItems();

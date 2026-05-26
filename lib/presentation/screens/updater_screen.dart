@@ -161,7 +161,7 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
         firstChild: const SizedBox(width: double.infinity),
         secondChild: Padding(
           // Modificado aquí también para mantener consistencia si lo deseas
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+          padding: const EdgeInsets.all(16.0),
           child: MarkdownBody(
             data: updater.latestChangelog!,
             styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),

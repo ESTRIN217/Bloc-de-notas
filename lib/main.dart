@@ -2179,69 +2179,75 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
   }
 
   Widget _buildGridView() {
-    final bool canReorder =
-        _sortMethod == SortMethod.custom ;
-    final scrollController = ScrollController(); // Sincronización obligatoria
+  final bool canReorder = _sortMethod == SortMethod.custom;
+  final scrollController = ScrollController(); // Sincronización obligatoria
 
-    if (canReorder) {
-      return ReorderableBuilder<ListItem>(
-        key: const Key('reorderable_grid'),
-        scrollController: scrollController,
-        longPressDelay: const Duration(milliseconds: 300), // UX recomendada
-        // Configuración de animaciones y feedback visual
-        dragChildBoxDecoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
-            BoxShadow(color: Colors.black26, blurRadius: 10, spreadRadius: 2),
-          ],
-        ),
+  // 1. Detectamos la orientación de la pantalla usando el contexto
+  final bool isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+  
+  // 2. Definimos la cantidad exacta de columnas según la orientación
+  final int crossAxisCount = isPortrait ? 2 : 3;
 
-        // Uso del nuevo callback de reordenamiento de la v5.6.0
-        onReorder: (ReorderedListFunction<ListItem> reorderCallback) {
-          setState(() {
-            _items = reorderCallback(_items);
-             
-            _saveItems();
-          });
-        },
-
-        // Se generan las llaves únicas obligatorias para cada hijo
-        builder: (children) {
-          return GridView(
-            controller: scrollController, // El controlador debe ser el mismo
-            padding: const EdgeInsets.all(16.0),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 200,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.75,
-            ),
-            children: children,
-          );
-        },
-        children: _currentSourceItems.map((item) {
-          return Container(
-            key: ValueKey(item.id), // Clave única obligatoria
-            child: _buildItem(item, isListView: false),
-      );
-      }).toList(),
-      );
-    }
-
-    // Vista estática cuando no se puede reordenar
-    return GridView.builder(
-      padding: const EdgeInsets.all(16.0),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 200,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 0.75,
+  if (canReorder) {
+    return ReorderableBuilder<ListItem>(
+      key: const Key('reorderable_grid'),
+      scrollController: scrollController,
+      longPressDelay: const Duration(milliseconds: 300), // UX recomendada
+      // Configuración de animaciones y feedback visual
+      dragChildBoxDecoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 10, spreadRadius: 2),
+        ],
       ),
-      itemCount: _currentSourceItems.length,
-      itemBuilder: (context, index) =>
-          _buildItem(_currentSourceItems[index], isListView: false),
+
+      // Uso del nuevo callback de reordenamiento de la v5.6.0
+      onReorder: (ReorderedListFunction<ListItem> reorderCallback) {
+        setState(() {
+          _items = reorderCallback(_items);
+          _saveItems();
+        });
+      },
+
+      // Se generan las llaves únicas obligatorias para cada hijo
+      builder: (children) {
+        return GridView(
+          controller: scrollController, // El controlador debe ser el mismo
+          padding: const EdgeInsets.all(16.0),
+          // 3. Cambiamos a FixedCrossAxisCount para forzar el número de columnas
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 0.75,
+          ),
+          children: children,
+        );
+      },
+      children: _currentSourceItems.map((item) {
+        return Container(
+          key: ValueKey(item.id), // Clave única obligatoria
+          child: _buildItem(item, isListView: false),
+        );
+      }).toList(),
     );
   }
+
+  // Vista estática cuando no se puede reordenar
+  return GridView.builder(
+    padding: const EdgeInsets.all(16.0),
+    // 4. Aplicamos el mismo delegado fijo aquí
+    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: crossAxisCount,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      childAspectRatio: 0.75,
+    ),
+    itemCount: _currentSourceItems.length,
+    itemBuilder: (context, index) =>
+        _buildItem(_currentSourceItems[index], isListView: false),
+  );
+}
 
   Future<void> _cleanupImagesForItems(List<ListItem> itemsToClean) async {
     for (final item in itemsToClean) {

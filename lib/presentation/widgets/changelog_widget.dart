@@ -67,7 +67,7 @@ class ChangelogSheet extends StatelessWidget {
           final releases = snapshot.data!;
 
           return ListView.builder(
-            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 100),
+            padding: const EdgeInsets.only(bottom: 100),
             itemCount: releases.length,
             itemBuilder: (context, index) {
               final release = releases[index];
@@ -81,8 +81,7 @@ class ChangelogSheet extends StatelessWidget {
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: SettingsCardGroup(
-                  child: Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Cabecera de la versión
@@ -107,7 +106,8 @@ class ChangelogSheet extends StatelessWidget {
                     const SizedBox(height: 12),
 
                     // --- Renderizador de Markdown ---
-                    MarkdownBody(
+                    SettingsCardGroup(
+                      child: MarkdownBody(
                       data: body,
                       selectable:
                           true, // Permite al usuario seleccionar y copiar texto
@@ -131,9 +131,7 @@ class ChangelogSheet extends StatelessWidget {
                         }
                       },
                     ),
-
-                    // ---------------------------------
-                    const Divider(height: 32),
+                    ),
                   ],
                 ),
                 )

@@ -45,6 +45,9 @@ class UpdateAvailableWidget extends StatelessWidget {
         title:  Text(AppLocalizations.of(context)!.nueva_version_disponible,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        trailing: isDrawerTile
+        ? null
+        : Icon(Icons.chevron_right),
         subtitle: Text(AppLocalizations.of(context)!.appVersion(updater.latestVersion ?? ''),
         ),
         onTap: () {

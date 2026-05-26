@@ -298,7 +298,7 @@ class NoteItemWidget extends StatelessWidget {
               ReorderableDragStartListener(
                 index: itemIndex,
                 child: Padding(
-      padding: const EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
       child: Icon(Icons.drag_handle, color: dynamicIconColor),
     ),
               ),

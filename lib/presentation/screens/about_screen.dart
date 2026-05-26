@@ -68,6 +68,7 @@ class AboutScreen extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(28),
@@ -179,6 +180,7 @@ class AboutScreen extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(28),

@@ -498,6 +498,24 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get noteUnfavorite => 'Nota favorita';
+
+  @override
+  String get categoriesHeader => 'Categorias';
+
+  @override
+  String get addCategory => 'Criar nova lista';
+
+  @override
+  String get newCategoryTitle => 'Nova lista';
+
+  @override
+  String get categoryNameLabel => 'Nome da lista';
+
+  @override
+  String get categoryRequiredError => 'Por favor, insira um nome';
+
+  @override
+  String get create => 'Criar';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -994,4 +1012,22 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get noteUnfavorite => 'Nota favorita';
+
+  @override
+  String get categoriesHeader => 'Categorias';
+
+  @override
+  String get addCategory => 'Criar nova lista';
+
+  @override
+  String get newCategoryTitle => 'Nova lista';
+
+  @override
+  String get categoryNameLabel => 'Nome da lista';
+
+  @override
+  String get categoryRequiredError => 'Por favor, insira um nome';
+
+  @override
+  String get create => 'Criar';
 }

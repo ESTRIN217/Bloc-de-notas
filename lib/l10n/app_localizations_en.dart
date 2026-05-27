@@ -495,4 +495,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noteUnfavorite => 'Note unfavorites';
+
+  @override
+  String get categoriesHeader => 'Categories';
+
+  @override
+  String get addCategory => 'Create new list';
+
+  @override
+  String get newCategoryTitle => 'New list';
+
+  @override
+  String get categoryNameLabel => 'List name';
+
+  @override
+  String get categoryRequiredError => 'Please enter a name';
+
+  @override
+  String get create => 'Create';
 }

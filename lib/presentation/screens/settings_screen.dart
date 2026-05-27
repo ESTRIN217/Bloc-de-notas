@@ -367,7 +367,7 @@ class SettingsScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(MaterialLocalizations.of(context).cancel),
+            child: Text(localizations.cancel),
           ),
         ],
       );

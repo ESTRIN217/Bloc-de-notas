@@ -1622,7 +1622,6 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                             _selectedTagFilter == null && 
                             _selectedColorFilter == null && 
                             !_isSelectionMode;
-    final localizations = AppLocalizations.of(context)!;
     final categoryProvider = context.watch<CategoryProvider>();
 
     // 2. Envolvemos el Scaffold con PopScope para interceptar el botón atrás
@@ -1838,7 +1837,7 @@ Padding(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
       Text(
-        AppLocalizations.of(context)!.categorias, // Soporte de traducción
+        AppLocalizations.of(context)!.categoriesHeader,
         style: Theme.of(context).textTheme.labelSmall,
       ),
       IconButton(

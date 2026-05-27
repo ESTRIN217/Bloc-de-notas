@@ -1001,6 +1001,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Note unfavorites'**
   String get noteUnfavorite;
+
+  /// No description provided for @categoriesHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categoriesHeader;
+
+  /// No description provided for @addCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new list'**
+  String get addCategory;
+
+  /// No description provided for @newCategoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New list'**
+  String get newCategoryTitle;
+
+  /// No description provided for @categoryNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'List name'**
+  String get categoryNameLabel;
+
+  /// No description provided for @categoryRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a name'**
+  String get categoryRequiredError;
+
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
 }
 
 class _AppLocalizationsDelegate

@@ -498,6 +498,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noteUnfavorite => 'Nota desfavoritos';
+
+  @override
+  String get categoriesHeader => 'Categorías';
+
+  @override
+  String get addCategory => 'Crear nueva lista';
+
+  @override
+  String get newCategoryTitle => 'Nueva lista';
+
+  @override
+  String get categoryNameLabel => 'Nombre de la lista';
+
+  @override
+  String get categoryRequiredError => 'Por favor, introduce un nombre';
+
+  @override
+  String get create => 'Crear';
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
@@ -994,4 +1012,22 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
 
   @override
   String get noteUnfavorite => 'Nota desfavoritos';
+
+  @override
+  String get categoriesHeader => 'Categorías';
+
+  @override
+  String get addCategory => 'Crear nueva lista';
+
+  @override
+  String get newCategoryTitle => 'Nueva lista';
+
+  @override
+  String get categoryNameLabel => 'Nombre de la lista';
+
+  @override
+  String get categoryRequiredError => 'Por favor, introduce un nombre';
+
+  @override
+  String get create => 'Crear';
 }

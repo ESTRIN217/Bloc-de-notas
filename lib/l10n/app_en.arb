@@ -375,5 +375,17 @@
   "noteFavorite": "Note added to Favorites",
   "@noteFavorite": {},
   "noteUnfavorite": "Note unfavorites",
-  "@noteUnfavorite": {}
+  "@noteUnfavorite": {},
+  "categoriesHeader": "Categories",
+  "@categoriesHeader": {},
+  "addCategory": "Create new list",
+  "@addCategory": {},
+  "newCategoryTitle": "New list",
+  "@newCategoryTitle": {},
+  "categoryNameLabel": "List name",
+  "@categoryNameLabel": {},
+  "categoryRequiredError": "Please enter a name",
+  "@categoryRequiredError": {},
+  "create": "Create",
+  "@create": {}
 }

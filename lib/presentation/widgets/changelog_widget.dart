@@ -70,72 +70,75 @@ class ChangelogSheet extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 100),
             itemCount: releases.length,
             itemBuilder: (context, index) {
-              final release = releases[index];
-              final String version = release['tag_name'] ?? 'v?';
-              final String title = release['name'] ?? 'Sin título';
-              final String body = release['body'] ?? '';
-              final String date = release['published_at'].toString().substring(
-                0,
-                10,
-              );
+  final release = releases[index];
+  final String version = release['tag_name'] ?? 'v?';
+  final String title = release['name'] ?? 'Sin título';
+  final String body = release['body'] ?? '';
+  final String date = release['published_at'].toString().substring(0, 10);
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Cabecera de la versión
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SettingsBadge(
-                          text: version,
-                          fontSize: 18.0,
-                        ),
-                        Text(
-                          date,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      title,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 12),
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SettingsBadge(
+              text: version,
+              fontSize: 18.0,
+            ),
+            Text(
+              date,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
 
-                    // --- Renderizador de Markdown ---
-                    SettingsCardGroup(
-                      child: MarkdownBody(
-                      data: body,
-                      selectable:
-                          true, // Permite al usuario seleccionar y copiar texto
-                      styleSheet:
-                          MarkdownStyleSheet.fromTheme(
-                            Theme.of(context),
-                          ).copyWith(
-                            // Ajusta el espacio entre párrafos si es necesario
-                            pPadding: const EdgeInsets.only(bottom: 8),
-                          ),
-                      // Hace que los enlaces en el markdown funcionen
-                      onTapLink: (text, href, title) async {
-                        if (href != null) {
-                          final uri = Uri.parse(href);
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(
-                              uri,
-                              mode: LaunchMode.externalApplication,
-                            );
-                          }
-                        }
-                      },
-                    ),
-                    ),
-                  ],
+        SettingsCardGroup(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Mostramos el título estilizado solo si contiene texto relevante
+              if (title.isNotEmpty && title != 'Sin título' && title != version) ...[
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-                );
-            },
+                const SizedBox(height: 10), // Espacio entre el título y las novedades
+              ],
+              
+              // Renderizador del cuerpo en Markdown
+              MarkdownBody(
+                data: body,
+                selectable: true,
+                styleSheet: MarkdownStyleSheet.fromTheme(
+                  Theme.of(context),
+                ).copyWith(
+                  pPadding: const EdgeInsets.only(bottom: 8),
+                ),
+                onTapLink: (text, href, title) async {
+                  if (href != null) {
+                    final uri = Uri.parse(href);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+          },
           );
         },
       ),

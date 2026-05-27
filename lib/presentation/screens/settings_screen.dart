@@ -55,42 +55,21 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ],
                   SettingsCardGroup(
-                    child: Column(
-                    children: [
-                      ListTile(
-                        // Aplicamos el fondo al icono del modo oscuro
-                        leading: SettingsIconContainer(icon: Icons.dark_mode_outlined),
-                        title: Text(AppLocalizations.of(context)!.themeMode),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                        child: SegmentedButton<ThemeMode>(
-                          segments: <ButtonSegment<ThemeMode>>[
-                            ButtonSegment<ThemeMode>(
-                              value: ThemeMode.system,
-                              label: Text(AppLocalizations.of(context)!.system),
-                              icon: const Icon(Icons.brightness_auto_outlined),
-                            ),
-                            ButtonSegment<ThemeMode>(
-                              value: ThemeMode.light,
-                              label: Text(AppLocalizations.of(context)!.light),
-                              icon: const Icon(Icons.light_mode_outlined),
-                            ),
-                            ButtonSegment<ThemeMode>(
-                              value: ThemeMode.dark,
-                              label: Text(AppLocalizations.of(context)!.dark),
-                              icon: const Icon(Icons.dark_mode_outlined),
-                            ),
-                          ],
-                          selected: {themeProvider.themeMode},
-                          onSelectionChanged: (newSelection) {
-                            themeProvider.setThemeMode(newSelection.first);
-                          },
-                        ),
-                      ),
-                    ],
-                    ),
-                  ),
+  child: ListTile(
+    leading: const SettingsIconContainer(icon: Icons.dark_mode_outlined),
+    title: Text(AppLocalizations.of(context)!.themeMode),
+    // Muestra dinámicamente el modo activo
+    subtitle: Text(
+      themeProvider.themeMode == ThemeMode.system
+          ? AppLocalizations.of(context)!.system
+          : themeProvider.themeMode == ThemeMode.light
+              ? AppLocalizations.of(context)!.light
+              : AppLocalizations.of(context)!.dark,
+    ),
+    trailing: const Icon(Icons.chevron_right),
+    onTap: () => _showThemeDialog(context, themeProvider),
+  ),
+),
 
                   SettingsSectionTitle(title: AppLocalizations.of(context)!.idioma),
                   SettingsCardGroup(
@@ -333,5 +312,66 @@ class SettingsScreen extends StatelessWidget {
         return const ChangelogSheet();
       },
     );
+  }
+  void _showThemeDialog(BuildContext context, dynamic themeProvider) {
+  final localizations = AppLocalizations.of(context)!;
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(localizations.themeMode),
+        // padding adaptado para que los RadioListTile fluyan bien en M3
+        contentPadding: const EdgeInsets.symmetric(vertical: 12.0), 
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<ThemeMode>(
+              value: ThemeMode.system,
+              groupValue: themeProvider.themeMode,
+              title: Text(localizations.system),
+              secondary: const Icon(Icons.brightness_auto_outlined),
+              onChanged: (ThemeMode? value) {
+                if (value != null) {
+                  themeProvider.setThemeMode(value);
+                  Navigator.pop(context); // Cierra el diálogo al seleccionar
+                }
+              },
+            ),
+            RadioListTile<ThemeMode>(
+              value: ThemeMode.light,
+              groupValue: themeProvider.themeMode,
+              title: Text(localizations.light),
+              secondary: const Icon(Icons.light_mode_outlined),
+              onChanged: (ThemeMode? value) {
+                if (value != null) {
+                  themeProvider.setThemeMode(value);
+                  Navigator.pop(context);
+                }
+              },
+            ),
+            RadioListTile<ThemeMode>(
+              value: ThemeMode.dark,
+              groupValue: themeProvider.themeMode,
+              title: Text(localizations.dark),
+              secondary: const Icon(Icons.dark_mode_outlined),
+              onChanged: (ThemeMode? value) {
+                if (value != null) {
+                  themeProvider.setThemeMode(value);
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(MaterialLocalizations.of(context).cancel),
+          ),
+        ],
+      );
+    },
+  );
   }
 }

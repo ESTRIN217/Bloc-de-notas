@@ -150,5 +150,11 @@
   "favorites": "Favoritos",
   "unfavoriteTooltip": "Desfavoritos",
   "noteFavorite": "Nota adicionada aos favoritos",
-  "noteUnfavorite": "Nota favorita"
+  "noteUnfavorite": "Nota favorita",
+  "categoriesHeader": "Categorias",
+  "addCategory": "Criar nova lista",
+  "newCategoryTitle": "Nova lista",
+  "categoryNameLabel": "Nome da lista",
+  "categoryRequiredError": "Por favor, insira um nome",
+  "create": "Criar"
 }

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:bloc_de_notas/services/backup_service.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
-// Solo se usa si !kIsWeb
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -24,6 +23,7 @@ import 'presentation/screens/editor_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'providers/theme_provider.dart';
 import 'providers/updater_provider.dart';
+import 'providers/category_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -33,6 +33,7 @@ import 'theme/theme.dart';
 import 'presentation/widgets/note_item_widget.dart';
 import 'presentation/animations/entry_animation.dart';
 import 'presentation/search/custom_search_delegate.dart';
+import 'presentation/widgets/create_category_dialog.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
@@ -47,6 +48,8 @@ void main() {
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
 
         ChangeNotifierProvider(create: (context) => UpdaterProvider()),
+        
+        ChangeNotifierProvider(create: (context) => CategoryProvider()),
       ],
       child: const MyApp(),
     ),
@@ -158,6 +161,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   // Vista por defecto (Inicio)
   return _items;
   }
+  CategoryItem? _selectedCategoryFilter;
   
   BackupService get _backupService => BackupService();
 
@@ -1618,6 +1622,8 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                             _selectedTagFilter == null && 
                             _selectedColorFilter == null && 
                             !_isSelectionMode;
+    final localizations = AppLocalizations.of(context)!;
+    final categoryProvider = context.watch<CategoryProvider>();
 
     // 2. Envolvemos el Scaffold con PopScope para interceptar el botón atrás
     return PopScope(
@@ -1719,6 +1725,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                     _isArchiveView = false;
                     _isFavoriteView = false;
                     _selectedTagFilter = null;
+                    _selectedCategoryFilter = null;
                   });
                    
                   Navigator.pop(context);
@@ -1751,6 +1758,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                     _isFavoriteView = true;
                     _isTrashView = false;
                     _selectedTagFilter = null;
+                    _selectedCategoryFilter = null;
                   });
                    
                   Navigator.pop(context);
@@ -1811,6 +1819,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                       _isArchiveView = false;
                       _isFavoriteView = false;
                       _selectedTagFilter = tag;
+                      _selectedCategoryFilter = null;
                     });
                      
                     Navigator.pop(context);
@@ -1820,6 +1829,67 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
             ),
 
             const Divider(),
+Padding(
+  padding: const EdgeInsets.symmetric(
+    horizontal: 12.0,
+    vertical: 4.0,
+  ),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(
+        AppLocalizations.of(context)!.categorias, // Soporte de traducción
+        style: Theme.of(context).textTheme.labelSmall,
+      ),
+      IconButton(
+        icon: const Icon(Icons.add_outlined, size: 20), // Icono Outlined
+        onPressed: () {
+          Navigator.pop(context); // Cierra el Drawer primero
+          // Muestra el diálogo utilizando el widget CreateCategoryDialog que ya creaste
+          showDialog(
+            context: context,
+            builder: (context) => const CreateCategoryDialog(),
+          );
+        },
+      ),
+    ],
+  ),
+),
+// Mapeamos directamente desde la lista de categorías del Provider
+...categoryProvider.categories.map(
+  (category) => Padding(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 4,
+    ),
+    child: ListTile(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
+      selectedTileColor: Theme.of(context).colorScheme.secondaryContainer,
+      selectedColor: Theme.of(context).colorScheme.onSecondaryContainer,
+      leading: Icon(
+        _selectedCategoryFilter?.id == category.id && !_isTrashView
+            ? Icons.folder
+            : Icons.folder_outlined, // Icono Outlined por defecto
+      ),
+      title: Text(category.name), // Utilizamos la propiedad name de tu CategoryItem
+      selected: _selectedCategoryFilter?.id == category.id && !_isTrashView,
+      onTap: () {
+        setState(() {
+          _isTrashView = false;
+          _isArchiveView = false;
+          _isFavoriteView = false;
+          _selectedTagFilter = null; // Limpiamos el filtro de etiqueta al cambiar a una lista
+          _selectedCategoryFilter = category; // Guardamos el objeto de la categoría seleccionada
+        });
+          
+        Navigator.pop(context);
+      },
+    ),
+  ),
+),
+const Divider(),
             //   Ítem de Archivados
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -1847,6 +1917,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                     _isFavoriteView = false;
                     _isTrashView = false;
                     _selectedTagFilter = null;
+                    _selectedCategoryFilter = null;
                   });
                    
                   Navigator.pop(context);
@@ -1879,7 +1950,8 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                     _isArchiveView = false;
                     _isFavoriteView = false;
                     _selectedTagFilter =
-                        null; // Opcional: quitar filtro al ir a papelera
+                        null;
+                    _selectedCategoryFilter = null;
                   });
                    
                   Navigator.pop(context);
@@ -2432,5 +2504,5 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
     _exitSelectionMode();
      
   });
-}
+  }
 }

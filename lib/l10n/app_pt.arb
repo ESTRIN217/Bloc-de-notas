@@ -156,5 +156,6 @@
   "newCategoryTitle": "Nova lista",
   "categoryNameLabel": "Nome da lista",
   "categoryRequiredError": "Por favor, insira um nome",
-  "create": "Criar"
+  "create": "Criar",
+  "apply": "consentir"
 }

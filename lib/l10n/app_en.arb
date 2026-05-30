@@ -387,5 +387,7 @@
   "categoryRequiredError": "Please enter a name",
   "@categoryRequiredError": {},
   "create": "Create",
-  "@create": {}
+  "@create": {},
+  "apply": "Apply",
+  "@apply": {}
 }

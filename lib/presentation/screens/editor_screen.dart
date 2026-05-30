@@ -241,6 +241,7 @@ class _EditorScreenState extends State<EditorScreen> {
       tags: _currentTags, // NUEVO: Pasamos las etiquetas al guardar
       isArchived: _isArchived, // NUEVO: Guardar el estado de archivo
       isFavorite: _isFavorite,
+      
     );
     Navigator.pop(context, updatedItem);
   }

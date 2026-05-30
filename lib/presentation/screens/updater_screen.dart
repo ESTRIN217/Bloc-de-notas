@@ -160,21 +160,8 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
       AnimatedCrossFade(
         firstChild: const SizedBox(width: double.infinity),
         secondChild: Padding(
-          // Modificado aquí también para mantener consistencia si lo deseas
           padding: const EdgeInsets.all(16.0),
-          child: MarkdownBody(
-            data: updater.latestChangelog!,
-            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
-            selectable: true,
-            onTapLink: (text, href, title) async {
-              if (href != null) {
-                final uri = Uri.parse(href);
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
-              }
-            },
-          ),
+          child: CustomMarkdownBody(data: updater.latestChangelog!),
         ),
         crossFadeState: _showChangelog
             ? CrossFadeState.showSecond

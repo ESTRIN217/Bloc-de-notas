@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:bloc_de_notas/providers/updater_provider.dart';
 import 'package:bloc_de_notas/presentation/screens/updater_screen.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UpdateAvailableWidget extends StatelessWidget {
   final bool isDrawerTile;
@@ -61,3 +63,33 @@ class UpdateAvailableWidget extends StatelessWidget {
     );
   }
 } 
+
+class CustomMarkdownBody extends StatelessWidget {
+  final String data;
+  final EdgeInsetsGeometry? pPadding;
+
+  const CustomMarkdownBody({
+    super.key,
+    required this.data,
+    this.pPadding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return MarkdownBody(
+      data: data,
+      selectable: true,
+      styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+        pPadding: pPadding,
+      ),
+      onTapLink: (text, href, title) async {
+        if (href != null) {
+          final Uri uri = Uri.parse(href);
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+        }
+      },
+    );
+  }
+}

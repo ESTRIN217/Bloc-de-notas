@@ -33,7 +33,7 @@ import 'theme/theme.dart';
 import 'presentation/widgets/note_item_widget.dart';
 import 'presentation/animations/entry_animation.dart';
 import 'presentation/search/custom_search_delegate.dart';
-import 'presentation/widgets/create_category_dialog.dart';
+import 'presentation/widgets/notes_provider.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
@@ -49,7 +49,7 @@ void main() {
 
         ChangeNotifierProvider(create: (context) => UpdaterProvider()),
         
-        ChangeNotifierProvider(create: (context) => CategoryProvider()),
+        ChangeNotifierProvider(create: (context) => NotesProvider()),
       ],
       child: const MyApp(),
     ),
@@ -129,39 +129,19 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _isListView = true;
-  SortMethod _sortMethod = SortMethod.custom;
-  late List<ListItem> _items;
 
   bool _isSelectionMode = false;
   final List<ListItem> _selectedItems = [];
-  bool _isLoading = true;
   // Definimos el canal de comunicación
   //static const platform = MethodChannel('com.estrin217.bloc_de_notas/settings');
   bool _isTrashView =
       false; // Controla si estamos viendo el inicio o la papelera
-  late List<ListItem> _trashedItems;
-  List<String> _availableTags = [];
   String? _selectedTagFilter;
-  //   Variables para Archivo
-  late List<ListItem> _archivedItems;
-  late List<ListItem> _favoriteItems;
+
   bool _isArchiveView = false;
   int? _selectedColorFilter;
   bool _isFavoriteView = false;
-  List<ListItem> get _currentSourceItems {
-  if (_isTrashView) return _trashedItems;
-  if (_isArchiveView) return _archivedItems;
-  if (_isFavoriteView) return _favoriteItems;
-  
-  // Filtra dinámicamente por la etiqueta seleccionada en la barra lateral
-  if (_selectedTagFilter != null) {
-    return _items.where((item) => item.tags.contains(_selectedTagFilter!)).toList();
-  }
-  
-  // Vista por defecto (Inicio)
-  return _items;
-  }
-  CategoryItem? _selectedCategoryFilter;
+  String? _selectedCategoryFilter;
   
   BackupService get _backupService => BackupService();
 
@@ -170,17 +150,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     super.initState();
     _backupService.isSignedIn();
     WidgetsBinding.instance.addObserver(this);
-    _items = [];
-    _trashedItems = [];
-    _archivedItems = [];
-    _favoriteItems = [];
     WidgetsBinding.instance.addPostFrameCallback((_) {
-    _loadAllData();
+    final languageCode = Localizations.localeOf(context).languageCode;
+    // Llamamos a la carga centralizada
+    context.read<NotesProvider>().loadAllData(languageCode);
+    context.read<UpdaterProvider>().checkUpdateOnStartup();
   });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Llamamos a nuestro nuevo método silencioso
-      context.read<UpdaterProvider>().checkUpdateOnStartup();
-    });
   }
 
   @override
@@ -204,343 +179,44 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  //  Método unificado para cargar todo
-  Future<void> _loadAllData() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // Cargar Etiquetas
-    setState(() {
-      _availableTags = prefs.getStringList('available_tags') ?? [];
-    });
-
-    await _loadItems();
-  }
-
-  Future<void> _loadItems() async {
-    final String languageCode = Localizations.localeOf(context).languageCode; 
-  try {
-    // 1. Cargamos la preferencia de la vista (Lista o Cuadrícula)
-    final prefs = await SharedPreferences.getInstance();
-    final savedView = prefs.getBool('is_list_view');
-    if (savedView != null) {
-      setState(() {
-        _isListView = savedView;
-      });
-    }
-
-    
-
-    // 2. Cargamos las notas activas
-    String? contents;
-    if (kIsWeb) {
-      contents = prefs.getString('notes');
-    } else {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/notes.json');
-      if (await file.exists()) {
-        contents = await file.readAsString();
-      }
-    }
-
-    if (contents != null && contents.isNotEmpty) {
-      final List<dynamic> jsonList = jsonDecode(contents);
-      setState(() {
-        _items = jsonList.map((json) => ListItem.fromJson(json)).toList();
-        
-      });
-    } else {
-      // NUEVA CARGA: Si no hay notas guardadas, leemos los assets JSON traducidos
-      final defaultNotes = await loadDefaultNotesFromAssets(languageCode);
-      setState(() {
-        _items = defaultNotes;
-        
-      });
-      _saveItems(); // Guardamos el JSON local inicializado por primera vez
-    }
-
-    // --- Cargar Archivados ---
-    String? archivedContents;
-    if (kIsWeb) {
-      archivedContents = prefs.getString('archived_notes');
-    } else {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/archived_notes.json');
-      if (await file.exists()) {
-        archivedContents = await file.readAsString();
-      }
-    }
-
-    if (archivedContents != null && archivedContents.isNotEmpty) {
-      final List<dynamic> jsonList = jsonDecode(archivedContents);
-      setState(() {
-        _archivedItems = jsonList
-            .map((json) => ListItem.fromJson(json))
-            .toList();
-      });
-    }
-    String? favoriteContents;
-    if (kIsWeb) {
-      favoriteContents = prefs.getString('favorite_notes');
-    } else {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/favorite_notes.json');
-      if (await file.exists()) {
-        favoriteContents = await file.readAsString();
-      }
-    }
-
-    if (favoriteContents != null && favoriteContents.isNotEmpty) {
-      final List<dynamic> jsonList = jsonDecode(favoriteContents);
-      setState(() {
-        _favoriteItems = jsonList
-            .map((json) => ListItem.fromJson(json))
-            .toList();
-      });
-    }
-
-    // --- Cargar Papelera ---
-    String? trashedContents;
-    if (kIsWeb) {
-      trashedContents = prefs.getString('trashed_notes');
-    } else {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/trashed_notes.json');
-      if (await file.exists()) {
-        trashedContents = await file.readAsString();
-      }
-    }
-
-    if (trashedContents != null && trashedContents.isNotEmpty) {
-      final List<dynamic> jsonList = jsonDecode(trashedContents);
-      setState(() {
-        _trashedItems = jsonList
-            .map((json) => ListItem.fromJson(json))
-            .toList();
-      });
-    }
-    setState(() {
-        _isLoading = false;
-      });
-       
-  } catch (e) {
-    debugPrint("Error loading items: $e");
-
-    // Manejo de error: Fallback seguro cargando desde los assets JSON
-    final defaultNotes = await loadDefaultNotesFromAssets(languageCode);
-    setState(() {
-      _items = defaultNotes;
-      _isLoading = false;
-    });
-     
-    _saveItems();
-  }
-}
-  
-
-/// Carga el JSON traducido basándose en el Locale actual y devuelve las notas por defecto.
-Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
-  try {
-    
-    String assetPath;
-    switch (languageCode) {
-      case 'en':
-        assetPath = 'assets/lang/notes_en.json';
-        break;
-      case 'pt':
-        assetPath = 'assets/lang/notes_pt.json';
-        break;
-      case 'es':
-      default:
-        assetPath = 'assets/lang/notes_es.json'; // Respaldo nativo si es cualquier otro idioma
-        break;
-    }
-
-    // 2. Leer el string crudo del archivo de assets
-    String jsonString = await rootBundle.loadString(assetPath);
-
-    // 3. Decodificar a un mapa nativo de Dart
-    Map<String, dynamic> notesData = jsonDecode(jsonString);
-    List<ListItem> defaultNotes = [];
-
-    // 4. Mapear y procesar la Nota de Bienvenida (welcome_note)
-    if (notesData.containsKey('welcome_note')) {
-      final welcome = notesData['welcome_note'];
-      defaultNotes.add(
-        ListItem(
-          id: 'welcome_note',
-          title: welcome['title'],
-          // Convertimos la lista estructurada del Delta de vuelta a un String JSON plano
-          summary: jsonEncode(welcome['summary']),
-          lastModified: DateTime.now(),
-          backgroundColor: welcome['backgroundColor'] ?? 4294959234, // Amber/Amarillo suave
-        ),
-      );
-    }
-
-    // 5. Mapear y procesar la Nota de Ejercicios (exercise_note)
-    if (notesData.containsKey('exercise_note')) {
-      final exercise = notesData['exercise_note'];
-      defaultNotes.add(
-        ListItem(
-          id: 'exercite_note', // Mantiene el ID que ya usabas
-          title: exercise['title'],
-          summary: jsonEncode(exercise['summary']),
-          lastModified: DateTime.now(),
-          backgroundColor: exercise['backgroundColor'] ?? 4294967295, // Blanco
-        ),
-      );
-    }
-
-    return defaultNotes;
-  } catch (e) {
-    if (kDebugMode) print('Error cargando notas por defecto: $e');
-    return []; // Retorna lista vacía ante cualquier error de lectura
-  }
-}
-
-  //   Guardar Etiquetas
-  Future<void> _saveTags() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('available_tags', _availableTags);
-  }
-
-  Future<void> _saveItems() async {
-    try {
-      final List<Map<String, dynamic>> jsonList = _items
-          .map((item) => item.toJson())
-          .toList();
-      final contents = jsonEncode(jsonList);
-      if (kIsWeb) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('notes', contents);
-      } else {
-        final directory = await getApplicationDocumentsDirectory();
-        final file = File('${directory.path}/notes.json');
-        await file.writeAsString(contents);
-      }
-    } catch (e) {
-      debugPrint("Error saving items: $e");
-    }
-  }
-
-  //   Guardar Archivados
-  Future<void> _saveArchivedItems() async {
-    try {
-      final List<Map<String, dynamic>> jsonList = _archivedItems
-          .map((item) => item.toJson())
-          .toList();
-      final contents = jsonEncode(jsonList);
-      if (kIsWeb) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('archived_notes', contents);
-      } else {
-        final directory = await getApplicationDocumentsDirectory();
-        final file = File('${directory.path}/archived_notes.json');
-        await file.writeAsString(contents);
-      }
-    } catch (e) {
-      debugPrint("Error saving archived items: $e");
-    }
-  }
-  Future<void> _saveFavoriteItems() async {
-    try {
-      final List<Map<String, dynamic>> jsonList = _favoriteItems
-          .map((item) => item.toJson())
-          .toList();
-      final contents = jsonEncode(jsonList);
-      if (kIsWeb) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('favorite_notes', contents);
-      } else {
-        final directory = await getApplicationDocumentsDirectory();
-        final file = File('${directory.path}/favorite_notes.json');
-        await file.writeAsString(contents);
-      }
-    } catch (e) {
-      debugPrint("Error saving favoritos items: $e");
-    }
-  }
-
   void _archiveSelectedItems() async {
-    // 1. Guardamos una copia de los elementos y el estado de la vista para el "Deshacer"
-    final itemsToMove = List<ListItem>.from(_selectedItems);
-    final wasInArchiveView = _isArchiveView;
+  if (_selectedItems.isEmpty) return;
 
-    // Función auxiliar para generar copias de los items con el estado isArchived actualizado
-    List<ListItem> getUpdatedItems(bool targetStatus) {
-      return itemsToMove
-          .map(
-            (item) => ListItem(
-              id: item.id,
-              title: item.title,
-              summary: item.summary,
-              lastModified: item.lastModified,
-              backgroundColor: item.backgroundColor,
-              backgroundImagePath: item.backgroundImagePath,
-              tags: item.tags,
-              isArchived:
-                  targetStatus, // Actualizamos la variable según el destino
-              isFavorite: item.isFavorite,
-            ),
-          )
-          .toList();
-    }
+  final itemsToMove = List<ListItem>.from(_selectedItems);
+  final wasInArchiveView = _isArchiveView;
+  final notesProvider = context.read<NotesProvider>();
 
-    setState(() {
-      if (wasInArchiveView) {
-        // Desarchivar: Quitar de archivados y mover a principal con isArchived = false
-        final restoredItems = getUpdatedItems(false);
-        _archivedItems.removeWhere(
-          (item) => itemsToMove.any((m) => m.id == item.id),
-        );
-        _items.addAll(restoredItems);
-      } else {
-        // Archivar: Quitar de principal y mover a archivados con isArchived = true
-        final archivedItems = getUpdatedItems(true);
-        _items.removeWhere((item) => itemsToMove.any((m) => m.id == item.id));
-        _archivedItems.addAll(archivedItems);
-      }
-      _saveItems();
-      _saveArchivedItems();
-      _exitSelectionMode();
-       
-    });
+  // Ejecutamos la acción inicial (Si estaba en archivo, va a principal. Si no, se archiva)
+  await notesProvider.toggleArchiveMultiple(
+    selectedItems: itemsToMove,
+    toArchive: !wasInArchiveView,
+  );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          wasInArchiveView
-              ? AppLocalizations.of(context)!.notesRestored
-              : AppLocalizations.of(context)!.notesArchived,
-        ),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: AppLocalizations.of(context)!.undo,
-          onPressed: () {
-            setState(() {
-              if (wasInArchiveView) {
-                // Revertir restauración: de vuelta al archivo (isArchived = true)
-                final reverted = getUpdatedItems(true);
-                _items.removeWhere(
-                  (item) => itemsToMove.any((m) => m.id == item.id),
-                );
-                _archivedItems.addAll(reverted);
-              } else {
-                // Revertir archivado: de vuelta a la lista principal (isArchived = false)
-                final reverted = getUpdatedItems(false);
-                _archivedItems.removeWhere(
-                  (item) => itemsToMove.any((m) => m.id == item.id),
-                );
-                _items.addAll(reverted);
-              }
-              _saveItems();
-              _saveArchivedItems();
-               
-            });
-          },
-        ),
+  setState(() {
+    _exitSelectionMode();
+  });
+
+  // SnackBar nativo usando tus traducciones existentes
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        wasInArchiveView
+            ? AppLocalizations.of(context)!.notesRestored
+            : AppLocalizations.of(context)!.notesArchived,
       ),
-    );
+      behavior: SnackBarBehavior.floating,
+      action: SnackBarAction(
+        label: AppLocalizations.of(context)!.undo,
+        onPressed: () async {
+          // Revertir: Volvemos a alternar pero al estado inverso original
+          await notesProvider.toggleArchiveMultiple(
+            selectedItems: itemsToMove,
+            toArchive: wasInArchiveView,
+          );
+        },
+      ),
+    ),
+  );
   }
 
   void _toggleView() async {
@@ -554,123 +230,41 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
   }
 
   Future<void> _navigateToEditor([ListItem? item]) async {
-    if (_isSelectionMode) return;
+  if (_isSelectionMode) return;
 
-    final originalItem =
-        item ??
-        ListItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          title: '',
-          summary: '',
-          lastModified: DateTime.now(),
-          tags: _selectedTagFilter != null
-              ? [_selectedTagFilter!]
-              : [], // Asigna la etiqueta actual si hay filtro
-        );
+  final originalItem = item ?? ListItem(
+    id: DateTime.now().millisecondsSinceEpoch.toString(),
+    title: '',
+    summary: '',
+    lastModified: DateTime.now(),
+    tags: _selectedTagFilter != null ? [_selectedTagFilter!] : [],
+  );
 
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => EditorScreen(item: originalItem)),
-    );
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => EditorScreen(item: originalItem)),
+  );
 
-    if (result == null) {
-      _loadAllData(); // Recargamos por si editó etiquetas dentro del editor
-      return;
-    }
+  final notesProvider = context.read<NotesProvider>();
 
-    if (result == "DELETE") {
-      final itemToDelete =
-          _items.cast<ListItem?>().firstWhere(
-            (i) => i?.id == originalItem.id,
-            orElse: () => null,
-          ) ??
-          _archivedItems.cast<ListItem?>().firstWhere(
-            (i) => i?.id == originalItem.id,
-            orElse: () => null,
-          ) ??
-          _favoriteItems.cast<ListItem?>().firstWhere((i) => i?.id == originalItem.id,
-          orElse: () => null);
-          
-      setState(() {
-        _items.removeWhere((i) => i.id == originalItem.id);
-        _archivedItems.removeWhere((i) => i.id == originalItem.id);
-        _favoriteItems.removeWhere((i) => i.id == originalItem.id);
-        _trashedItems.add(itemToDelete!); // Movemos a papelera
-         
-        _saveItems();
-        _saveArchivedItems();
-        _saveFavoriteItems();
-        _saveTrashedItems();
-      });
-      if (itemToDelete != null) {
-        _showUndoSnackbar([itemToDelete]); // Mostramos SnackBar
-      }
-    } else if (result is ListItem) {
-      setState(() {
-        // 1. Buscamos la posición original en ambas listas
-        final int indexInItems = _items.indexWhere((i) => i.id == result.id);
-        final int indexInArchived = _archivedItems.indexWhere(
-          (i) => i.id == result.id,
-        );
-        final int indexInFavorites = _favoriteItems.indexWhere((i) => i.id == result.id);
+  // Si canceló sin retornar datos, recargamos el estado local por si acaso
+  if (result == null) {
+    // Puedes pasar el language code actual si es necesario
+    final lang = Localizations.localeOf(context).languageCode;
+    notesProvider.loadAllData(lang); 
+    return;
+  }
 
-        // 2. Si la nota quedó vacía, la eliminamos y salimos
-        if (result.title.trim().isEmpty && result.document.length <= 1) {
-          if (indexInItems != -1) _items.removeAt(indexInItems);
-          if (indexInArchived != -1) _archivedItems.removeAt(indexInArchived);
-          if (indexInFavorites != -1) _favoriteItems.removeAt(indexInFavorites);
-           
-          _saveItems();
-          _saveArchivedItems();
-          _saveFavoriteItems();
-          return;
-        }
+  // Dejamos que el provider haga toda la magia pesada en background
+  await notesProvider.handleEditorResult(
+    result: result,
+    originalItem: originalItem,
+  );
 
-        // 3. Manejamos la actualización o inserción respetando la posición
-        if (result.isArchived) {
-          // Si se movió de Principal a Archivado o es nueva en archivados
-          if (indexInItems != -1) _items.removeAt(indexInItems);
-
-          if (indexInArchived != -1) {
-            _archivedItems[indexInArchived] = result; // Actualiza en su lugar
-          } else {
-            _archivedItems.insert(0, result); // Nueva nota archivada va arriba
-          }
-        } else {
-          // Si se movió de Archivado a Principal o es nueva en principal
-          if (indexInArchived != -1) _archivedItems.removeAt(indexInArchived);
-
-          if (indexInItems != -1) {
-            _items[indexInItems] =
-                result; // Actualiza en su lugar (mantiene orden personalizado)
-          } else {
-            _items.insert(0, result); // Nueva nota va al principio
-          }
-        }
-    
-    if (result.isFavorite) {
-      if (indexInFavorites != -1) {
-        // Si ya era favorito, actualizamos sus datos modificados (título, texto, etc.)
-        _favoriteItems[indexInFavorites] = result;
-      } else {
-        // Si se marcó como favorito dentro del editor por primera vez
-        _favoriteItems.insert(0, result);
-      }
-    } else {
-      // Si se desmarcó como favorito dentro del editor
-      if (indexInFavorites != -1) {
-        _favoriteItems.removeAt(indexInFavorites);
-      }
-    }
-    
-        
-         
-        _saveItems();
-        _saveArchivedItems();
-        _saveFavoriteItems();
-      });
-      _loadAllData();
-    }
+  // Si fue una eliminación, disparamos el snackbar desde aquí usando los datos del Provider
+  if (result == "DELETE" && notesProvider.trashedItems.isNotEmpty) {
+    _showUndoSnackbar([notesProvider.trashedItems.first]);
+  }
   }
 
   void _startSelectionMode(ListItem item) {
@@ -703,110 +297,65 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
 
 // Diálogo para asignar etiquetas en modo selección
   void _showAssignTagDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.tagNotesTitle),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: _availableTags.isEmpty
-                ? Text(AppLocalizations.of(context)!.noTagsCreated)
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: _availableTags.length,
-                    itemBuilder: (context, index) {
-                      final tag = _availableTags[index];
-                      return ListTile(
-                        leading: const Icon(Icons.label_outline),
-                        title: Text(tag),
-                        // Cambié un poco el ícono para que tenga más sentido visual de "etiquetar/modificar"
-                        trailing: const Icon(Icons.sell_outlined), 
-                        onTap: () {
-                          setState(() {
-                            for (var item in _selectedItems) {
-                              
-                              // 1. Buscar y actualizar en la lista principal (_items)
-                              final indexInItems = _items.indexWhere((i) => i.id == item.id);
-                              if (indexInItems != -1) {
-                                final updatedTags = List<String>.from(_items[indexInItems].tags);
-                                
-                                // Lógica de Toggle: Si la tiene, la quita. Si no la tiene, la pone.
-                                if (updatedTags.contains(tag)) {
-                                  updatedTags.remove(tag);
-                                } else {
-                                  updatedTags.add(tag);
-                                }
-                                
-                                _items[indexInItems] = ListItem(
-                                  id: _items[indexInItems].id,
-                                  title: _items[indexInItems].title,
-                                  summary: _items[indexInItems].summary,
-                                  lastModified: DateTime.now(), // Actualizamos la fecha de modificación
-                                  backgroundColor: _items[indexInItems].backgroundColor,
-                                  backgroundImagePath: _items[indexInItems].backgroundImagePath,
-                                  tags: updatedTags,
-                                  isArchived: _items[indexInItems].isArchived,
-                                  isFavorite: _items[indexInItems].isFavorite,
-                                );
-                              }
+  final notesProvider = context.read<NotesProvider>();
 
-                              // 2. Buscar y actualizar en la lista de archivados (_archivedItems)
-                              final indexInArchived = _archivedItems.indexWhere((i) => i.id == item.id);
-                              if (indexInArchived != -1) {
-                                final updatedTags = List<String>.from(_archivedItems[indexInArchived].tags);
-                                
-                                if (updatedTags.contains(tag)) {
-                                  updatedTags.remove(tag);
-                                } else {
-                                  updatedTags.add(tag);
-                                }
-                                
-                                _archivedItems[indexInArchived] = ListItem(
-                                  id: _archivedItems[indexInArchived].id,
-                                  title: _archivedItems[indexInArchived].title,
-                                  summary: _archivedItems[indexInArchived].summary,
-                                  lastModified: DateTime.now(),
-                                  backgroundColor: _archivedItems[indexInArchived].backgroundColor,
-                                  backgroundImagePath: _archivedItems[indexInArchived].backgroundImagePath,
-                                  tags: updatedTags,
-                                  isArchived: _archivedItems[indexInArchived].isArchived,
-                                  isFavorite: _archivedItems[indexInItems].isFavorite,
-                                );
-                              }
-                            }
-                            
-                            // Guardamos ambas listas por si modificamos notas archivadas
-                            _saveItems();
-                            _saveArchivedItems(); 
-                             
-                          });
-                          
-                          Navigator.pop(context);
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text(AppLocalizations.of(context)!.tagNotesTitle),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: notesProvider.availableTags.isEmpty
+              ? Text(AppLocalizations.of(context)!.noTagsCreated)
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: notesProvider.availableTags.length,
+                  itemBuilder: (context, index) {
+                    final tag = notesProvider.availableTags[index];
+                    return ListTile(
+                      leading: const Icon(Icons.label_outline), // Iconos outlined preservados
+                      title: Text(tag),
+                      trailing: const Icon(Icons.sell_outlined), 
+                      onTap: () async {
+                        // Clonamos la lista para procesarla de forma segura
+                        final selectedItemsCopy = List<ListItem>.from(_selectedItems);
+                        final itemsCount = selectedItemsCopy.length;
+
+                        // Todo el proceso asíncrono ocurre en el Provider
+                        await notesProvider.toggleTagMultiple(
+                          selectedItems: selectedItemsCopy,
+                          tag: tag,
+                        );
+
+                        if (!context.mounted) return;
+
+                        Navigator.pop(context);
+                        setState(() {
                           _exitSelectionMode();
-                          
-                          // Hacemos el mensaje del SnackBar más genérico ya que ahora quita y pone etiquetas
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                AppLocalizations.of(context)!.updatesTag(_selectedItems.length as String),
-                              ),
+                        });
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              AppLocalizations.of(context)!.updatesTag(itemsCount.toString()),
                             ),
-                          );
-                        },
-                      );
-                    },
-                  ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(AppLocalizations.of(context)!.cancel),
-            ),
-          ],
-        );
-      },
-    );
+        ],
+      );
+    },
+  );
   }
 
   //   Diálogo para gestionar/crear etiquetas desde el Drawer
@@ -926,174 +475,127 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
   }
 
   void _showRenameTagDialog(String oldTag) {
-    final TextEditingController renameController = TextEditingController(
-      text: oldTag,
-    );
-    // Agregamos una variable para manejar el error localmente en el diálogo
-    String? errorText;
+  final TextEditingController renameController = TextEditingController(text: oldTag);
+  final notesProvider = context.read<NotesProvider>();
+  String? errorText;
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          // Necesario para mostrar el error dinámicamente
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(AppLocalizations.of(context)!.renameTag),
-              content: TextField(
-                controller: renameController,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.renameTagLabel,
-                  errorText: errorText, // Muestra el mensaje de error aquí
-                  prefixIcon: const Icon(Icons.edit_outlined),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      renameController.clear();
-                      setDialogState(() => errorText = null);
-                    },
-                  ),
-                ),
-                onChanged: (value) {
-                  if (errorText != null) setDialogState(() => errorText = null);
-                },
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(AppLocalizations.of(context)!.cancel),
-                ),
-                FilledButton(
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Text(AppLocalizations.of(context)!.renameTag),
+            content: TextField(
+              controller: renameController,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.renameTagLabel,
+                errorText: errorText,
+                prefixIcon: const Icon(Icons.edit_outlined), // Iconos outlined preservados
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
                   onPressed: () {
-                    final newTag = renameController.text.trim();
-
-                    // 1. Si no cambió nada, solo cerramos
-                    if (newTag == oldTag) {
-                      Navigator.pop(context);
-                      return;
-                    }
-
-                    // 2. Validación de duplicados
-                    bool exists = _availableTags.any(
-                      (t) =>
-                          t.toLowerCase() == newTag.toLowerCase() &&
-                          t != oldTag,
-                    );
-
-                    if (exists) {
-                      setDialogState(
-                        () => errorText = AppLocalizations.of(
-                          context,
-                        )!.tagExistsError,
-                      );
-                      return;
-                    }
-
-                    if (newTag.isNotEmpty) {
-                      setState(() {
-                        // Actualizar lista global
-                        int index = _availableTags.indexOf(oldTag);
-                        if (index != -1) _availableTags[index] = newTag;
-
-                        // Actualizar filtro activo
-                        if (_selectedTagFilter == oldTag) {
-                          _selectedTagFilter = newTag;
-                        }
-
-                        // Actualizar notas (Uso de map para mayor limpieza)
-                        void updateTags(List<ListItem> list) {
-                          for (var item in list) {
-                            if (item.tags.contains(oldTag)) {
-                              item.tags.remove(oldTag);
-                              item.tags.add(newTag);
-                            }
-                          }
-                        }
-
-                        updateTags(_items);
-                        updateTags(_trashedItems);
-
-                        _saveTags();
-                         
-                      });
-                      Navigator.pop(context);
-                    }
+                    renameController.clear();
+                    setDialogState(() => errorText = null);
                   },
-                  child: Text(AppLocalizations.of(context)!.save),
                 ),
-              ],
-            );
-          },
-        );
-      },
-    );
+              ),
+              onChanged: (value) {
+                if (errorText != null) setDialogState(() => errorText = null);
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(AppLocalizations.of(context)!.cancel),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  final newTag = renameController.text.trim();
+
+                  // 1. Si no hubo cambios en el texto, salimos inmediatamente
+                  if (newTag == oldTag) {
+                    Navigator.pop(context);
+                    return;
+                  }
+
+                  // 2. Validación de duplicados consumiendo el estado limpio del Provider
+                  bool exists = notesProvider.availableTags.any(
+                    (t) => t.toLowerCase() == newTag.toLowerCase() && t != oldTag,
+                  );
+
+                  if (exists) {
+                    setDialogState(() {
+                      errorText = AppLocalizations.of(context)!.tagExistsError;
+                    });
+                    return;
+                  }
+
+                  if (newTag.isNotEmpty) {
+                    // 3. Delegamos el renombrado completo al Provider de manera asíncrona
+                    await notesProvider.renameTagGlobal(oldTag: oldTag, newTag: newTag);
+
+                    // 4. Actualizamos el filtro de la UI local en caso de que estuviéramos visualizando esta etiqueta
+                    if (_selectedTagFilter == oldTag) {
+                      setState(() {
+                        _selectedTagFilter = newTag;
+                      });
+                    }
+
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text(AppLocalizations.of(context)!.save),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
   }
 
-  void _showUndoSnackbar(List<ListItem> deletedItems) {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    scaffoldMessenger.clearSnackBars();
-    scaffoldMessenger.showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.movedToTrash),
-        behavior: SnackBarBehavior.floating, // Estilo flotante de Material 3
-        action: SnackBarAction(
-          label: AppLocalizations.of(context)!.undo,
-          onPressed: () {
-            setState(() {
-              for (var item in deletedItems) {
-                _trashedItems.removeWhere((i) => i.id == item.id);
-                
-                if (item.isArchived) {
-                  _archivedItems.add(item); // Si era archivada, vuelve a archivados
-                } else {
-                  _items.add(item); // Si no, va al inicio
-                }
-
-                // Sincronización al restaurar: Si era favorita, la devolvemos a favoritos
-                if (item.isFavorite) {
-                  if (!_favoriteItems.any((i) => i.id == item.id)) {
-                    _favoriteItems.add(item);
-                  }
-                }
-              }
-              _saveItems();
-              _saveArchivedItems(); 
-              _saveFavoriteItems(); // Guardamos los cambios en favoritos
-              _saveTrashedItems();
-            });
-          },
-        ),
+  void _showUndoSnackbar(List<ListItem> restoredItems) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(AppLocalizations.of(context)!.notesDeleted), // Ajusta según tu traducción
+      behavior: SnackBarBehavior.floating,
+      action: SnackBarAction(
+        label: AppLocalizations.of(context)!.undo,
+        onPressed: () async {
+          // El provider se encarga de reinsertar los ítems en sus listas correctas y guardar
+          await context.read<NotesProvider>().restoreFromTrash(restoredItems);
+        },
       ),
-    );
+    ),
+  );
   }
 
   void _deleteSelectedItems() async {
-    final itemsToDelete = List<ListItem>.from(_selectedItems);
-    final idsToDelete = itemsToDelete.map((item) => item.id).toSet();
+  if (_selectedItems.isEmpty) return;
 
-    setState(() {
-      if (_isTrashView) {
-        // Eliminación definitiva desde la papelera
-        _cleanupImagesForItems(itemsToDelete);
-        _trashedItems.removeWhere((item) => idsToDelete.contains(item.id));
-        _saveTrashedItems();
-      } else {
-        // Enviar a la papelera comparando por ID para mantener la sincronización
-        _items.removeWhere((item) => idsToDelete.contains(item.id));
-        _archivedItems.removeWhere((item) => idsToDelete.contains(item.id));
-        _favoriteItems.removeWhere((item) => idsToDelete.contains(item.id));
-        
-        _trashedItems.addAll(itemsToDelete);
-        
-        _saveItems();
-        _saveArchivedItems();
-        _saveFavoriteItems(); // Guardamos el estado de favoritos actualizado
-        _saveTrashedItems();
-        _showUndoSnackbar(itemsToDelete);
-      }
-      _exitSelectionMode();
-    });
+  final itemsToDelete = List<ListItem>.from(_selectedItems);
+  final isTrash = _isTrashView;
+  final notesProvider = context.read<NotesProvider>();
+
+  // Ejecutamos la eliminación en el Provider
+  await notesProvider.deleteMultiple(
+    selectedItems: itemsToDelete,
+    isTrashView: isTrash,
+    // Pasamos tu función nativa de limpieza de imágenes como callback seguro
+    onPermanentDeleteCleanup: (items) => _cleanupImagesForItems(items),
+  );
+
+  setState(() {
+    _exitSelectionMode();
+  });
+
+  // Si no estábamos en la papelera, mostramos la opción de deshacer la acción
+  if (!isTrash) {
+    _showUndoSnackbar(itemsToDelete);
+  }
   }
 
   void _showShareMenu(BuildContext context) {
@@ -1390,43 +892,26 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
   }
 
   void _setCustomSort() {
-    setState(() {
-      _sortMethod = SortMethod.custom;
-       
-    });
-    Navigator.pop(context);
+    if (preserveState) Navigator.pop(context);
+    context.read<NotesProvider>().changeSortMethod(SortMethod.custom)
   }
 
   void _sortAlphabetically({bool preserveState = true}) {
-    if (preserveState) Navigator.pop(context);
-    setState(() {
-      _sortMethod = SortMethod.alphabetical;
-      _items.sort(
-        (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
-      );
-       
-    });
+  if (preserveState) Navigator.pop(context);
+  context.read<NotesProvider>().changeSortMethod(SortMethod.alphabetical);
   }
 
-  void _sortByDate({bool preserveState = true}) {
-    if (preserveState) Navigator.pop(context);
-    setState(() {
-      _sortMethod = SortMethod.byDate;
-      _items.sort((a, b) => b.lastModified.compareTo(a.lastModified));
-       
-    });
+void _sortByDate({bool preserveState = true}) {
+  if (preserveState) Navigator.pop(context);
+  context.read<NotesProvider>().changeSortMethod(SortMethod.byDate);
   }
 
-  void _onReorderItem(int oldIndex, int newIndex) {
-    if (!_isTrashView) return;
-    setState(() {
-      
-      final item = _items.removeAt(oldIndex);
-      _items.insert(newIndex, item);
+  void _onReorderItem(int oldIndex, int newIndex) async {
+  // Si estamos en la papelera, no permitimos reordenar las notas de la lista principal
+  if (_isTrashView) return; 
 
-       
-      _saveItems();
-    });
+  // Llamamos al método centralizado del Provider
+  await context.read<NotesProvider>().reorderItemByIndex(oldIndex, newIndex);
   }
 
   PreferredSizeWidget _buildAppBar() {
@@ -1443,6 +928,11 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
         ),
         title: Text('${_selectedItems.length}'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.folder_outlined),
+            tooltip: AppLocalizations.of(context)!.categoriesHeader,
+            onPressed: _showAssignCategoryDialog,
+          ),
           IconButton(
             icon: const Icon(Icons.star_outline),
             tooltip: _isFavoriteView
@@ -1510,41 +1000,34 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
       // VISTA NORMAL, ARCHIVO O ETIQUETAS
       titleWidget = GestureDetector(
   onTap: () async {
-    // Obtenemos los colores únicos para enviarlos al Delegate [cite: 314]
-    final uniqueColors = [..._items, ..._archivedItems]
-        .where((item) => item.backgroundColor != null)
-        .map((item) => item.backgroundColor!)
-        .toSet()
-        .toList();
+    final notesProvider = context.read<NotesProvider>();
 
+    // Abrimos el buscador inyectando los datos directamente desde el Provider
     final ListItem? selectedNote = await showSearch<ListItem?>(
       context: context,
       delegate: CustomSearchDelegate(
-        allNotes: [
-      ..._items, 
-      ..._archivedItems
-    ],
-        availableTags: _availableTags,
-        availableColors: uniqueColors,
+        allNotes: notesProvider.allSearchableNotes,
+        availableTags: notesProvider.availableTags,
+        availableColors: notesProvider.uniqueNotesColors,
       ),
     );
 
-    // Si el usuario seleccionó una nota desde la búsqueda, la abrimos
+    // Si el usuario seleccionó una nota desde la búsqueda, la abrimos usando tu editor
     if (selectedNote != null) {
       _navigateToEditor(selectedNote);
     }
   },
   child: SearchBar(
-    enabled: false, // Lo desactivamos para que actúe solo como un botón visual
+    enabled: false, // Actúa estrictamente como botón visual
     hintText: AppLocalizations.of(context)!.search,
-    leading: const Icon(Icons.search_outlined),
+    leading: const Icon(Icons.search_outlined), // Icono outlined preservado
     elevation: WidgetStateProperty.all(0),
     backgroundColor: WidgetStateProperty.all(
-      Theme.of(context).colorScheme.surfaceContainerHigh,
+      Theme.of(context).colorScheme.surfaceContainerHigh, // Estilo Material 3
     ),
     constraints: const BoxConstraints(minHeight: 48, maxHeight: 48),
   ),
-      );
+  );
 
       actions = [
         IconButton(
@@ -1621,8 +1104,30 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
                             !_isFavoriteView &&
                             _selectedTagFilter == null && 
                             _selectedColorFilter == null && 
+                            _selectedCategoryFilter == null &&
                             !_isSelectionMode;
-    final categoryProvider = context.watch<CategoryProvider>();
+    final notesProvider = context.watch<NotesProvider>();
+  
+  List<ListItem> currentSourceItems;
+
+if (_isTrashView) {
+  currentSourceItems = notesProvider.sortedTrashedItems;
+} else if (_isArchiveView) {
+  currentSourceItems = notesProvider.sortedArchivedItems;
+} else if (_isFavoriteView) {
+  currentSourceItems = notesProvider.sortedFavoriteItems;
+} else if (_selectedTagFilter != null) {
+  currentSourceItems = notesProvider.sortedItems
+      .where((item) => item.tags.contains(_selectedTagFilter!))
+      .toList();
+} else if (_selectedCategoryFilter != null) {
+  // Filtramos las notas ordenadas cuyo categoryId coincida con la categoría seleccionada
+  currentSourceItems = notesProvider.sortedItems
+      .where((item) => item.categoryId == _selectedCategoryFilter!.id)
+      .toList();
+} else {
+  currentSourceItems = notesProvider.sortedItems;
+}
 
     // 2. Envolvemos el Scaffold con PopScope para interceptar el botón atrás
     return PopScope(
@@ -1642,6 +1147,7 @@ Future<List<ListItem>> loadDefaultNotesFromAssets(String languageCode) async {
             _isFavoriteView = false;
             _selectedTagFilter = null;
             _selectedColorFilter = null;
+            _selectedCategoryFilter = null;
           });
           
         }
@@ -1855,7 +1361,7 @@ Padding(
   ),
 ),
 // Mapeamos directamente desde la lista de categorías del Provider
-...categoryProvider.categories.map(
+...notesProvider.categories.map(
   (category) => Padding(
     padding: const EdgeInsets.symmetric(
       horizontal: 12,
@@ -2121,7 +1627,7 @@ const Divider(),
           ],
         ),
       ),
-      body: _isLoading
+      body: notesProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : (_isListView ? _buildListView() : _buildGridView()),
       floatingActionButton: (_isSelectionMode || _isTrashView || _isArchiveView)
@@ -2138,15 +1644,15 @@ const Divider(),
   Widget _buildItem(ListItem item, {bool isListView = true}) {
     return EntryAnimation(
     key: ValueKey(item.id), // Asegúrate de mantener tus llaves para la lista
-    index: _currentSourceItems.indexOf(item),
+    index: currentSourceItems.indexOf(item),
     child: NoteItemWidget(
     item: item,
     isListView: isListView,
     isSelected: _selectedItems.contains(item),
     isSelectionMode: _isSelectionMode,
-    canReorder: _sortMethod == SortMethod.custom,
+    canReorder: context.watch<NotesProvider>().currentSortMethod == SortMethod.custom,,
     isTrashView: _isTrashView,
-    itemIndex: _currentSourceItems.indexOf(item),
+    itemIndex: currentSourceItems.indexOf(item),
     moreButtonTooltip: AppLocalizations.of(context)!.select,
     onTap: () {
       if (_isSelectionMode) {
@@ -2154,61 +1660,48 @@ const Divider(),
       } else if (_isTrashView) {
         // MOSTRAR DIÁLOGO EN PAPELERA
         showModalBottomSheet(
-          context: context,
-          builder: (context) => SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.restore_outlined),
-                  title: Text(AppLocalizations.of(context)!.restoreNote),
-                  onTap: () {
-                    setState(() {
-                      _trashedItems.removeWhere((i) => i.id == item.id);
-                      if (item.isArchived) {
-                        if (!_archivedItems.any((i) => i.id == item.id)) {
-                             _archivedItems.add(item);
-                          }
-                      } else {
-                        if (!_items.any((i) => i.id == item.id)) {
-                             _items.add(item);
-                          }
-                      }
-                      if (item.isFavorite) {
-                          // Insertamos para evitar duplicados por seguridad
-                          if (!_favoriteItems.any((i) => i.id == item.id)) {
-                             _favoriteItems.add(item);
-                          }
-                       }
-                      _saveItems();
-                      _saveArchivedItems();
-                      _saveFavoriteItems();
-                      _saveTrashedItems();
-                       
-                    });
-                    Navigator.pop(context);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(
-                    Icons.delete_forever_outlined,
-                    color: Colors.red,
-                  ),
-                  title: Text(AppLocalizations.of(context)!.deleteForever),
-                  onTap: () {
-                    setState(() {
-                      _cleanupImagesForItems([item]);
-                      _trashedItems.removeWhere((i) => i.id == item.id);
-                      _saveTrashedItems();
-                       
-                    });
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
+  context: context,
+  builder: (context) {
+    final notesProvider = context.read<NotesProvider>();
+
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.restore_outlined), // Iconos outlined preservados
+            title: Text(AppLocalizations.of(context)!.restoreNote),
+            onTap: () async {
+              // Reutilizamos el método existente del Provider pasando el ítem en una lista
+              await notesProvider.restoreFromTrash([item]);
+
+              if (!context.mounted) return;
+              Navigator.pop(context);
+            },
           ),
-        );
+          ListTile(
+            leading: const Icon(
+              Icons.delete_forever_outlined,
+              color: Colors.red,
+            ),
+            title: Text(AppLocalizations.of(context)!.deleteForever),
+            onTap: () async {
+              // Reutilizamos deleteMultiple simulando el estado de la papelera activo (isTrashView: true)
+              await notesProvider.deleteMultiple(
+                selectedItems: [item],
+                isTrashView: true,
+                onPermanentDeleteCleanup: (items) => _cleanupImagesForItems(items),
+              );
+
+              if (!context.mounted) return;
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
+  },
+);
       } else {
         _navigateToEditor(item);
       }
@@ -2221,13 +1714,13 @@ const Divider(),
 
   Widget _buildListView() {
     final bool canReorder =
-        _sortMethod == SortMethod.custom ;
+        context.watch<NotesProvider>().currentSortMethod == SortMethod.custom, ;
     if (canReorder) {
       return ReorderableListView.builder(
         buildDefaultDragHandles: false,
-        itemCount: _currentSourceItems.length,
+        itemCount: currentSourceItems.length,
         itemBuilder: (context, index) {
-          final item = _currentSourceItems[index];
+          final item = currentSourceItems[index];
           return Container(
             key: ValueKey(item.id),
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -2238,9 +1731,9 @@ const Divider(),
       );
     }
     return ListView.builder(
-      itemCount: _currentSourceItems.length,
+      itemCount: currentSourceItems.length,
       itemBuilder: (context, index) {
-        final item = _currentSourceItems[index];
+        final item = currentSourceItems[index];
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: _buildItem(item, isListView: true),
@@ -2250,7 +1743,7 @@ const Divider(),
   }
 
   Widget _buildGridView() {
-  final bool canReorder = _sortMethod == SortMethod.custom;
+  final bool canReorder = context.watch<NotesProvider>().currentSortMethod == SortMethod.custom,;
   final scrollController = ScrollController(); // Sincronización obligatoria
 
   // 1. Detectamos la orientación de la pantalla usando el contexto
@@ -2273,11 +1766,12 @@ const Divider(),
       ),
 
       // Uso del nuevo callback de reordenamiento de la v5.6.0
-      onReorder: (ReorderedListFunction<ListItem> reorderCallback) {
-        setState(() {
-          _items = reorderCallback(_items);
-          _saveItems();
-        });
+      onReorder: (ReorderedListFunction<ListItem> reorderCallback) async {
+        final notesProvider = context.read<NotesProvider>();
+        // Calculamos la nueva lista ordenada usando la función que provee el Grid
+        final updatedList = reorderCallback(notesProvider.items);
+        // Le delegamos el nuevo orden y el guardado al Provider de forma asíncrona
+        await notesProvider.reorderNotes(updatedList);
       },
 
       // Se generan las llaves únicas obligatorias para cada hijo
@@ -2295,7 +1789,7 @@ const Divider(),
           children: children,
         );
       },
-      children: _currentSourceItems.map((item) {
+      children: currentSourceItems.map((item) {
         return Container(
           key: ValueKey(item.id), // Clave única obligatoria
           child: _buildItem(item, isListView: false),
@@ -2314,9 +1808,9 @@ const Divider(),
       mainAxisSpacing: 16,
       childAspectRatio: 0.75,
     ),
-    itemCount: _currentSourceItems.length,
+    itemCount: currentSourceItems.length,
     itemBuilder: (context, index) =>
-        _buildItem(_currentSourceItems[index], isListView: false),
+        _buildItem(currentSourceItems[index], isListView: false),
   );
 }
 
@@ -2356,152 +1850,190 @@ const Divider(),
     }
   }
 
-  Future<void> _saveTrashedItems() async {
-    try {
-      final List<Map<String, dynamic>> jsonList = _trashedItems
-          .map((item) => item.toJson())
-          .toList();
-      final contents = jsonEncode(jsonList);
-      if (kIsWeb) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('trashed_notes', contents);
-      } else {
-        final directory = await getApplicationDocumentsDirectory();
-        final file = File('${directory.path}/trashed_notes.json');
-        await file.writeAsString(contents);
-      }
-    } catch (e) {
-      debugPrint("Error guardando papelera: $e");
-    }
-  }
-
   void _emptyTrash() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.emptyTrashTitle),
-        content: Text(AppLocalizations.of(context)!.emptyTrashMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              setState(() {
-                _cleanupImagesForItems(_trashedItems);
-                _trashedItems.clear();
-                _saveTrashedItems();
-                 
-              });
-              Navigator.pop(context);
-            },
-            child: Text(AppLocalizations.of(context)!.emptyTrashAction),
-          ),
-        ],
-      ),
-    );
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(AppLocalizations.of(context)!.emptyTrashTitle),
+      content: Text(AppLocalizations.of(context)!.emptyTrashMessage),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(AppLocalizations.of(context)!.cancel),
+        ),
+        FilledButton(
+          onPressed: () async {
+            final notesProvider = context.read<NotesProvider>();
+
+            // Ejecutamos el vaciado asíncrono en el Provider
+            await notesProvider.clearTrash(
+              onPermanentDeleteCleanup: (items) => _cleanupImagesForItems(items),
+            );
+
+            if (!context.mounted) return;
+            Navigator.pop(context);
+          },
+          child: Text(AppLocalizations.of(context)!.emptyTrashAction),
+        ),
+      ],
+    ),
+  );
   }
 
   void _confirmDeleteTag(String tag) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.deleteTagTitle(tag)),
-        content: Text(AppLocalizations.of(context)!.deleteTagMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.cancel),
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(AppLocalizations.of(context)!.deleteTagTitle(tag)),
+      content: Text(AppLocalizations.of(context)!.deleteTagMessage),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(AppLocalizations.of(context)!.cancel),
+        ),
+        TextButton(
+          onPressed: () async {
+            final notesProvider = context.read<NotesProvider>();
+
+            // 1. Ejecutar la remoción global en segundo plano
+            await notesProvider.deleteTagGlobal(tag);
+
+            // 2. Modificar el estado local de la UI de forma segura
+            setState(() {
+              _selectedTagFilter = null; // Volvemos a la vista general si estábamos filtrando por ella
+            });
+
+            if (!context.mounted) return;
+            Navigator.pop(context);
+          },
+          child: Text(
+            AppLocalizations.of(context)!.delete,
+            style: const TextStyle(color: Colors.red),
           ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                // 1. Eliminar de la lista global de etiquetas
-                _availableTags.remove(tag);
-                _selectedTagFilter = null; // Volvemos a la vista general
-
-                // 2. Función interna para limpiar la etiqueta de cualquier lista de notas
-                void removeTagFromList(List<ListItem> list) {
-                  for (var item in list) {
-                    // Si el ítem contiene la etiqueta, la removemos
-                    if (item.tags.contains(tag)) {
-                      item.tags.remove(tag);
-                    }
-                  }
-                }
-
-                // 3. Aplicar la limpieza a todas tus fuentes de datos[cite: 1]
-                removeTagFromList(_items);
-                removeTagFromList(_archivedItems);
-                removeTagFromList(_trashedItems);
-
-                // 4. Persistir todos los cambios en SharedPreferences y archivos JSON[cite: 1]
-                _saveTags();
-                _saveItems();
-                _saveArchivedItems();
-                _saveTrashedItems();
-
-                  // Refrescar la UI[cite: 1]
-              });
-              Navigator.pop(context);
-            },
-            child: Text(
-              AppLocalizations.of(context)!.delete,
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
   }
   void _toggleFavoriteSelectedItems() async {
   if (_selectedItems.isEmpty) return;
 
+  // Pasamos una copia de la lista de seleccionados para evitar problemas de referencia
+  final itemsToToggle = List<ListItem>.from(_selectedItems);
+
+  // Llamada asíncrona al Provider
+  await context.read<NotesProvider>().toggleFavoriteMultiple(itemsToToggle);
+
+  // Limpiamos la UI en la vista local
   setState(() {
-    for (var selectedItem in _selectedItems) {
-      // 1. Localizar el ítem en la lista de notas activas o archivadas
-      final int indexInItems = _items.indexWhere((i) => i.id == selectedItem.id);
-      final int indexInArchived = _archivedItems.indexWhere((i) => i.id == selectedItem.id);
-      
-      final bool newFavoriteStatus = !selectedItem.isFavorite;
-
-      // 2. Crear una nueva instancia con el estado de favorito invertido
-      final updatedItem = ListItem(
-        id: selectedItem.id,
-        title: selectedItem.title,
-        summary: selectedItem.summary,
-        lastModified: selectedItem.lastModified,
-        backgroundColor: selectedItem.backgroundColor,
-        backgroundImagePath: selectedItem.backgroundImagePath,
-        tags: selectedItem.tags,
-        isArchived: selectedItem.isArchived,
-        isFavorite: newFavoriteStatus,
-      );
-
-      // 3. Reemplazar en la lista de origen
-      if (indexInItems != -1) _items[indexInItems] = updatedItem;
-      if (indexInArchived != -1) _archivedItems[indexInArchived] = updatedItem;
-
-      // 4. Sincronizar la lista/categoría especial de favoritos
-      if (newFavoriteStatus) {
-        // Evitamos duplicados
-        if (!_favoriteItems.any((i) => i.id == selectedItem.id)) {
-          _favoriteItems.insert(0, updatedItem);
-        }
-      } else {
-        _favoriteItems.removeWhere((i) => i.id == selectedItem.id);
-      }
-    }
-
-    // 5. Persistir todos los cambios en los archivos correspondientes
-    _saveItems();
-    _saveArchivedItems();
-    _saveFavoriteItems();
-    
-    // Limpiar selección y refrescar UI
     _exitSelectionMode();
-     
   });
+  }
+
+  void showAssignCategoryDialog({
+  required BuildContext context,
+  required List<ListItem> selectedNotes,
+}) {
+  final notesProvider = Provider.of<NotesProvider>(context, listen: false);
+  final localizations = AppLocalizations.of(context)!;
+  
+  // Si es solo una nota, pre-seleccionamos su categoría actual para mejorar la UX
+  String? currentSelectedId = selectedNotes.length == 1 ? selectedNotes.first.categoryId : null;
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            icon: const Icon(Icons.folder_outlined), // Icono Outlined (MD3 style)
+            title: Text(localizations.selectCategory), // Clave de traducción para el título
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  // Opción por defecto para eliminar la nota de cualquier categoría
+                  RadioListTile<String?>(
+                    title: Text(localizations.noCategory), // Traducción ej: "Ninguna" o "Sin categoría"
+                    value: null,
+                    groupValue: currentSelectedId,
+                    onChanged: (value) {
+                      setState(() => currentSelectedId = value);
+                    },
+                  ),
+                  const Divider(),
+                  // Listado dinámico de categorías existentes
+                  ...notesProvider.categories.map((category) {
+                    return RadioListTile<String?>(
+                      title: Text(category.name),
+                      value: category.id,
+                      groupValue: currentSelectedId,
+                      onChanged: (value) {
+                        setState(() => currentSelectedId = value);
+                      },
+                    );
+                  }),
+                  const Divider(),
+                  // Acción rápida por si desea crear una categoría al instante
+                  ListTile(
+                    leading: const Icon(Icons.add_outlined),
+                    title: Text(localizations.addCategory), // Traducción ej: "Nueva categoría"
+                    onTap: () async {
+                      final inputController = TextEditingController();
+                      final newCatName = await showDialog<String>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: Text(localizations.addCategory),
+                          content: TextField(
+                            controller: inputController,
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              labelText: localizations.categoryName, // Traducción ej: "Nombre"
+                              border: const OutlineInputBorder(),
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: Text(localizations.cancel),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, inputController.text.trim()),
+                              child: Text(localizations.save),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (newCatName != null && newCatName.isNotEmpty) {
+                        await notesProvider.addCategory(newCatName);
+                        setState(() {
+                          // Forzar redibujado interno del diálogo para que aparezca la nueva categoría
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(localizations.cancel),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await notesProvider.assignCategoryMultiple(selectedNotes, currentSelectedId);
+                  if (context.mounted) Navigator.pop(context);
+                },
+                child: Text(localizations.apply), // Traducción ej: "Aplicar" o "Aceptar"
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
   }
 }

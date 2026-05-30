@@ -13,6 +13,7 @@ class ListItem {
   final List<String> tags;
   final bool isArchived;
   final bool isFavorite;
+  final String? categoryId; // <-- Nueva propiedad opcional
 
   ListItem({
     required this.id,
@@ -24,19 +25,33 @@ class ListItem {
     this.tags = const [],
     this.isArchived = false,
     this.isFavorite = false,
+    this.categoryId, // <-- Incluida aquí
   });
 
-  factory ListItem.fromJson(Map<String, dynamic> json) {
+  ListItem copyWith({
+    String? id,
+    String? title,
+    String? summary,
+    DateTime? lastModified,
+    int? backgroundColor,
+    String? backgroundImagePath,
+    List<String>? tags,
+    bool? isArchived,
+    bool? isFavorite,
+    String? categoryId,
+    bool overrideCategory = false, // <-- Si es true, forzará el valor de categoryId aunque sea null
+  }) {
     return ListItem(
-      id: json['id'],
-      title: json['title'],
-      summary: json['summary'] ?? '',
-      lastModified: DateTime.parse(json['lastModified']),
-      backgroundColor: json['backgroundColor'],
-      backgroundImagePath: json['backgroundImagePath'],
-      tags: List<String>.from(json['tags'] ?? []), // <-- NUEVO
-      isArchived: json['isArchived'],
-      isFavorite: json['isFavorite'],
+      id: id ?? this.id,
+      title: title ?? this.title,
+      summary: summary ?? this.summary,
+      lastModified: lastModified ?? this.lastModified,
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      backgroundImagePath: backgroundImagePath ?? this.backgroundImagePath,
+      tags: tags ?? this.tags,
+      isArchived: isArchived ?? this.isArchived,
+      isFavorite: isFavorite ?? this.isFavorite,
+      categoryId: overrideCategory ? categoryId : (categoryId ?? this.categoryId),
     );
   }
 
@@ -51,7 +66,23 @@ class ListItem {
       'tags': tags,
       'isArchived': isArchived,
       'isFavorite': isFavorite,
+      'categoryId': categoryId, // <-- Serializar
     };
+  }
+
+  factory ListItem.fromJson(Map<String, dynamic> json) {
+    return ListItem(
+      id: json['id'],
+      title: json['title'],
+      summary: json['summary'],
+      lastModified: DateTime.parse(json['lastModified']),
+      backgroundColor: json['backgroundColor'],
+      backgroundImagePath: json['backgroundImagePath'],
+      tags: List<String>.from(json['tags'] ?? []),
+      isArchived: json['isArchived'] ?? false,
+      isFavorite: json['isFavorite'] ?? false,
+      categoryId: json['categoryId'], // <-- Deserializar
+    );
   }
 
   // Helper to get a Quill Document from the summary string

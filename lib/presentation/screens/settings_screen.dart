@@ -178,37 +178,13 @@ class SettingsScreen extends StatelessWidget {
                           const UpdateAvailableWidget(),
                           ),
                           if (updater.latestChangelog != null) ...[
-                      SettingsCardGroup(
-                        child:
-                          
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: MarkdownBody(
-                                data: updater.latestChangelog!,
-                                selectable:
-                          true, // Permite al usuario seleccionar y copiar texto
-                      // Hace que los enlaces en el markdown funcionen
-                      onTapLink: (text, href, title) async {
-                        if (href != null) {
-                          final uri = Uri.parse(href);
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(
-                              uri,
-                              mode: LaunchMode.externalApplication,
-                            );
-                          }
-                        }
-                      },
-                                styleSheet: MarkdownStyleSheet.fromTheme(
-                                  Theme.of(context),
-                                ),
-                              ),
-                            ),
-                          
-                          
+                            SettingsCardGroup(
+                              child: Padding(
+                             padding: const EdgeInsets.all(16.0),
+                             child: CustomMarkdownBody(data: updater.latestChangelog!),
+                           ),
                           ),
                         ],
-                      
                     ],
                 ]
               );

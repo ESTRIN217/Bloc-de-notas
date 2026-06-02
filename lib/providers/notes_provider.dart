@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -632,7 +631,7 @@ Future<void> reorderItemByIndex(int oldIndex, int newIndex) async {
   }
 
 /// Filtra y devuelve la lista de colores únicos presentes en las notas
-  List<Color> get uniqueNotesColors {
+  List<int> get uniqueNotesColors {
   return allSearchableNotes
       .where((item) => item.backgroundColor != null)
       .map((item) => item.backgroundColor!)
@@ -728,7 +727,7 @@ Future<void> renameTagGlobal({required String oldTag, required String newTag}) a
     
     final folderIds = itemsToUpdate.map((e) => e.id).toSet();
     
-    List<ListItem> _updateList(List<ListItem> targetList) { 
+    List<ListItem> updateList(List<ListItem> targetList) { 
       return targetList.map((item) {
         if (folderIds.contains(item.id)) {
           return item.copyWith(
@@ -741,10 +740,10 @@ Future<void> renameTagGlobal({required String oldTag, required String newTag}) a
       }).toList();
     } 
 
-    items = _updateList(items);
-    archivedItems = _updateList(archivedItems);
-    favoriteItems = _updateList(favoriteItems);
-    trashedItems = _updateList(trashedItems);
+    items = updateList(items);
+    archivedItems = updateList(archivedItems);
+    favoriteItems = updateList(favoriteItems);
+    trashedItems = updateList(trashedItems);
 
     await _saveAllLists();
     notifyListeners();

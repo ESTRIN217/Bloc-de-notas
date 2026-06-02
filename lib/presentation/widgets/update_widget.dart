@@ -66,7 +66,7 @@ class UpdateAvailableWidget extends StatelessWidget {
 
 class CustomMarkdownBody extends StatelessWidget {
   final String data;
-  final EdgeInsetsGeometry? pPadding;
+  final EdgeInsets? pPadding;
 
   const CustomMarkdownBody({
     super.key,

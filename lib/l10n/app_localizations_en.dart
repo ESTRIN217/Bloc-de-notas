@@ -513,4 +513,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get create => 'Create';
+
+  @override
+  String get apply => 'Apply';
 }

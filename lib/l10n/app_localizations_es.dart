@@ -516,6 +516,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get create => 'Crear';
+
+  @override
+  String get apply => 'aplicar';
 }
 
 /// The translations for Spanish Castilian, as used in Venezuela (`es_VE`).
@@ -1030,4 +1033,7 @@ class AppLocalizationsEsVe extends AppLocalizationsEs {
 
   @override
   String get create => 'Crear';
+
+  @override
+  String get apply => 'aceptar';
 }

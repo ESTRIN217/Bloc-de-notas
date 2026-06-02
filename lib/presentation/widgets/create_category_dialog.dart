@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:bloc_de_notas/providers/category_provider.dart';
+import 'package:bloc_de_notas/providers/notes_provider.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart'; 
 
 class CreateCategoryDialog extends StatefulWidget {
@@ -52,7 +52,7 @@ class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
         FilledButton( // Botón con estilo M3
           onPressed: () {
             if (_formKey.currentState!.validate()) {
-              context.read<CategoryProvider>().addCategory(_controller.text.trim());
+              context.read<NotesProvider>().addCategory(_controller.text.trim());
               Navigator.pop(context);
             }
           },

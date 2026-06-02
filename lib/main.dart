@@ -23,7 +23,6 @@ import 'presentation/screens/editor_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'providers/theme_provider.dart';
 import 'providers/updater_provider.dart';
-import 'providers/category_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -33,7 +32,8 @@ import 'theme/theme.dart';
 import 'presentation/widgets/note_item_widget.dart';
 import 'presentation/animations/entry_animation.dart';
 import 'presentation/search/custom_search_delegate.dart';
-import 'presentation/widgets/notes_provider.dart';
+import 'providers/notes_provider.dart';
+import 'package:bloc_de_notas/presentation/widgets/create_category_dialog.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
@@ -141,9 +141,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool _isArchiveView = false;
   int? _selectedColorFilter;
   bool _isFavoriteView = false;
-  String? _selectedCategoryFilter;
+  CategoryItem? _selectedCategoryFilter;
+  List<ListItem> currentSourceItems = [];
   
   BackupService get _backupService => BackupService();
+
 
   @override
   void initState() {
@@ -181,10 +183,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   void _archiveSelectedItems() async {
   if (_selectedItems.isEmpty) return;
-
+  if (!context.mounted) return;
   final itemsToMove = List<ListItem>.from(_selectedItems);
   final wasInArchiveView = _isArchiveView;
   final notesProvider = context.read<NotesProvider>();
+  final localization = AppLocalizations.of(context)!;
 
   // Ejecutamos la acción inicial (Si estaba en archivo, va a principal. Si no, se archiva)
   await notesProvider.toggleArchiveMultiple(
@@ -197,22 +200,24 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   });
 
   // SnackBar nativo usando tus traducciones existentes
+  if (!mounted) return;
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(
         wasInArchiveView
-            ? AppLocalizations.of(context)!.notesRestored
-            : AppLocalizations.of(context)!.notesArchived,
+            ? localization.notesRestored
+            : localization.notesArchived,
       ),
       behavior: SnackBarBehavior.floating,
       action: SnackBarAction(
-        label: AppLocalizations.of(context)!.undo,
+        label: localization.undo,
         onPressed: () async {
           // Revertir: Volvemos a alternar pero al estado inverso original
           await notesProvider.toggleArchiveMultiple(
             selectedItems: itemsToMove,
             toArchive: wasInArchiveView,
           );
+          if (!context.mounted) return;
         },
       ),
     ),
@@ -245,10 +250,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     MaterialPageRoute(builder: (context) => EditorScreen(item: originalItem)),
   );
 
+  if (!mounted) return;
+
   final notesProvider = context.read<NotesProvider>();
 
   // Si canceló sin retornar datos, recargamos el estado local por si acaso
   if (result == null) {
+    if (!mounted) return;
     // Puedes pasar el language code actual si es necesario
     final lang = Localizations.localeOf(context).languageCode;
     notesProvider.loadAllData(lang); 
@@ -298,16 +306,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 // Diálogo para asignar etiquetas en modo selección
   void _showAssignTagDialog() {
   final notesProvider = context.read<NotesProvider>();
+  final localization = AppLocalizations.of(context)!;
 
   showDialog(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: Text(AppLocalizations.of(context)!.tagNotesTitle),
+        title: Text(localization.tagNotesTitle),
         content: SizedBox(
           width: double.maxFinite,
           child: notesProvider.availableTags.isEmpty
-              ? Text(AppLocalizations.of(context)!.noTagsCreated)
+              ? Text(localization.noTagsCreated)
               : ListView.builder(
                   shrinkWrap: true,
                   itemCount: notesProvider.availableTags.length,
@@ -338,7 +347,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              AppLocalizations.of(context)!.updatesTag(itemsCount.toString()),
+                              localization.updatesTag(itemsCount.toString()),
                             ),
                           ),
                         );
@@ -361,6 +370,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   //   Diálogo para gestionar/crear etiquetas desde el Drawer
   void _showManageTagsDialog() {
     final TextEditingController tagController = TextEditingController();
+    final notesProvider = context.read<NotesProvider>();
 
     showDialog(
       context: context,
@@ -394,7 +404,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             // VALIDACIÓN: ¿Está vacía o ya existe?
                             if (newTag.isEmpty) return;
 
-                            if (_availableTags.any(
+                            if (notesProvider.availableTags.any(
                               (t) => t.toLowerCase() == newTag.toLowerCase(),
                             )) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -410,8 +420,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             }
 
                             setState(() {
-                              _availableTags.add(newTag);
-                              _saveTags();
+                              notesProvider.availableTags.add(newTag);
+                              notesProvider.saveTags();
                             });
                             setModalState(() {});
                             tagController.clear();
@@ -424,9 +434,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     Expanded(
                       child: ListView.builder(
                         shrinkWrap: true,
-                        itemCount: _availableTags.length,
+                        itemCount: notesProvider.availableTags.length,
                         itemBuilder: (context, index) {
-                          final tag = _availableTags[index];
+                          final tag = notesProvider.availableTags[index];
                           return ListTile(
                             // Icono de etiqueta al inicio
                             leading: const Icon(Icons.label_outline),
@@ -560,7 +570,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   void _showUndoSnackbar(List<ListItem> restoredItems) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text(AppLocalizations.of(context)!.notesDeleted), // Ajusta según tu traducción
+      content: Text(AppLocalizations.of(context)!.movedToTrash), // Ajusta según tu traducción
       behavior: SnackBarBehavior.floating,
       action: SnackBarAction(
         label: AppLocalizations.of(context)!.undo,
@@ -891,9 +901,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
   }
 
-  void _setCustomSort() {
+  void _setCustomSort({bool preserveState = true}) {
     if (preserveState) Navigator.pop(context);
-    context.read<NotesProvider>().changeSortMethod(SortMethod.custom)
+    context.read<NotesProvider>().changeSortMethod(SortMethod.custom);
   }
 
   void _sortAlphabetically({bool preserveState = true}) {
@@ -931,7 +941,7 @@ void _sortByDate({bool preserveState = true}) {
           IconButton(
             icon: const Icon(Icons.folder_outlined),
             tooltip: AppLocalizations.of(context)!.categoriesHeader,
-            onPressed: _showAssignCategoryDialog,
+            onPressed: () => showAssignCategoryDialog(context: context, selectedNotes: _selectedItems),
           ),
           IconButton(
             icon: const Icon(Icons.star_outline),
@@ -1108,9 +1118,7 @@ void _sortByDate({bool preserveState = true}) {
                             !_isSelectionMode;
     final notesProvider = context.watch<NotesProvider>();
   
-  List<ListItem> currentSourceItems;
-
-if (_isTrashView) {
+    if (_isTrashView) {
   currentSourceItems = notesProvider.sortedTrashedItems;
 } else if (_isArchiveView) {
   currentSourceItems = notesProvider.sortedArchivedItems;
@@ -1294,7 +1302,7 @@ if (_isTrashView) {
                 ],
               ),
             ),
-            ..._availableTags.map(
+            ...context.read<NotesProvider>().availableTags.map(
               (tag) => Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -1386,7 +1394,7 @@ Padding(
           _isArchiveView = false;
           _isFavoriteView = false;
           _selectedTagFilter = null; // Limpiamos el filtro de etiqueta al cambiar a una lista
-          _selectedCategoryFilter = category; // Guardamos el objeto de la categoría seleccionada
+          _selectedCategoryFilter = category;
         });
           
         Navigator.pop(context);
@@ -1522,7 +1530,7 @@ const Divider(),
                       builder: (context) => const SettingsScreen(),
                     ),
                   );
-                  _loadAllData();
+                  notesProvider.loadAllData;
                   // }
                 },
               ),
@@ -1650,7 +1658,7 @@ const Divider(),
     isListView: isListView,
     isSelected: _selectedItems.contains(item),
     isSelectionMode: _isSelectionMode,
-    canReorder: context.watch<NotesProvider>().currentSortMethod == SortMethod.custom,,
+    canReorder: context.watch<NotesProvider>().currentSortMethod == SortMethod.custom,
     isTrashView: _isTrashView,
     itemIndex: currentSourceItems.indexOf(item),
     moreButtonTooltip: AppLocalizations.of(context)!.select,
@@ -1714,7 +1722,7 @@ const Divider(),
 
   Widget _buildListView() {
     final bool canReorder =
-        context.watch<NotesProvider>().currentSortMethod == SortMethod.custom, ;
+        context.watch<NotesProvider>().currentSortMethod == SortMethod.custom;
     if (canReorder) {
       return ReorderableListView.builder(
         buildDefaultDragHandles: false,
@@ -1743,7 +1751,7 @@ const Divider(),
   }
 
   Widget _buildGridView() {
-  final bool canReorder = context.watch<NotesProvider>().currentSortMethod == SortMethod.custom,;
+  final bool canReorder = context.watch<NotesProvider>().currentSortMethod == SortMethod.custom;
   final scrollController = ScrollController(); // Sincronización obligatoria
 
   // 1. Detectamos la orientación de la pantalla usando el contexto
@@ -1947,7 +1955,7 @@ const Divider(),
         builder: (context, setState) {
           return AlertDialog(
             icon: const Icon(Icons.folder_outlined), // Icono Outlined (MD3 style)
-            title: Text(localizations.selectCategory), // Clave de traducción para el título
+            title: Text(localizations.categoriesHeader),
             content: SizedBox(
               width: double.maxFinite,
               child: ListView(
@@ -1955,7 +1963,7 @@ const Divider(),
                 children: [
                   // Opción por defecto para eliminar la nota de cualquier categoría
                   RadioListTile<String?>(
-                    title: Text(localizations.noCategory), // Traducción ej: "Ninguna" o "Sin categoría"
+                    title: const Text('No category'),
                     value: null,
                     groupValue: currentSelectedId,
                     onChanged: (value) {
@@ -1989,7 +1997,7 @@ const Divider(),
                             controller: inputController,
                             autofocus: true,
                             decoration: InputDecoration(
-                              labelText: localizations.categoryName, // Traducción ej: "Nombre"
+                              labelText: localizations.categoryNameLabel,
                               border: const OutlineInputBorder(),
                             ),
                           ),
@@ -2027,7 +2035,7 @@ const Divider(),
                   await notesProvider.assignCategoryMultiple(selectedNotes, currentSelectedId);
                   if (context.mounted) Navigator.pop(context);
                 },
-                child: Text(localizations.apply), // Traducción ej: "Aplicar" o "Aceptar"
+                child: Text(localizations.create),
               ),
             ],
           );

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:bloc_de_notas/presentation/widgets/settings_ui_widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:convert';
+import 'package:bloc_de_notas/presentation/widgets/update_widget.dart';
 
 class ChangelogSheet extends StatelessWidget {
   const ChangelogSheet({super.key});

@@ -389,5 +389,9 @@
   "create": "Create",
   "@create": {},
   "apply": "Apply",
-  "@apply": {}
+  "@apply": {},
+  "pin": "Pin",
+  "@pin": {},
+  "unpin": "unpin",
+  "@unpin": {}
 }

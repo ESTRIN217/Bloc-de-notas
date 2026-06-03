@@ -294,7 +294,8 @@ class NoteItemWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (isListView) ...[
-            if (canReorder)
+            if (canReorder) ...[
+              if (item.isPinned)
               ReorderableDragStartListener(
                 index: itemIndex,
                 child: Padding(
@@ -302,6 +303,7 @@ class NoteItemWidget extends StatelessWidget {
       child: Icon(Icons.drag_handle, color: dynamicIconColor),
     ),
               ),
+              ],
           ] else ...[
             if (!isTrashView)
               Padding(
@@ -315,9 +317,17 @@ class NoteItemWidget extends StatelessWidget {
           ],
           if (item.isFavorite && !isTrashView)
             Padding(
-              padding: const EdgeInsets.only(top: 8.0), // Cambiado left por top para separación vertical
+              padding: const EdgeInsets.only(top: 8.0), 
               child: Icon(
                 Icons.star_outline,
+                color: dynamicIconColor,
+              ),
+            ),
+          if (item.isPinned && !isTrashView)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0), 
+              child: Icon(
+                Icons.push_pin_outlined,
                 color: dynamicIconColor,
               ),
             ),

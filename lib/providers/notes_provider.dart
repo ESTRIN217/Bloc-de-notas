@@ -663,23 +663,30 @@ Future<void> reorderItemByIndex(int oldIndex, int newIndex) async {
   }
   }
 
-/// Helper privado para ordenar cualquier lista dinámicamente sin destruirla
-List<ListItem> _applySort(List<ListItem> originalList) {
-  // Creamos una copia para no mutar de forma destructiva la lista original
-  final listCopy = List<ListItem>.from(originalList);
+  /// Helper privado para ordenar cualquier lista dinámicamente sin destruirla.
+  /// Prioriza los elementos fijados arriba en la lista, los cuales permanecen inmóviles.
+  List<ListItem> _applySort(List<ListItem> originalList) {
+  if (originalList.isEmpty) return originalList;
 
+  // 1. Separar los elementos en fijados y no fijados
+  final pinnedNotes = originalList.where((item) => item.isPinned).toList();
+  final normalNotes = originalList.where((item) => !item.isPinned).toList();
+
+  // 2. Aplicar el ordenamiento elegido ÚNICAMENTE a las notas normales
   switch (_currentSortMethod) {
     case SortMethod.alphabetical:
-      listCopy.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+      normalNotes.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
       break;
     case SortMethod.byDate:
-      listCopy.sort((a, b) => b.lastModified.compareTo(a.lastModified));
+      normalNotes.sort((a, b) => b.lastModified.compareTo(a.lastModified));
       break;
     case SortMethod.custom:
-      // Si el método es personalizado, mantenemos el orden original del JSON (de los reorders)
-      return originalList;
+      // Mantiene el orden de inserción/arrastre del JSON original
+      break;
   }
-  return listCopy;
+
+  // 3. Unificar las listas. Los fijados siempre se quedan arriba en su orden original.
+  return [...pinnedNotes, ...normalNotes];
   }
 
 /// Renombra una etiqueta a nivel global y actualiza todas las notas que la contengan
@@ -778,5 +785,30 @@ Future<void> renameTagGlobal({required String oldTag, required String newTag}) a
     }
     
     return filtered.toList();
+  }
+  /// Alterna el estado de fijado (pin) para un bloque de notas seleccionadas
+  Future<void> togglePinMultiple(List<ListItem> selectedItems) async {
+  if (selectedItems.isEmpty) return;
+
+  final Set<String> selectedIds = selectedItems.map((e) => e.id).toSet();
+
+  List<ListItem> updatePinStatus(List<ListItem> targetList) {
+    return targetList.map((item) {
+      if (selectedIds.contains(item.id)) {
+        return item.copyWith(
+          isPinned: !item.isPinned,
+          lastModified: DateTime.now(),
+        );
+      }
+      return item;
+    }).toList();
+  }
+
+  items = updatePinStatus(items);
+  archivedItems = updatePinStatus(archivedItems);
+  favoriteItems = updatePinStatus(favoriteItems);
+
+  await _saveAllLists();
+  notifyListeners();
   }
 }

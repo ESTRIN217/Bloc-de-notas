@@ -948,6 +948,13 @@ void _sortByDate({bool preserveState = true}) {
         title: Text('${_selectedItems.length}'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.push_pin_outlined),
+            tooltip: item.isPinned
+            ? AppLocalizations.of(context)!.unpin
+            : AppLocalizations.of(context)!.pin,
+            onPressed: _togglePinSelectedItems,
+          ),
+          IconButton(
             icon: const Icon(Icons.folder_outlined),
             tooltip: AppLocalizations.of(context)!.categoriesHeader,
             onPressed: () => showAssignCategoryDialog(context: context, selectedNotes: _selectedItems),
@@ -1941,6 +1948,20 @@ const Divider(),
 
   // Llamada asíncrona al Provider
   await context.read<NotesProvider>().toggleFavoriteMultiple(itemsToToggle);
+
+  // Limpiamos la UI en la vista local
+  setState(() {
+    _exitSelectionMode();
+  });
+  }
+  void _togglePinSelectedItems() async {
+  if (_selectedItems.isEmpty) return;
+
+  // Pasamos una copia de la lista de seleccionados para evitar problemas de referencia
+  final itemsToToggle = List<ListItem>.from(_selectedItems);
+
+  // Llamada asíncrona al Provider
+  await context.read<NotesProvider>().togglePinMultiple(itemsToToggle);
 
   // Limpiamos la UI en la vista local
   setState(() {

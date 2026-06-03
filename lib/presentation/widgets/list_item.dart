@@ -13,7 +13,8 @@ class ListItem {
   final List<String> tags;
   final bool isArchived;
   final bool isFavorite;
-  final String? categoryId; // <-- Nueva propiedad opcional
+  final String? categoryId; 
+  final bool isPinned;
 
   ListItem({
     required this.id,
@@ -25,7 +26,8 @@ class ListItem {
     this.tags = const [],
     this.isArchived = false,
     this.isFavorite = false,
-    this.categoryId, // <-- Incluida aquí
+    this.categoryId,
+    this.isPinned = false,
   });
 
   ListItem copyWith({
@@ -39,7 +41,8 @@ class ListItem {
     bool? isArchived,
     bool? isFavorite,
     String? categoryId,
-    bool overrideCategory = false, // <-- Si es true, forzará el valor de categoryId aunque sea null
+    bool overrideCategory = false,
+    bool? isPinned,
   }) {
     return ListItem(
       id: id ?? this.id,
@@ -52,6 +55,7 @@ class ListItem {
       isArchived: isArchived ?? this.isArchived,
       isFavorite: isFavorite ?? this.isFavorite,
       categoryId: overrideCategory ? categoryId : (categoryId ?? this.categoryId),
+      isPinned: isPinned ?? this.isPinned,
     );
   }
 
@@ -66,7 +70,8 @@ class ListItem {
       'tags': tags,
       'isArchived': isArchived,
       'isFavorite': isFavorite,
-      'categoryId': categoryId, // <-- Serializar
+      'categoryId': categoryId, 
+      'isPinned': isPinned,
     };
   }
 
@@ -81,7 +86,8 @@ class ListItem {
       tags: List<String>.from(json['tags'] ?? []),
       isArchived: json['isArchived'] ?? false,
       isFavorite: json['isFavorite'] ?? false,
-      categoryId: json['categoryId'], // <-- Deserializar
+      categoryId: json['categoryId'], 
+      isPinned: json['isPinned'] ?? false,
     );
   }
 

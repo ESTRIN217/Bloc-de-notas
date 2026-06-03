@@ -166,5 +166,7 @@
   "categoryNameLabel": "Nombre de la lista",
   "categoryRequiredError": "Por favor, introduce un nombre",
   "create": "Crear",
-  "apply": "aplicar"
+  "apply": "aplicar",
+  "pin": "Fijar",
+  "unpin": "Desfijar"
 }

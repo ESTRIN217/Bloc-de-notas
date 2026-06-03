@@ -157,5 +157,7 @@
   "categoryNameLabel": "Nome da lista",
   "categoryRequiredError": "Por favor, insira um nome",
   "create": "Criar",
-  "apply": "consentir"
+  "apply": "consentir",
+  "pin": "Definir",
+  "unpin": "Desfazer"
 }

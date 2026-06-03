@@ -519,6 +519,12 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get apply => 'consentir';
+
+  @override
+  String get pin => 'Definir';
+
+  @override
+  String get unpin => 'Desfazer';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -1036,4 +1042,10 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get apply => 'consentir';
+
+  @override
+  String get pin => 'Definir';
+
+  @override
+  String get unpin => 'Desfazer';
 }

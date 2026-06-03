@@ -516,4 +516,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get apply => 'Apply';
+
+  @override
+  String get pin => 'Pin';
+
+  @override
+  String get unpin => 'unpin';
 }

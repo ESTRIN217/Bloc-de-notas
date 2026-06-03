@@ -149,14 +149,28 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   @override
   void initState() {
-    super.initState();
-    _backupService.isSignedIn();
-    WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+  super.initState();
+  _backupService.isSignedIn();
+  WidgetsBinding.instance.addObserver(this);
+  
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
     final languageCode = Localizations.localeOf(context).languageCode;
-    // Llamamos a la carga centralizada
-    context.read<NotesProvider>().loadAllData(languageCode);
-    context.read<UpdaterProvider>().checkUpdateOnStartup();
+    
+    // 1. Cargamos los datos de las notas
+    final notesProvider = context.read<NotesProvider>();
+    await notesProvider.loadAllData(languageCode);
+    
+    // 2. RECUPERAMOS EL MODO DE VISTA GUARDADO 
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _isListView = prefs.getBool('is_list_view') ?? true; // Si no existe, por defecto es lista
+      });
+    }
+    
+    if (mounted) {
+      context.read<UpdaterProvider>().checkUpdateOnStartup();
+    }
   });
   }
 
@@ -255,13 +269,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final notesProvider = context.read<NotesProvider>();
 
   // Si canceló sin retornar datos, recargamos el estado local por si acaso
-  if (result == null) {
-    if (!mounted) return;
-    // Puedes pasar el language code actual si es necesario
-    final lang = Localizations.localeOf(context).languageCode;
-    notesProvider.loadAllData(lang); 
-    return;
-  }
+  if (result == null) return;
+  
 
   // Dejamos que el provider haga toda la magia pesada en background
   await notesProvider.handleEditorResult(
@@ -1216,7 +1225,7 @@ void _sortByDate({bool preserveState = true}) {
 
                 // Cambia el icono a uno relleno (opcional) si está seleccionado para más feedback visual
                 leading: Icon(
-                  !_isTrashView && _selectedTagFilter == null && !_isArchiveView && !_isFavoriteView
+                  !_isTrashView && _selectedTagFilter == null && _selectedCategoryFilter == null && !_isArchiveView && !_isFavoriteView
                       ? Icons
                             .home // Icono relleno
                       : Icons.home_outlined, // Tu icono outlined por defecto
@@ -1230,6 +1239,7 @@ void _sortByDate({bool preserveState = true}) {
                 selected:
                     !_isTrashView &&
                     _selectedTagFilter == null &&
+                    _selectedCategoryFilter == null &&
                     !_isArchiveView && !_isFavoriteView,
 
                 onTap: () {

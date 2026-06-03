@@ -72,6 +72,13 @@ class NotesProvider with ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     
+    final int? sortMethodIndex = prefs.getInt('selected_sort_method');
+  if (sortMethodIndex != null && sortMethodIndex < SortMethod.values.length) {
+    _currentSortMethod = SortMethod.values[sortMethodIndex];
+  } else {
+    _currentSortMethod = SortMethod.custom; // Por defecto si no existe 
+  }
+    
     // 1. Cargar metadatos (Etiquetas y Categorías)
     availableTags = prefs.getStringList('available_tags') ?? [];
     
@@ -639,15 +646,22 @@ Future<void> reorderItemByIndex(int oldIndex, int newIndex) async {
       .toList();
   }
 
-SortMethod _currentSortMethod = SortMethod.byDate; // Método por defecto
-SortMethod get currentSortMethod => _currentSortMethod;
+  SortMethod _currentSortMethod = SortMethod.custom;
+  SortMethod get currentSortMethod => _currentSortMethod;
 
-/// Cambia el método de ordenamiento global y notifica a la UI
-void changeSortMethod(SortMethod method) {
+/// Cambia el método de ordenamiento global, lo persiste y notifica a la UI
+  Future<void> changeSortMethod(SortMethod method) async {
   _currentSortMethod = method;
-  notifyListeners();
-  // Opcional: Aquí puedes guardar la preferencia en SharedPreferences si quieres que se recuerde al abrir la app
-}
+  notifyListeners(); // Notifica de inmediato a la UI para mejorar la respuesta visual 
+  
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    // Guardamos el índice del enum (0: alphabetical, 1: byDate, 2: custom)
+    await prefs.setInt('selected_sort_method', method.index);
+  } catch (e) {
+    debugPrint("Error guardando el método de ordenamiento: $e");
+  }
+  }
 
 /// Helper privado para ordenar cualquier lista dinámicamente sin destruirla
 List<ListItem> _applySort(List<ListItem> originalList) {

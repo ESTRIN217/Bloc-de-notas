@@ -53,6 +53,7 @@ class _EditorScreenState extends State<EditorScreen> {
   List<String> _availableGlobalTags = [];
   bool _isArchived = false; // NUEVO: Estado de archivo
   bool _isFavorite = false;
+  bool _isPinned = false;
   final quill.QuillController _controller = () {
     return quill.QuillController.basic(
       config: quill.QuillControllerConfig(
@@ -97,6 +98,7 @@ class _EditorScreenState extends State<EditorScreen> {
     _currentTags = List.from(widget.item.tags); // Inicializamos las etiquetas
     _isArchived = widget.item.isArchived; // Cargar estado inicial
     _isFavorite = widget.item.isFavorite;
+    _isPinned = widget.item.isPinned;
     _initTts();
     _loadGlobalTags();
   }
@@ -181,6 +183,37 @@ class _EditorScreenState extends State<EditorScreen> {
       ),
     );
   }
+  void _togglePin() {
+    setState(() {
+      _isPinned = !_isPinned; // Cambiar el estado actual
+    });
+
+    // Limpiamos cualquier snackbar previo para evitar acumulación
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          _isPinned
+              ? AppLocalizations.of(context)!.notePin
+              : AppLocalizations.of(context)!.noteUnpin,
+        ),
+        duration: const Duration(
+          seconds: 4,
+        ), // Damos tiempo suficiente para reaccionar
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: AppLocalizations.of(context)!.undo,
+          // Si el usuario presiona "Deshacer", revertimos el cambio de estado
+          onPressed: () {
+            setState(() {
+              _isPinned = !_isPinned;
+            });
+          },
+        ),
+      ),
+    );
+  }
 
   void _initTts() {
     _flutterTts = FlutterTts();
@@ -241,7 +274,7 @@ class _EditorScreenState extends State<EditorScreen> {
       tags: _currentTags, // NUEVO: Pasamos las etiquetas al guardar
       isArchived: _isArchived, // NUEVO: Guardar el estado de archivo
       isFavorite: _isFavorite,
-      
+      isPinned: _isPinned,
     );
     Navigator.pop(context, updatedItem);
   }
@@ -604,6 +637,7 @@ class _EditorScreenState extends State<EditorScreen> {
       tags: _currentTags,
       isArchived: _isArchived,
       isFavorite: _isFavorite,
+      isPinned: _isPinned,
     );
 
     // 3. Usamos un encoder con indentación para que el JSON quede ordenado y legible
@@ -936,6 +970,20 @@ class _EditorScreenState extends State<EditorScreen> {
             elevation: 0,
             title: null,
             actions: [
+              IconButton(
+                isSelected: _isPinned,
+                icon: const Icon(
+                  Icons.push_pin_outlined,
+                ), // Icono por defecto (sin seleccionar)
+                selectedIcon: const Icon(
+                  Icons.push_pin
+                ), // Icono cuando isSelected es true
+                color: dynamicIconColor,
+                tooltip: _isPinned
+                    ? AppLocalizations.of(context)!.unPin
+                    : AppLocalizations.of(context)!.pin,
+                onPressed: _togglePin,
+              ),
               IconButton(
                 isSelected: _isFavorite,
                 icon: const Icon(

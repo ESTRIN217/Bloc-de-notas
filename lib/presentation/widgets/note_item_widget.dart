@@ -295,7 +295,7 @@ class NoteItemWidget extends StatelessWidget {
         children: [
           if (isListView) ...[
             if (canReorder) ...[
-              if (item.isPinned)
+              if (!item.isPinned)
               ReorderableDragStartListener(
                 index: itemIndex,
                 child: Padding(

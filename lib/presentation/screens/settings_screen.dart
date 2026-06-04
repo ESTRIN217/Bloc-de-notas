@@ -326,41 +326,34 @@ class SettingsScreen extends StatelessWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              RadioListTile<ThemeMode>(
-                value: ThemeMode.system,
-                groupValue: themeProvider.themeMode,
-                title: Text(localizations.system),
-                secondary: const Icon(Icons.brightness_auto_outlined),
+              RadioGroup<ThemeMode>(
+                value: themeProvider.themeMode,
                 onChanged: (ThemeMode? value) {
                   if (value != null) {
                     themeProvider.setThemeMode(value);
                     Navigator.pop(context); // Cierra el diálogo al seleccionar
                   }
                 },
-              ),
-              RadioListTile<ThemeMode>(
-                value: ThemeMode.light,
-                groupValue: themeProvider.themeMode,
-                title: Text(localizations.light),
-                secondary: const Icon(Icons.light_mode_outlined),
-                onChanged: (ThemeMode? value) {
-                  if (value != null) {
-                    themeProvider.setThemeMode(value);
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-              RadioListTile<ThemeMode>(
-                value: ThemeMode.dark,
-                groupValue: themeProvider.themeMode,
-                title: Text(localizations.dark),
-                secondary: const Icon(Icons.dark_mode_outlined),
-                onChanged: (ThemeMode? value) {
-                  if (value != null) {
-                    themeProvider.setThemeMode(value);
-                    Navigator.pop(context);
-                  }
-                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RadioListTile<ThemeMode>(
+                      value: ThemeMode.system,
+                      title: Text(localizations.system),
+                      secondary: const Icon(Icons.brightness_auto_outlined),
+                    ),
+                    RadioListTile<ThemeMode>(
+                      value: ThemeMode.light,
+                      title: Text(localizations.light),
+                      secondary: const Icon(Icons.light_mode_outlined),
+                    ),
+                    RadioListTile<ThemeMode>(
+                      value: ThemeMode.dark,
+                      title: Text(localizations.dark),
+                      secondary: const Icon(Icons.dark_mode_outlined),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

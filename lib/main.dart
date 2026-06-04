@@ -1880,9 +1880,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         // Uso del nuevo callback de reordenamiento de la v5.6.0
         onReorder: (ReorderedListFunction<ListItem> reorderCallback) async {
           final notesProvider = context.read<NotesProvider>();
-          // Calculamos la nueva lista ordenada usando la función que provee el Grid
-          final updatedList = reorderCallback(notesProvider.items);
-          // Le delegamos el nuevo orden y el guardado al Provider de forma asíncrona
+          if (item.isPinned && item.isFavorite && isTrashView && isArchiveView) return;
+          // 1. Validar que el ordenamiento actual permita mover elementos manualmente
+          if (notesProvider.currentSortMethod != SortMethod.custom) return;
+          // 2. CRUCIAL: Usamos sortedItems porque coincide con los índices visuales del Grid
+          final updatedList = reorderCallback(notesProvider.sortedItems);
+          // 3. Guardamos el nuevo estado unificado en el Provider
           await notesProvider.reorderNotes(updatedList);
         },
 
@@ -2087,34 +2090,37 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 child: ListView(
                   shrinkWrap: true,
                   children: [
-                    // Opción por defecto para eliminar la nota de cualquier categoría
-                    RadioListTile<String?>(
-                      title: const Text('No category'),
-                      value: null,
-                      groupValue: currentSelectedId,
+                    RadioGroup<String?>(
+                      value: currentSelectedId,
                       onChanged: (value) {
                         setState(() => currentSelectedId = value);
                       },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Opción por defecto para eliminar la nota de cualquier categoría
+                          RadioListTile<String?>(
+                            title: const Text('No category'),
+                            value: null,
+                            // groupValue y onChanged ya no son necesarios aquí
+                          ),
+                          const Divider(),
+                          // Listado dinámico de categorías existentes
+                          ...notesProvider.categories.map((category) {
+                            return RadioListTile<String?>(
+                              title: Text(category.name),
+                              value: category.id,
+                              // groupValue y onChanged ya no son necesarios aquí
+                            );
+                          }),
+                        ],
+                      ),
                     ),
-                    const Divider(),
-                    // Listado dinámico de categorías existentes
-                    ...notesProvider.categories.map((category) {
-                      return RadioListTile<String?>(
-                        title: Text(category.name),
-                        value: category.id,
-                        groupValue: currentSelectedId,
-                        onChanged: (value) {
-                          setState(() => currentSelectedId = value);
-                        },
-                      );
-                    }),
                     const Divider(),
                     // Acción rápida por si desea crear una categoría al instante
                     ListTile(
                       leading: const Icon(Icons.add_outlined),
-                      title: Text(
-                        localizations.addCategory,
-                      ), // Traducción ej: "Nueva categoría"
+                      title: Text(localizations.addCategory),
                       onTap: () async {
                         final inputController = TextEditingController();
                         final newCatName = await showDialog<String>(

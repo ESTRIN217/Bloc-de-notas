@@ -195,8 +195,8 @@ class _EditorScreenState extends State<EditorScreen> {
       SnackBar(
         content: Text(
           _isPinned
-              ? AppLocalizations.of(context)!.notePin
-              : AppLocalizations.of(context)!.noteUnpin,
+              ? AppLocalizations.of(context)!.pinned
+              : AppLocalizations.of(context)!.unpinned,
         ),
         duration: const Duration(
           seconds: 4,
@@ -980,7 +980,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 ), // Icono cuando isSelected es true
                 color: dynamicIconColor,
                 tooltip: _isPinned
-                    ? AppLocalizations.of(context)!.unPin
+                    ? AppLocalizations.of(context)!.unpin
                     : AppLocalizations.of(context)!.pin,
                 onPressed: _togglePin,
               ),

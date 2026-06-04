@@ -1055,6 +1055,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'unpin'**
   String get unpin;
+
+  /// No description provided for @pinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes Pinned'**
+  String get pinned;
+
+  /// No description provided for @unpinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes Unpinned'**
+  String get unpinned;
 }
 
 class _AppLocalizationsDelegate

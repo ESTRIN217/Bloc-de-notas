@@ -168,5 +168,7 @@
   "create": "Crear",
   "apply": "aplicar",
   "pin": "Fijar",
-  "unpin": "Desfijar"
+  "unpin": "Desfijar",
+  "pinned": "Notas fijadas",
+  "unpinned": "Notas desfijadas"
 }

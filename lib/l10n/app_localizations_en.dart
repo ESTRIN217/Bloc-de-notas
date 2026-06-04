@@ -522,4 +522,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unpin => 'unpin';
+
+  @override
+  String get pinned => 'Notes Pinned';
+
+  @override
+  String get unpinned => 'Notes Unpinned';
 }

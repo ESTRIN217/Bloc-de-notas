@@ -159,5 +159,7 @@
   "create": "Criar",
   "apply": "consentir",
   "pin": "Definir",
-  "unpin": "Desfazer"
+  "unpin": "Desfazer",
+  "pinned": "Notas Pinned",
+  "unpinned": "Notas Unpinned"
 }

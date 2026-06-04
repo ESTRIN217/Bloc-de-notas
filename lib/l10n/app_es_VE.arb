@@ -159,5 +159,7 @@
   "create": "Crear",
   "apply": "aceptar",
     "pin": "Fijar",
-  "unpin": "Desfijar"
+  "unpin": "Desfijar",
+  "pinned": "Notas fijadas",
+  "unpinned": "Notas desfijadas"
 }

@@ -327,7 +327,7 @@ class SettingsScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               RadioGroup<ThemeMode>(
-                value: themeProvider.themeMode,
+                groupValue: themeProvider.themeMode,
                 onChanged: (ThemeMode? value) {
                   if (value != null) {
                     themeProvider.setThemeMode(value);

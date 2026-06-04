@@ -525,6 +525,12 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get unpin => 'Desfazer';
+
+  @override
+  String get pinned => 'Notas Pinned';
+
+  @override
+  String get unpinned => 'Notas Unpinned';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -1048,4 +1054,10 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get unpin => 'Desfazer';
+
+  @override
+  String get pinned => 'Notas Pinned';
+
+  @override
+  String get unpinned => 'Notas Unpinned';
 }

@@ -1880,7 +1880,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         // Uso del nuevo callback de reordenamiento de la v5.6.0
         onReorder: (ReorderedListFunction<ListItem> reorderCallback) async {
           final notesProvider = context.read<NotesProvider>();
-          if (item.isPinned && item.isFavorite && isTrashView && isArchiveView) return;
+          if (_isTrashView && _isArchiveView && _isFavoriteView) return;
           // 1. Validar que el ordenamiento actual permita mover elementos manualmente
           if (notesProvider.currentSortMethod != SortMethod.custom) return;
           // 2. CRUCIAL: Usamos sortedItems porque coincide con los índices visuales del Grid
@@ -2091,7 +2091,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   shrinkWrap: true,
                   children: [
                     RadioGroup<String?>(
-                      value: currentSelectedId,
+                      groupValue: currentSelectedId,
                       onChanged: (value) {
                         setState(() => currentSelectedId = value);
                       },

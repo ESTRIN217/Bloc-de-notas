@@ -393,5 +393,9 @@
   "pin": "Pin",
   "@pin": {},
   "unpin": "unpin",
-  "@unpin": {}
+  "@unpin": {},
+  "pinned": "Notes Pinned",
+  "@pinned": {},
+  "unpinned": "Notes Unpinned",
+  "@unpinned": {}
 }

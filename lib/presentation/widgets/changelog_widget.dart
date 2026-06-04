@@ -102,14 +102,17 @@ class ChangelogSheet extends StatelessWidget {
                                 children: [
                                   // Mostramos el título estilizado solo si contiene texto relevante
                                   if (title.isNotEmpty && title != 'Sin título' && title != version) ...[
-                                    Text(
-                                      title,
-                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        ),
-                                        ),
-                                        const SizedBox(height: 10), // Espacio entre el título y las novedades
-                                        ],
+  Center( // Envoltura para centrar el widget en la pantalla
+    child: Text(
+      title,
+      textAlign: TextAlign.center, // Centra el texto si se divide en varias líneas
+      style: Theme.of(context).textTheme.titleMedium?.copyWith( // Mantiene titleMedium
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  ),
+  const SizedBox(height: 10), 
+],
               
               // Renderizador del cuerpo en Markdown
               Padding(

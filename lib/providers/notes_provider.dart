@@ -619,22 +619,46 @@ Future<void> _saveAllLists() async {
   notifyListeners();
   }
 
-/// Reordena un elemento mediante índices tradicionales (ReorderableListView)
-Future<void> reorderItemByIndex(int oldIndex, int newIndex) async {
-  // Ajuste nativo de Flutter: si el elemento se mueve hacia abajo, el índice cambia
+  /// Reordena un elemento mediante índices tradicionales (ReorderableListView)
+  Future<void> reorderItemByIndex(int oldIndex, int newIndex) async {
+  // 1. Obtenemos las referencias visuales usando los mismos getters que ve la UI
+  final List<ListItem> visualList = sortedItems; 
+
   if (oldIndex < newIndex) {
-    newIndex -= 1;
+    newIndex -= 1; 
   }
 
-  // Removemos el ítem de su posición vieja e insertamos en la nueva
-  final item = items.removeAt(oldIndex);
-  items.insert(newIndex, item);
+  // 2. Extraemos el ítem basándonos en la posición real que el usuario vio en pantalla
+  final item = visualList[oldIndex];
+
+  // 3. Buscamos dónde está realmente ese ítem en la lista cruda 'items'
+  int realOldIndex = items.indexWhere((element) => element.id == item.id);
+  
+  if (realOldIndex == -1) return; // Validación por seguridad
+
+  // 4. Removemos el elemento de su posición real en la lista cruda
+  items.removeAt(realOldIndex); 
+
+  // 5. Calculamos la posición real de destino
+  // Si el destino es el final de la lista visual, lo mandamos al final de la cruda
+  int realNewIndex;
+  if (newIndex >= visualList.length - 1) {
+    realNewIndex = items.length;
+  } else {
+    // Si no, buscamos el ID del elemento que quedará justo en esa posición visual
+    final targetVisualItem = visualList[newIndex >= oldIndex ? newIndex + 1 : newIndex];
+    realNewIndex = items.indexWhere((element) => element.id == targetVisualItem.id);
+    if (realNewIndex == -1) realNewIndex = newIndex;
+  }
+
+  // 6. Insertamos en la posición real de la lista cruda
+  items.insert(realNewIndex, item);
 
   // Persistimos los cambios de forma asíncrona en el almacenamiento
-  await saveNotesList('notes', items);
+  await saveNotesList('notes', items); 
   
   // Notificamos a todos los widgets que escuchan las notas
-  notifyListeners();
+  notifyListeners(); 
   }
 
 /// Filtra y devuelve la lista de colores únicos presentes en las notas

@@ -70,6 +70,37 @@ Este documento describe el diseño y las características de una aplicación mod
 - **Nuevos formatos de exportación:**
     - **Opciones de uso compartido:** Capacidad ampliada para exportar notas en formato PDF, Markdown, HTML y JSON en crudo \(soportado mediante extensiones oficiales de renderizado\)\.
 
+### 2.5 🚀 Novedades en Bloc de notas v5\.0\.0
+### 🎨 Interfaz y Experiencia de Usuario \(Material 3\)
+- **Rediseño Visual:** Interfaz mejorada siguiendo las directrices de _Material Design 3_ con un enfoque limpio y el uso consistente de iconos _outlined_\.
+- **Nueva Barra de Búsqueda:** Implementación de una Search Bar dinámica y limpia \(vía SearchDelegate\)\. Ahora incluye _chips_ de filtrado rápido por etiquetas, archivadas y color de fondo\.
+- **Animaciones Fluídas:** Añadidas transiciones y animaciones más vivas al iniciar la aplicación y al abrir o interactuar con tus notas\.
+- **Herramientas Flotantes:** La barra de herramientas del editor ahora flota sobre el contenido y el teclado, optimizando el espacio en pantalla\.
+
+### 🗂️ Organización y Gestión de Notas
+- **Notas Fijadas y Favoritos:** Añadida la posibilidad de fijar notas importantes en la parte superior y un nuevo sistema de favoritos\.
+- **Categorías y Etiquetas:** Crea listas personalizadas y asigna múltiples etiquetas a tus notas para mantener todo en orden\.
+- **Archivo y Papelera:** Mueve las notas que no uses al archivo para limpiar tu pantalla principal, o envíalas a la papelera antes de eliminarlas definitivamente\.
+- **Reorganización Visual:** Ahora puedes reordenar tus notas arrastrándolas \(Drag & Drop\) directamente en la vista de cuadrícula \(_GridView_\)\. Al activar la selección, la interfaz se adapta limpiamente\.
+
+### 📝 Editor y Rendimiento
+- **Mejoras en el Editor:** Integración de _Embed Timestamp_ para registrar marcas de tiempo y optimizaciones en la escritura\.
+- **Escritura Inteligente:** Corrección de palabras y sistema de autocompletado mejorado\.
+
+### 🔒 Privacidad y Copias de Seguridad
+- **Filosofía Client\-Side:** Tus datos son tuyos\. Implementación de copias de seguridad locales y sincronización en la nube utilizando **tu propia cuota de Google Drive**, garantizando privacidad absoluta\.
+
+### 🌐 Optimización para la Versión Web
+- **Navegación Mejorada:** Sistema de retorno inteligente que te devuelve a la pantalla de inicio antes de salir de la aplicación\.
+- **Compatibilidad Multiplataforma:** Los métodos para compartir notas en formatos **PDF** y **HTML** ahora son totalmente compatibles con la web\.
+- **Exportación Completa:** El método para compartir en **JSON** ahora envía la estructura e información interna completa de la nota\.
+
+### 🛠️ Sistema y Mejoras Internas
+- **Actualizaciones Inteligentes:** Nuevo sistema de notificaciones de actualización integrado en el _Drawer_, en los ajustes y en el actualizador de la plataforma correspondiente\.
+- **Información de Compilación Dinámica:** Se eliminó la etiqueta genérica "Universal"\. Ahora la app detecta y muestra la arquitectura exacta del dispositivo \(ej\. _ARM64\-V8A_\), la plataforma actual o la versión del navegador en la web\.
+- **Globalización:** Consistencia mejorada en el sistema de selección de idiomas y traducciones\.
+- **Estabilidad:** Corrección de errores menores y optimizaciones internas de rendimiento\.
+
 ## 3. Calidad del código y control de versiones
 
 ### 3.1. Dependencias
@@ -78,4 +109,4 @@ Este documento describe el diseño y las características de una aplicación mod
 
 ### 3.2. Control de versiones
 
-- **Versión actual:** `4.0.0+1`
+- **Versión actual:** `5.0.0+1`

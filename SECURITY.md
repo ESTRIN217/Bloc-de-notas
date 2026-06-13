@@ -6,9 +6,9 @@ Actualmente damos soporte a las siguientes versiones:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 4.1.0   | :white_check_mark: |
-| 4.0     | :x:                |
-| < 2.0   | :x:                |
+| 5.0.0   | :white_check_mark: |
+| 4.1.0   | :x:                |
+| < 4.0     | :x:                |
 
 ## Reporting a Vulnerability
 ¡Gracias por ayudarnos a mantener el proyecto seguro! 

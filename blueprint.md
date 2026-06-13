@@ -110,3 +110,151 @@ Este documento describe el diseño y las características de una aplicación mod
 ### 3.2. Control de versiones
 
 - **Versión actual:** `5.0.0+1`
+
+---
+
+# 🗺️ Hoja de Ruta — Bloc de Notas v6.0.0
+
+## 1. 🌐 Traducir toda la interfaz (i18n completo)
+
+| Ítem | Estado | Prioridad |
+|------|--------|-----------|
+| Revisar que TODOS los textos visibles usen `AppLocalizations.of(context)` | Pendiente | Alta |
+| Eliminar strings hardcodeadas en `main.dart`, `editor_screen.dart`, `settings_screen.dart`, widgets, etc. | Pendiente | Alta |
+| Verificar traducciones faltantes en `app_localizations_en.dart`, `app_localizations_es.dart`, `app_localizations_pt.dart` | Pendiente | Alta |
+| Asegurar que los idiomas `es-VE` y `pt-BR` tengan cobertura completa | Pendiente | Media |
+| Agregar detección automática de idioma del sistema como fallback | Pendiente | Media |
+
+## 2. 🎨 Consistencia visual (estilo outlined)
+
+| Ítem | Estado | Prioridad |
+|------|--------|-----------|
+| Auditar TODOS los iconos en la app y asegurar que usen variantes `_outlined` | Pendiente | Alta |
+| Revisar `main.dart`: `AppBar`, `Drawer`, `FloatingActionButton`, `SearchBar` | Pendiente | Alta |
+| Revisar `editor_screen.dart`: toolbar, botones de acción, diálogos | Pendiente | Alta |
+| Revisar `note_item_widget.dart`: tarjetas, iconos de pin/fav/star | Pendiente | Alta |
+| Revisar `settings_screen.dart`, `about_screen.dart`, `backup_screen.dart` | Pendiente | Alta |
+| Revisar `create_category_dialog.dart`, `changelog_widget.dart` | Pendiente | Media |
+| Asegurar botones `FilledButton`/`TextButton` sigan MD3 con estilo outlined donde corresponda | Pendiente | Media |
+
+## 3. 📱 Compatibilidad Web + Android
+
+| Ítem | Estado | Prioridad |
+|------|--------|-----------|
+| Verificar `kIsWeb` en todas las ramas de `main.dart` (compartir PDF/HTML, imports `dart:io`) | Pendiente | Alta |
+| Probar `flutter build web` y `flutter build apk` sin errores | Pendiente | Alta |
+| Revisar dependencias con `dart:io` protegidas con `kIsWeb` (editor_screen, note_item_widget) | Pendiente | Alta |
+| Asegurar que `flutter_quill_extensions` funcione en ambas plataformas | Pendiente | Media |
+| Verificar `file_picker`, `image_picker`, `record` en web con guards | Pendiente | Media |
+
+## 4. 🧹 Principio DRY (Don't Repeat Yourself)
+
+| Ítem | Estado | Prioridad |
+|------|--------|-----------|
+| Extraer lógica repetida de `togglePinMultiple`, `toggleFavoriteMultiple`, `toggleArchiveMultiple` en un helper genérico | Pendiente | Alta |
+| Refactorizar `_batchUpdateItemTags` en `notes_provider.dart` para cubrir más campos | Pendiente | Alta |
+| Unificar `reorderNotes` y `reorderItemByIndex` en un solo método de reordenamiento | Pendiente | Alta |
+| Eliminar código duplicado en `_shareAsText`, `_shareAsMarkdown`, `_shareAsHtml` con un builder común | Pendiente | Media |
+| Centralizar la creación de `SnackBar` con "Undo" en un único helper | Pendiente | Media |
+| Unificar los diálogos de confirmación (`_confirmDeleteTag`, `_emptyTrash`, `deleteMultiple`) | Pendiente | Media |
+
+## 5. ⚡ Eficiencia y carga de la app
+
+| Ítem | Estado | Prioridad |
+|------|--------|-----------|
+| Implementar `Future.wait` para carga paralela de datos en `loadAllData` | Pendiente | Alta |
+| Usar `const` constructors donde sea posible (widgets, iconos, estilos) | Pendiente | Alta |
+| Reemplazar `context.watch` en `_buildListView`/`_buildGridView` por `Consumer` local | Pendiente | Media |
+| Lazy loading de `GoogleFonts` (usar `GoogleFonts.notoSansTextTheme` ya está, verificar impacto) | Pendiente | Media |
+| Evitar reconstrucciones innecesarias con `RepaintBoundary` en la lista de notas | Pendiente | Media |
+| Agregar `const` en los `EdgeInsets`, `SizedBox`, estilos repetidos | Pendiente | Baja |
+
+## 6. 📋 Logcat detallado y completo
+
+| Ítem | Estado | Prioridad |
+|------|--------|-----------|
+| Crear un `LogService` singleton con niveles V/D/I/W/E | Pendiente | Alta |
+| Implementar `DeveloperLog` class con método `log(level, message, [error, stackTrace])` | Pendiente | Alta |
+| Integrar `dart:developer` para logs estructurados visibles en DevTools | Pendiente | Alta |
+| Crear wrapper: `Log.v()`, `Log.d()`, `Log.i()`, `Log.w()`, `Log.e()` | Pendiente | Alta |
+| Reemplazar todos los `debugPrint` y `print` esparcidos por el código con el nuevo LogService | Pendiente | Alta |
+
+### Niveles de prioridad
+
+| Nivel | Tag | Uso |
+|-------|-----|-----|
+| **V** (Verbose) | `Log.v()` | Traza detallada de desarrollo (flujo interno) |
+| **D** (Debug) | `Log.d()` | Depuración: valores de variables, puntos de control |
+| **I** (Info) | `Log.i()` | Éxito: "Nota guardada", "Backup completado" |
+| **W** (Warning) | `Log.w()` | Advertencia: "Conexión lenta", "Actualización no disponible" |
+| **E** (Error) | `Log.e()` | Error grave: excepciones, crashes, fallos de I/O |
+
+## 7. 🔍 Rastreo de errores en tiempo real
+
+| Ítem | Estado | Prioridad |
+|------|--------|-----------|
+| Capturar excepciones no controladas con `FlutterError.onError` + `PlatformDispatcher.instance.onError` | Pendiente | Alta |
+| Envolver operaciones asíncronas con try-catch y `Log.e()` | Pendiente | Alta |
+| Loggear crashes con stacktrace completo en el nuevo LogService | Pendiente | Alta |
+| Mostrar notificación visual si ocurre un error crítico (SnackBar/Banner) | Pendiente | Media |
+
+## 8. 🔄 Monitoreo de flujo de funciones
+
+| Ítem | Estado | Prioridad |
+|------|--------|-----------|
+| Agregar `Log.v("→ [NombreFunción] iniciado")` al inicio de métodos clave | Pendiente | Alta |
+| Agregar `Log.v("← [NombreFunción] completado")` al finalizar | Pendiente | Alta |
+| Monitorear flujo: `loadAllData`, `handleEditorResult`, `saveNotesList`, `reorderNotes` | Pendiente | Alta |
+| Monitorear acciones del usuario: crear/editar/eliminar/archivar notas | Pendiente | Media |
+
+## 9. 🎯 Bugfix: Reordenamiento por arrastre en vista de lista
+
+### Problema detectado
+
+El reordenamiento drag & drop en `ReorderableListView.builder` (línea 1829 de `main.dart`) tiene inconsistencias cuando:
+
+1. Hay notas **fijadas (pinned)** — el índice visual (`sortedItems`) no coincide con el índice real (`items`)
+2. Se cambia de vista (lista ↔ cuadrícula) después de reordenar
+3. Se alterna entre filtros (etiquetas, categorías, favoritos) y luego se vuelve al inicio
+
+### Causa raíz
+
+El método `reorderItemByIndex` en `notes_provider.dart:623` trabaja con `sortedItems` (que aplica `_applySort` separando pinned), pero intenta mapear los índices de vuelta a la lista cruda `items`. Cuando hay pinned items, el mapeo es incorrecto porque:
+
+- `sortedItems = [...pinnedNotes, ...normalNotes]` 
+- `items` tiene el orden crudo sin separar
+- El cálculo de `realNewIndex` puede caer en una posición equivocada
+
+| Ítem | Estado | Prioridad |
+|------|--------|-----------|
+| Refactorizar `reorderItemByIndex` para usar `items` directamente en lugar de `sortedItems` | Pendiente | **Crítica** |
+| Extraer el `currentSourceItems` filtrado y usarlo en `onReorderItem` en lugar de `sortedItems` | Pendiente | **Crítica** |
+| Deshabilitar reordenamiento visual en vistas filtradas (tags, categorías, favoritos, archivo) | Pendiente | Alta |
+| Sincronizar el estado de reorden entre `_buildListView` y `_buildGridView` | Pendiente | Alta |
+| Agregar tests de reordenamiento con pinned items | Pendiente | Alta |
+| Usar `ListenableBuilder` o `ValueNotifier` para el estado `canReorder` y evitar `context.watch` en build | Pendiente | Media |
+
+### Plan de acción para el bug
+
+```
+1. En main.dart: 
+   - Envolver el área reordenable con un Consumer<NotesProvider> 
+   - Pasar currentSourceItems filtrado (sin pinned processing duplicado)
+2. En notes_provider.dart:
+   - Simplificar reorderItemByIndex para operar sobre 'items' directamente 
+   - Agregar validación: si currentSortMethod != SortMethod.custom, no reordenar
+3. En note_item_widget.dart:
+   - Asegurar que ReorderableDragStartListener solo aparezca en vista "Inicio" 
+   - con sortMethod == custom y sin filtros activos
+```
+
+---
+
+## Resumen de prioridades
+
+| Prioridad | Ítems |
+|-----------|-------|
+| 🔴 Crítica | Bugfix reordenamiento (sección 9) |
+| 🟠 Alta | i18n completo, consistencia outlined, DRY en providers, LogService, rastreo errores |
+| 🟡 Media | Compatibilidad web, eficiencia de carga, monitoreo de flujo |
+| 🟢 Baja | Optimizaciones menores (const, RepaintBoundary) |

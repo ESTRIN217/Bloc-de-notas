@@ -39,12 +39,6 @@ Every cycle of change follows a strict documentation and verification flow to en
 
 1. **Blueprint Synchronization:** Before changing anything, the AI will create or update a blueprint\.md file in the root directory\. This file is the single source of truth and contains:
     - **Project Overview:** Current state, styling parameters, and established features\.
-    - **Change History:** Log of changes from initial versions up to version 4\.0\.0 and upcoming 5\.0\.0 milestones\.
+    - **Change History:** Log of changes from initial versions up to version latest and upcoming milestones\.
     - **Current Action Plan:** Step\-by\-step roadmap of the current prompt\.
 2. **Verification Flow:** After changes are applied, the AI simulates or triggers flutter analyze and flutter test to ensure that no existing features are broken, and formatting conforms exactly to local specifications\.
-
-## 6\. GitHub Codespaces Configuration \(\.devcontainer\)
-To ensure that any GitHub Codespace container spins up with the exact toolchain required for this Flutter setup, the \.devcontainer/devcontainer\.json or configuration files should be used as the environment's source of truth instead of dev\.nix\.The environment includes:
-
-- Flutter and Dart SDKs configured for Android and Web targets\.
-- Extensions for Dart, Flutter, and Markdown styling\.

@@ -1,9 +1,9 @@
 import 'package:flutter_quill/flutter_quill.dart';
-// Eliminamos dart:io de la parte superior para evitar errores de compilación en web
 import 'package:flutter/foundation.dart' show kIsWeb; 
-import 'dart:io' as io; // Usamos un alias para usarlo solo cuando NO sea web
+import 'dart:io' as io;
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:bloc_de_notas/services/log_service.dart';
 
 class AudioEmbedBuilder extends EmbedBuilder {
   @override
@@ -138,7 +138,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
           await file.delete(); 
         }
       } catch (e) {
-        debugPrint('Error eliminando el archivo de audio: $e'); 
+        Log.e('Error eliminando el archivo de audio', e); 
       }
     }
 

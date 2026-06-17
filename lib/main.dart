@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:bloc_de_notas/services/backup_service.dart';
+import 'package:bloc_de_notas/services/log_service.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -35,25 +37,39 @@ import 'presentation/search/custom_search_delegate.dart';
 import 'providers/notes_provider.dart';
 import 'package:bloc_de_notas/presentation/widgets/create_category_dialog.dart';
 
-void main() {
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark, // Ajusta según tu tema
-    ),
-  );
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+Future<void> main() async {
+  Log.init();
 
-        ChangeNotifierProvider(create: (context) => UpdaterProvider()),
+  FlutterError.onError = (FlutterErrorDetails details) {
+    Log.e('Flutter error', details.exception, details.stack);
+    FlutterError.presentError(details);
+  };
 
-        ChangeNotifierProvider(create: (context) => NotesProvider()),
-      ],
-      child: const MyApp(),
-    ),
-  );
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+    Log.e('Platform error', error, stack);
+    return true;
+  };
+
+  runZonedGuarded(() {
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    );
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => ThemeProvider()),
+          ChangeNotifierProvider(create: (context) => UpdaterProvider()),
+          ChangeNotifierProvider(create: (context) => NotesProvider()),
+        ],
+        child: const MyApp(),
+      ),
+    );
+  }, (Object error, StackTrace stack) {
+    Log.e('Unhandled async error', error, stack);
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -90,7 +106,7 @@ class MyApp extends StatelessWidget {
             }
 
             return MaterialApp(
-              title: 'Bloc de notas',
+              title: AppLocalizations.of(context)!.myNotes,
               // 4. Asignamos los temas generados por tu clase
               theme: lightTheme,
               darkTheme: darkTheme,
@@ -404,14 +420,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         hintText: AppLocalizations.of(context)!.newTagHint,
                         // Icono para limpiar el texto (Equis)
                         prefixIcon: IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: const Icon(Icons.clear_outlined),
                           onPressed: () {
                             tagController.clear();
                             setModalState(() {});
                           },
                         ),
                         suffixIcon: IconButton(
-                          icon: const Icon(Icons.add),
+                          icon: const Icon(Icons.add_outlined),
                           onPressed: () {
                             final newTag = tagController.text.trim();
 
@@ -521,7 +537,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     Icons.edit_outlined,
                   ), // Iconos outlined preservados
                   suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
+                    icon: const Icon(Icons.clear_outlined),
                     onPressed: () {
                       renameController.clear();
                       setDialogState(() => errorText = null);
@@ -684,7 +700,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.html, color: Colors.orange),
+                leading: const Icon(Icons.html_outlined, color: Colors.orange),
                 title: Text(AppLocalizations.of(context)!.html),
                 onTap: () {
                   Navigator.pop(context);
@@ -736,7 +752,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     SharePlus.instance.share(
       ShareParams(
         text: content,
-        subject: 'Mis notas en Markdown', // Opcional, útil para correos
+        subject: AppLocalizations.of(context)!.titleHtml,
       ),
     );
 
@@ -795,17 +811,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         name: baseName,
         mimeType: 'application/pdf',
       );
+      final shareText = AppLocalizations.of(context)!.shareHtmlMessage;
       await SharePlus.instance.share(
-        ShareParams(text: 'Te comparto mis notas', files: [xFile]),
+        ShareParams(text: shareText, files: [xFile]),
       );
     } else {
-      // Solución nativa Móvil existente usando almacenamiento temporal
       final output = await getTemporaryDirectory();
       final file = File("${output.path}/$baseName");
       await file.writeAsBytes(pdfBytes);
 
+      final shareText = AppLocalizations.of(context)!.shareHtmlMessage;
       await SharePlus.instance.share(
-        ShareParams(text: 'Te comparto mis notas', files: [XFile(file.path)]),
+        ShareParams(text: shareText, files: [XFile(file.path)]),
       );
     }
     _exitSelectionMode();
@@ -882,7 +899,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       }
       _exitSelectionMode();
     } catch (e) {
-      if (kDebugMode) print('Error al generar el archivo HTML: $e');
+      Log.e('Error al generar el archivo HTML', e);
     }
   }
 
@@ -911,17 +928,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       builder: (context) => Wrap(
         children: <Widget>[
           ListTile(
-            leading: const Icon(Icons.sort_by_alpha),
+            leading: const Icon(Icons.sort_by_alpha_outlined),
             title: Text(AppLocalizations.of(context)!.sortAlphabetically),
             onTap: () => _sortAlphabetically(),
           ),
           ListTile(
-            leading: Icon(Icons.date_range),
+            leading: Icon(Icons.date_range_outlined),
             title: Text(AppLocalizations.of(context)!.sortByDate),
             onTap: () => _sortByDate(),
           ),
           ListTile(
-            leading: Icon(Icons.drag_handle),
+            leading: Icon(Icons.drag_handle_outlined),
             title: Text(AppLocalizations.of(context)!.customSort),
             onTap: () => _setCustomSort(),
           ),
@@ -946,11 +963,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   void _onReorderItem(int oldIndex, int newIndex) async {
-    // Si estamos en la papelera, no permitimos reordenar las notas de la lista principal
-    if (_isTrashView) return;
+    if (_isTrashView || _isArchiveView || _isFavoriteView ||
+        _selectedTagFilter != null || _selectedCategoryFilter != null ||
+        _selectedColorFilter != null) return;
 
-    // Llamamos al método centralizado del Provider
-    await context.read<NotesProvider>().reorderItemByIndex(oldIndex, newIndex);
+    final provider = context.read<NotesProvider>();
+    if (provider.currentSortMethod != SortMethod.custom) return;
+
+    await provider.reorderItemByIndex(oldIndex, newIndex);
   }
 
   PreferredSizeWidget _buildAppBar() {
@@ -963,7 +983,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         elevation: 0,
         leading: IconButton(
           icon: Icon(
-            Icons.close,
+            Icons.close_outlined,
             color: Theme.of(context).colorScheme.onSurface,
           ),
           onPressed: _exitSelectionMode,
@@ -1089,20 +1109,20 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         IconButton(
           isSelected: !_isListView,
           icon: const Icon(Icons.view_agenda_outlined),
-          selectedIcon: const Icon(Icons.grid_view),
+          selectedIcon: const Icon(Icons.grid_view_outlined),
           onPressed: _toggleView,
         ),
         if (_selectedTagFilter == null)
           // Si NO hay etiqueta seleccionada, mostrar icono de importación (ordenar)
           IconButton(
-            icon: const Icon(Icons.import_export),
+            icon: const Icon(Icons.import_export_outlined),
             onPressed: _showSortOptions,
             tooltip: AppLocalizations.of(context)!.ordenar,
           )
         else
           // Si HAY una etiqueta seleccionada, mostrar menú de opciones de etiqueta
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
+            icon: const Icon(Icons.more_vert_outlined),
             onSelected: (value) {
               if (value == 'rename') {
                 _showRenameTagDialog(_selectedTagFilter!);
@@ -1144,7 +1164,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       elevation: 0,
       leading: Builder(
         builder: (context) => IconButton(
-          icon: const Icon(Icons.menu_open),
+          icon: const Icon(Icons.menu_open_outlined),
           onPressed: () => Scaffold.of(context).openDrawer(),
         ),
       ),
@@ -1273,9 +1293,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             _selectedCategoryFilter == null &&
                             !_isArchiveView &&
                             !_isFavoriteView
-                        ? Icons
-                              .home // Icono relleno
-                        : Icons.home_outlined, // Tu icono outlined por defecto
+                        ? Icons.home_outlined
+                        : Icons.home_outlined,
                   ),
 
                   title: Text(
@@ -1321,7 +1340,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     context,
                   ).colorScheme.onSecondaryContainer,
                   leading: Icon(
-                    _isFavoriteView ? Icons.star : Icons.star_outline,
+                    _isFavoriteView ? Icons.star_outline : Icons.star_outline,
                   ),
                   title: Text(AppLocalizations.of(context)!.favorites),
                   selected: _isFavoriteView,
@@ -1353,7 +1372,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                       style: Theme.of(context).textTheme.labelSmall,
                     ),
                     IconButton(
-                      icon: const Icon(Icons.add, size: 20),
+                      icon: const Icon(Icons.add_outlined, size: 20),
                       onPressed: () {
                         Navigator.pop(context);
                         _showManageTagsDialog();
@@ -1382,7 +1401,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     ).colorScheme.onSecondaryContainer,
                     leading: Icon(
                       _selectedTagFilter == tag && !_isTrashView
-                          ? Icons.label
+                          ? Icons.label_outline
                           : Icons.label_outline,
                     ),
                     title: Text(tag),
@@ -1452,8 +1471,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     leading: Icon(
                       _selectedCategoryFilter?.id == category.id &&
                               !_isTrashView
-                          ? Icons.folder
-                          : Icons.folder_outlined, // Icono Outlined por defecto
+                          ? Icons.folder_outlined
+                          : Icons.folder_outlined,
                     ),
                     title: Text(
                       category.name,
@@ -1496,7 +1515,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     context,
                   ).colorScheme.onSecondaryContainer,
                   leading: Icon(
-                    _isArchiveView ? Icons.archive : Icons.archive_outlined,
+                    _isArchiveView ? Icons.archive_outlined : Icons.archive_outlined,
                   ),
                   title: Text(AppLocalizations.of(context)!.archivados),
                   selected: _isArchiveView,
@@ -1531,7 +1550,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     context,
                   ).colorScheme.onSecondaryContainer,
                   leading: Icon(
-                    _isTrashView ? Icons.delete : Icons.delete_outline,
+                    _isTrashView ? Icons.delete_outline : Icons.delete_outline,
                   ),
                   title: Text(AppLocalizations.of(context)!.papelera),
                   selected: _isTrashView,
@@ -1738,24 +1757,30 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             : FloatingActionButton(
                 onPressed: () => _navigateToEditor(),
                 tooltip: AppLocalizations.of(context)!.addItem,
-                child: const Icon(Icons.add),
+                child: const Icon(Icons.add_outlined),
               ),
       ),
     );
   }
 
-  Widget _buildItem(ListItem item, {bool isListView = true}) {
+  Widget _buildItem(ListItem item, {bool isListView = true, bool? canReorderOverride}) {
+    final bool isHomeView =
+        !_isTrashView && !_isArchiveView && !_isFavoriteView &&
+        _selectedTagFilter == null && _selectedColorFilter == null &&
+        _selectedCategoryFilter == null && !_isSelectionMode;
+    final bool canReorder =
+        canReorderOverride ??
+        (isHomeView &&
+         context.watch<NotesProvider>().currentSortMethod == SortMethod.custom);
     return EntryAnimation(
-      key: ValueKey(item.id), // Asegúrate de mantener tus llaves para la lista
+      key: ValueKey(item.id),
       index: currentSourceItems.indexOf(item),
       child: NoteItemWidget(
         item: item,
         isListView: isListView,
         isSelected: _selectedItems.contains(item),
         isSelectionMode: _isSelectionMode,
-        canReorder:
-            context.watch<NotesProvider>().currentSortMethod ==
-            SortMethod.custom,
+        canReorder: canReorder,
         isTrashView: _isTrashView,
         itemIndex: currentSourceItems.indexOf(item),
         moreButtonTooltip: AppLocalizations.of(context)!.select,
@@ -1825,7 +1850,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   Widget _buildListView() {
     final bool canReorder =
         context.watch<NotesProvider>().currentSortMethod == SortMethod.custom;
-    if (canReorder) {
+    final bool isHomeView =
+        !_isTrashView && !_isArchiveView && !_isFavoriteView &&
+        _selectedTagFilter == null && _selectedColorFilter == null &&
+        _selectedCategoryFilter == null && !_isSelectionMode;
+    if (canReorder && isHomeView) {
       return ReorderableListView.builder(
         buildDefaultDragHandles: false,
         itemCount: currentSourceItems.length,
@@ -1864,12 +1893,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     // 2. Definimos la cantidad exacta de columnas según la orientación
     final int crossAxisCount = isPortrait ? 2 : 3;
 
-    if (canReorder) {
+    final bool isHomeView =
+        !_isTrashView && !_isArchiveView && !_isFavoriteView &&
+        _selectedTagFilter == null && _selectedColorFilter == null &&
+        _selectedCategoryFilter == null && !_isSelectionMode;
+    if (canReorder && isHomeView) {
       return ReorderableBuilder<ListItem>(
         key: const Key('reorderable_grid'),
         scrollController: scrollController,
-        longPressDelay: const Duration(milliseconds: 300), // UX recomendada
-        // Configuración de animaciones y feedback visual
+        longPressDelay: const Duration(milliseconds: 300),
         dragChildBoxDecoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
@@ -1877,24 +1909,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           ],
         ),
 
-        // Uso del nuevo callback de reordenamiento de la v5.6.0
         onReorder: (ReorderedListFunction<ListItem> reorderCallback) async {
           final notesProvider = context.read<NotesProvider>();
-          if (_isTrashView && _isArchiveView && _isFavoriteView) return;
-          // 1. Validar que el ordenamiento actual permita mover elementos manualmente
           if (notesProvider.currentSortMethod != SortMethod.custom) return;
-          // 2. CRUCIAL: Usamos sortedItems porque coincide con los índices visuales del Grid
           final updatedList = reorderCallback(notesProvider.sortedItems);
-          // 3. Guardamos el nuevo estado unificado en el Provider
           await notesProvider.reorderNotes(updatedList);
         },
 
-        // Se generan las llaves únicas obligatorias para cada hijo
         builder: (children) {
           return GridView(
-            controller: scrollController, // El controlador debe ser el mismo
+            controller: scrollController,
             padding: const EdgeInsets.all(16.0),
-            // 3. Cambiamos a FixedCrossAxisCount para forzar el número de columnas
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: 16,
@@ -1906,7 +1931,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         },
         children: currentSourceItems.map((item) {
           return Container(
-            key: ValueKey(item.id), // Clave única obligatoria
+            key: ValueKey(item.id),
             child: _buildItem(item, isListView: false),
           );
         }).toList(),
@@ -1950,17 +1975,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                       path.contains('com.estrin217.bloc_de_notas/cache') ||
                   path.contains('com.estrin217.bloc_de_notas/app_flutter')) {
                 await file.delete();
-                if (kDebugMode) {
-                  print('Imagen de caché eliminada desde main: $path');
-                }
+                Log.d('Imagen de caché eliminada desde main: $path');
               }
             }
           }
         }
       } catch (e) {
-        if (kDebugMode) {
-          print('Error al limpiar imágenes de la nota ${item.id}: $e');
-        }
+        Log.e('Error al limpiar imágenes de la nota ${item.id}', e);
       }
     }
   }

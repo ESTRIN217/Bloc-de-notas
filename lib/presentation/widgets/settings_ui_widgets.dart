@@ -144,9 +144,9 @@ class SettingsSwitchTile extends StatelessWidget {
       onChanged: onChanged,
       thumbIcon: WidgetStateProperty.resolveWith<Icon?>((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Icon(Icons.check);
+          return const Icon(Icons.check_outlined);
         }
-        return const Icon(Icons.close);
+        return const Icon(Icons.close_outlined);
       }),
     );
   }

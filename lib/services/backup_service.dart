@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math' as math; // [cite: 1017] Para el cálculo del Jitter aleatorio
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter/services.dart'; // [cite: 964] Para llamar al requestSync nativo si fuera necesario
+import 'package:flutter/services.dart';
+import 'package:bloc_de_notas/services/log_service.dart';
 
 // Google Drive & Auth
 import 'package:google_sign_in/google_sign_in.dart';
@@ -103,7 +104,7 @@ class BackupService {
             1000,
           ); // Hasta 1 segundo de desvío aleatorio
 
-          debugPrint(
+          Log.w(
             'Límite de cuota de Google Drive alcanzado. Reintento $retries/$maxRetries en ${backoffMs + jitter}ms...',
           );
           await Future.delayed(Duration(milliseconds: backoffMs + jitter));
@@ -125,8 +126,9 @@ class BackupService {
       await channel.invokeMethod('requestSync');
     } catch (e) {
       // Fallback silencioso en desarrollo si el canal nativo no se ha declarado aún
-      debugPrint(
-        'Sincronización de metadatos Play Services omitida/no configurada: $e',
+      Log.w(
+        'Sincronización de metadatos Play Services omitida/no configurada',
+        e,
       );
     }
   }
@@ -210,7 +212,7 @@ class BackupService {
       }
       return null;
     } catch (e) {
-      debugPrint('Error en el inicio de sesión: $e');
+      Log.e('Error en el inicio de sesión', e);
       rethrow;
     }
   }

@@ -109,7 +109,7 @@ Este documento describe el diseño y las características de una aplicación mod
 
 ### 3.2. Control de versiones
 
-- **Versión actual:** `5.0.0+1`
+- **Versión actual:** `6.0.0+1`
 
 ---
 
@@ -119,21 +119,21 @@ Este documento describe el diseño y las características de una aplicación mod
 
 | Ítem | Estado | Prioridad |
 |------|--------|-----------|
-| Revisar que TODOS los textos visibles usen `AppLocalizations.of(context)` | Pendiente | Alta |
-| Eliminar strings hardcodeadas en `main.dart`, `editor_screen.dart`, `settings_screen.dart`, widgets, etc. | Pendiente | Alta |
-| Verificar traducciones faltantes en `app_localizations_en.dart`, `app_localizations_es.dart`, `app_localizations_pt.dart` | Pendiente | Alta |
-| Asegurar que los idiomas `es-VE` y `pt-BR` tengan cobertura completa | Pendiente | Media |
+| Revisar que TODOS los textos visibles usen `AppLocalizations.of(context)` | Completado | Alta |
+| Eliminar strings hardcodeadas en `main.dart`, `editor_screen.dart`, `settings_screen.dart`, widgets, etc. | Completado | Alta |
+| Verificar traducciones faltantes en `app_localizations_en.dart`, `app_localizations_es.dart`, `app_localizations_pt.dart` | Completado | Alta |
+| Asegurar que los idiomas `es-VE` y `pt-BR` tengan cobertura completa | Completado | Media |
 | Agregar detección automática de idioma del sistema como fallback | Pendiente | Media |
 
 ## 2. 🎨 Consistencia visual (estilo outlined)
 
 | Ítem | Estado | Prioridad |
 |------|--------|-----------|
-| Auditar TODOS los iconos en la app y asegurar que usen variantes `_outlined` | Pendiente | Alta |
-| Revisar `main.dart`: `AppBar`, `Drawer`, `FloatingActionButton`, `SearchBar` | Pendiente | Alta |
-| Revisar `editor_screen.dart`: toolbar, botones de acción, diálogos | Pendiente | Alta |
-| Revisar `note_item_widget.dart`: tarjetas, iconos de pin/fav/star | Pendiente | Alta |
-| Revisar `settings_screen.dart`, `about_screen.dart`, `backup_screen.dart` | Pendiente | Alta |
+| Auditar TODOS los iconos en la app y asegurar que usen variantes `_outlined` | Completado | Alta |
+| Revisar `main.dart`: `AppBar`, `Drawer`, `FloatingActionButton`, `SearchBar` | Completado | Alta |
+| Revisar `editor_screen.dart`: toolbar, botones de acción, diálogos | Completado | Alta |
+| Revisar `note_item_widget.dart`: tarjetas, iconos de pin/fav/star | Completado | Alta |
+| Revisar `settings_screen.dart`, `about_screen.dart`, `backup_screen.dart` | Completado | Alta |
 | Revisar `create_category_dialog.dart`, `changelog_widget.dart` | Pendiente | Media |
 | Asegurar botones `FilledButton`/`TextButton` sigan MD3 con estilo outlined donde corresponda | Pendiente | Media |
 
@@ -151,7 +151,7 @@ Este documento describe el diseño y las características de una aplicación mod
 
 | Ítem | Estado | Prioridad |
 |------|--------|-----------|
-| Extraer lógica repetida de `togglePinMultiple`, `toggleFavoriteMultiple`, `toggleArchiveMultiple` en un helper genérico | Pendiente | Alta |
+| Extraer lógica repetida de `togglePinMultiple`, `toggleFavoriteMultiple`, `toggleArchiveMultiple` en un helper genérico | Completado | Alta |
 | Refactorizar `_batchUpdateItemTags` en `notes_provider.dart` para cubrir más campos | Pendiente | Alta |
 | Unificar `reorderNotes` y `reorderItemByIndex` en un solo método de reordenamiento | Pendiente | Alta |
 | Eliminar código duplicado en `_shareAsText`, `_shareAsMarkdown`, `_shareAsHtml` con un builder común | Pendiente | Media |
@@ -162,7 +162,7 @@ Este documento describe el diseño y las características de una aplicación mod
 
 | Ítem | Estado | Prioridad |
 |------|--------|-----------|
-| Implementar `Future.wait` para carga paralela de datos en `loadAllData` | Pendiente | Alta |
+| Implementar `Future.wait` para carga paralela de datos en `loadAllData` | Completado | Alta |
 | Usar `const` constructors donde sea posible (widgets, iconos, estilos) | Pendiente | Alta |
 | Reemplazar `context.watch` en `_buildListView`/`_buildGridView` por `Consumer` local | Pendiente | Media |
 | Lazy loading de `GoogleFonts` (usar `GoogleFonts.notoSansTextTheme` ya está, verificar impacto) | Pendiente | Media |
@@ -173,11 +173,11 @@ Este documento describe el diseño y las características de una aplicación mod
 
 | Ítem | Estado | Prioridad |
 |------|--------|-----------|
-| Crear un `LogService` singleton con niveles V/D/I/W/E | Pendiente | Alta |
-| Implementar `DeveloperLog` class con método `log(level, message, [error, stackTrace])` | Pendiente | Alta |
-| Integrar `dart:developer` para logs estructurados visibles en DevTools | Pendiente | Alta |
-| Crear wrapper: `Log.v()`, `Log.d()`, `Log.i()`, `Log.w()`, `Log.e()` | Pendiente | Alta |
-| Reemplazar todos los `debugPrint` y `print` esparcidos por el código con el nuevo LogService | Pendiente | Alta |
+| Crear un `LogService` singleton con niveles V/D/I/W/E | Completado | Alta |
+| Implementar `DeveloperLog` class con método `log(level, message, [error, stackTrace])` | Completado | Alta |
+| Integrar `dart:developer` para logs estructurados visibles en DevTools | Completado | Alta |
+| Crear wrapper: `Log.v()`, `Log.d()`, `Log.i()`, `Log.w()`, `Log.e()` | Completado | Alta |
+| Reemplazar todos los `debugPrint` y `print` esparcidos por el código con el nuevo LogService | Completado | Alta |
 
 ### Niveles de prioridad
 
@@ -193,19 +193,19 @@ Este documento describe el diseño y las características de una aplicación mod
 
 | Ítem | Estado | Prioridad |
 |------|--------|-----------|
-| Capturar excepciones no controladas con `FlutterError.onError` + `PlatformDispatcher.instance.onError` | Pendiente | Alta |
-| Envolver operaciones asíncronas con try-catch y `Log.e()` | Pendiente | Alta |
-| Loggear crashes con stacktrace completo en el nuevo LogService | Pendiente | Alta |
+| Capturar excepciones no controladas con `FlutterError.onError` + `PlatformDispatcher.instance.onError` | Completado | Alta |
+| Envolver operaciones asíncronas con try-catch y `Log.e()` | Completado | Alta |
+| Loggear crashes con stacktrace completo en el nuevo LogService | Completado | Alta |
 | Mostrar notificación visual si ocurre un error crítico (SnackBar/Banner) | Pendiente | Media |
 
 ## 8. 🔄 Monitoreo de flujo de funciones
 
 | Ítem | Estado | Prioridad |
 |------|--------|-----------|
-| Agregar `Log.v("→ [NombreFunción] iniciado")` al inicio de métodos clave | Pendiente | Alta |
-| Agregar `Log.v("← [NombreFunción] completado")` al finalizar | Pendiente | Alta |
-| Monitorear flujo: `loadAllData`, `handleEditorResult`, `saveNotesList`, `reorderNotes` | Pendiente | Alta |
-| Monitorear acciones del usuario: crear/editar/eliminar/archivar notas | Pendiente | Media |
+| Agregar `Log.v("→ [NombreFunción] iniciado")` al inicio de métodos clave | Completado | Alta |
+| Agregar `Log.v("← [NombreFunción] completado")` al finalizar | Completado | Alta |
+| Monitorear flujo: `loadAllData`, `handleEditorResult`, `saveNotesList`, `reorderNotes` | Completado | Alta |
+| Monitorear acciones del usuario: crear/editar/eliminar/archivar notas | Completado | Media |
 
 ## 9. 🎯 Bugfix: Reordenamiento por arrastre en vista de lista
 
@@ -227,10 +227,10 @@ El método `reorderItemByIndex` en `notes_provider.dart:623` trabaja con `sorted
 
 | Ítem | Estado | Prioridad |
 |------|--------|-----------|
-| Refactorizar `reorderItemByIndex` para usar `items` directamente en lugar de `sortedItems` | Pendiente | **Crítica** |
-| Extraer el `currentSourceItems` filtrado y usarlo en `onReorderItem` en lugar de `sortedItems` | Pendiente | **Crítica** |
-| Deshabilitar reordenamiento visual en vistas filtradas (tags, categorías, favoritos, archivo) | Pendiente | Alta |
-| Sincronizar el estado de reorden entre `_buildListView` y `_buildGridView` | Pendiente | Alta |
+| Refactorizar `reorderItemByIndex` para usar `items` directamente en lugar de `sortedItems` | Completado | **Crítica** |
+| Extraer el `currentSourceItems` filtrado y usarlo en `onReorderItem` en lugar de `sortedItems` | Completado | **Crítica** |
+| Deshabilitar reordenamiento visual en vistas filtradas (tags, categorías, favoritos, archivo) | Completado | Alta |
+| Sincronizar el estado de reorden entre `_buildListView` y `_buildGridView` | Completado | Alta |
 | Agregar tests de reordenamiento con pinned items | Pendiente | Alta |
 | Usar `ListenableBuilder` o `ValueNotifier` para el estado `canReorder` y evitar `context.watch` en build | Pendiente | Media |
 
@@ -258,3 +258,5 @@ El método `reorderItemByIndex` en `notes_provider.dart:623` trabaja con `sorted
 | 🟠 Alta | i18n completo, consistencia outlined, DRY en providers, LogService, rastreo errores |
 | 🟡 Media | Compatibilidad web, eficiencia de carga, monitoreo de flujo |
 | 🟢 Baja | Optimizaciones menores (const, RepaintBoundary) |
+
+**Estado general:** 8/9 secciones completadas. Pendiente: compatibilidad Web + Android (sección 3).

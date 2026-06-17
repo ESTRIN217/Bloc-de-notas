@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
+import 'package:bloc_de_notas/services/log_service.dart';
 // 1. Definimos el Embed Personalizado
 class DrawingBlockEmbed extends quill.CustomBlockEmbed {
   const DrawingBlockEmbed(String data) : super('drawing', data);
@@ -119,7 +120,7 @@ class _DrawingWidgetState extends State<_DrawingWidget> {
         _height = (map['height'] as num).toDouble();
         lines = (map['lines'] as List).map((e) => DrawnLine.fromJson(e)).toList();
       } catch (e) {
-        debugPrint("Error parsing drawing: $e");
+        Log.e("Error parsing drawing", e);
       }
     }
   }
@@ -301,7 +302,7 @@ class _DrawingWidgetState extends State<_DrawingWidget> {
                       color: Colors.grey,
                       borderRadius: BorderRadius.only(topLeft: Radius.circular(10)),
                     ),
-                    child: const Icon(Icons.drag_indicator, color: Colors.white, size: 20),
+                    child: const Icon(Icons.drag_indicator_outlined, color: Colors.white, size: 20),
                   ),
                 ),
               ),

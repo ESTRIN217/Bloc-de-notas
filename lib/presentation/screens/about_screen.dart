@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
-// Para detectar Android/iOS
-import 'package:flutter/foundation.dart' show kIsWeb; // Para detectar si es Web
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:bloc_de_notas/presentation/widgets/settings_ui_widgets.dart';
+import 'package:bloc_de_notas/services/log_service.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -17,7 +17,7 @@ class AboutScreen extends StatelessWidget {
       Uri.parse(url),
       mode: LaunchMode.externalApplication,
     )) {
-      debugPrint('No se pudo abrir $url');
+      Log.e('No se pudo abrir $url');
     }
   }
 
@@ -296,7 +296,7 @@ class AboutScreen extends StatelessWidget {
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
             leading: const SettingsFaIconContainer(icon: FontAwesomeIcons.github),
             title: Text(AppLocalizations.of(context)!.repositorio),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const Icon(Icons.chevron_right_outlined),
             onTap: () => _openUrl('https://github.com/ESTRIN217/Bloc-de-notas'),
           ),
         ],
@@ -320,7 +320,7 @@ class AboutScreen extends StatelessWidget {
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
             leading: SettingsIconContainer(icon: Icons.description_outlined),
             title: Text(AppLocalizations.of(context)!.mit_license),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const Icon(Icons.chevron_right_outlined),
             onTap: () => _openUrl(
               'https://github.com/ESTRIN217/Bloc-de-notas/blob/master/LICENSE',
             ),

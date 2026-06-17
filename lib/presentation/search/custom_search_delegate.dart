@@ -31,7 +31,7 @@ class CustomSearchDelegate extends SearchDelegate<ListItem?> {
   } 
 
   @override
-  String get searchFieldLabel => "Buscar..."; 
+  String get searchFieldLabel => AppLocalizations.of(context)?.search ?? "Buscar..."; 
 
   @override
   List<Widget> buildActions(BuildContext context) {

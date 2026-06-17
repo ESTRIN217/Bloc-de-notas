@@ -68,7 +68,7 @@ class SettingsScreen extends StatelessWidget {
                             ? AppLocalizations.of(context)!.light
                             : AppLocalizations.of(context)!.dark,
                       ),
-                      trailing: const Icon(Icons.chevron_right),
+                      trailing: const Icon(Icons.chevron_right_outlined),
                       onTap: () => _showThemeDialog(context, themeProvider),
                     ),
                   ),
@@ -78,7 +78,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   SettingsCardGroup(
                     child: ListTile(
-                      leading: SettingsIconContainer(icon: Icons.language),
+                      leading: SettingsIconContainer(icon: Icons.language_outlined),
                       title: Text(
                         themeProvider.isSystemLocale
                             ? AppLocalizations.of(context)!
@@ -95,7 +95,7 @@ class SettingsScreen extends StatelessWidget {
                             ? AppLocalizations.of(context)!.ingles
                             : '🌐 ${themeProvider.locale.languageCode.toUpperCase()}',
                       ),
-                      trailing: const Icon(Icons.chevron_right),
+                      trailing: const Icon(Icons.chevron_right_outlined),
                       subtitle: Text(AppLocalizations.of(context)!.idioma),
                       onTap: () {
                         _showLanguageDialog(context, themeProvider);
@@ -117,7 +117,7 @@ class SettingsScreen extends StatelessWidget {
                       title: Text(
                         AppLocalizations.of(context)!.backupSyncTitle,
                       ),
-                      trailing: const Icon(Icons.chevron_right),
+                      trailing: const Icon(Icons.chevron_right_outlined),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -141,11 +141,11 @@ class SettingsScreen extends StatelessWidget {
                               horizontal: 16,
                               vertical: 8.0,
                             ),
-                            leading: SettingsIconContainer(icon: Icons.update),
+                            leading: SettingsIconContainer(icon: Icons.update_outlined),
                             title: Text(
                               AppLocalizations.of(context)!.actualizador,
                             ),
-                            trailing: const Icon(Icons.chevron_right),
+                            trailing: const Icon(Icons.chevron_right_outlined),
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -168,7 +168,7 @@ class SettingsScreen extends StatelessWidget {
                       title: Text(
                         AppLocalizations.of(context)!.registro_de_cambio,
                       ),
-                      trailing: const Icon(Icons.chevron_right),
+                      trailing: const Icon(Icons.chevron_right_outlined),
                       onTap: () {
                         _showChangelogBottomSheet(context);
                       },
@@ -184,7 +184,7 @@ class SettingsScreen extends StatelessWidget {
                         icon: Icons.info_outline_rounded,
                       ),
                       title: Text(AppLocalizations.of(context)!.sobre),
-                      trailing: const Icon(Icons.chevron_right),
+                      trailing: const Icon(Icons.chevron_right_outlined),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -196,7 +196,7 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ),
                   if (!kIsWeb && updater.hasUpdate) ...[
-                    SettingsSectionTitle(title: 'Actualización'),
+                    SettingsSectionTitle(title: AppLocalizations.of(context)!.actualizador),
                     SettingsCardGroup(child: const UpdateAvailableWidget()),
                     if (updater.latestChangelog != null) ...[
                       SettingsCardGroup(
@@ -233,7 +233,7 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 // OPCIÓN PREDETERMINADO
                 ListTile(
-                  leading: const Icon(Icons.language),
+                  leading: const Icon(Icons.language_outlined),
                   title: Text(AppLocalizations.of(context)!.system_default),
                   onTap: () {
                     themeProvider.setLocale(
@@ -246,7 +246,7 @@ class SettingsScreen extends StatelessWidget {
                 // VENEZUELA
                 ListTile(
                   leading: const Text('🇻🇪'),
-                  title: const Text('Español (Venezuela)'),
+                  title: Text(AppLocalizations.of(context)!.venezolano),
                   onTap: () {
                     // IMPORTANTE: Pasar ambos códigos para que el ternario lo detecte
                     themeProvider.setLocale(const Locale('es', 'VE'));
@@ -257,7 +257,7 @@ class SettingsScreen extends StatelessWidget {
                 // ESPAÑA
                 ListTile(
                   leading: const Text('🇪🇸'),
-                  title: const Text('Español (España)'),
+                  title: Text(AppLocalizations.of(context)!.espanol),
                   onTap: () {
                     themeProvider.setLocale(const Locale('es', 'ES'));
                     Navigator.pop(context);
@@ -267,7 +267,7 @@ class SettingsScreen extends StatelessWidget {
                 // USA
                 ListTile(
                   leading: const Text('🇺🇸'),
-                  title: const Text('English'),
+                  title: Text(AppLocalizations.of(context)!.ingles),
                   onTap: () {
                     themeProvider.setLocale(const Locale('en'));
                     Navigator.pop(context);
@@ -277,7 +277,7 @@ class SettingsScreen extends StatelessWidget {
                 // BRASIL
                 ListTile(
                   leading: const Text('🇧🇷'),
-                  title: const Text('Português (Brasil)'),
+                  title: Text(AppLocalizations.of(context)!.brasileno),
                   onTap: () {
                     themeProvider.setLocale(const Locale('pt', 'BR'));
                     Navigator.pop(context);
@@ -287,7 +287,7 @@ class SettingsScreen extends StatelessWidget {
                 // PORTUGAL
                 ListTile(
                   leading: const Text('🇵🇹'),
-                  title: const Text('Português (Portugal)'),
+                  title: Text(AppLocalizations.of(context)!.portugues),
                   onTap: () {
                     themeProvider.setLocale(const Locale('pt', 'PT'));
                     Navigator.pop(context);

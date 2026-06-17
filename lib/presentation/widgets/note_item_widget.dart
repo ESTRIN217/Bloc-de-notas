@@ -300,7 +300,7 @@ class NoteItemWidget extends StatelessWidget {
                 index: itemIndex,
                 child: Padding(
       padding: const EdgeInsets.fromLTRB(4, 12, 12, 0),
-      child: Icon(Icons.drag_handle, color: dynamicIconColor),
+      child: Icon(Icons.drag_handle_outlined, color: dynamicIconColor),
     ),
               ),
               ],
@@ -309,7 +309,7 @@ class NoteItemWidget extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: IconButton(
-                  icon: Icon(Icons.more_vert, color: dynamicIconColor),
+                  icon: Icon(Icons.more_vert_outlined, color: dynamicIconColor),
                   onPressed: onMorePressed,
                   tooltip: moreButtonTooltip,
                 ),

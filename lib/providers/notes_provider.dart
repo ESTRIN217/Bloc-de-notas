@@ -4,7 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:bloc_de_notas/presentation/widgets/list_item.dart'; 
+import 'package:bloc_de_notas/presentation/widgets/list_item.dart';
+import 'package:bloc_de_notas/services/log_service.dart';
 
 class CategoryItem {
   final String id;
@@ -67,6 +68,7 @@ class NotesProvider with ChangeNotifier {
   // --- Lógica de Carga Unificada ---
 
   Future<void> loadAllData(String languageCode) async {
+    Log.v('→ loadAllData iniciado', languageCode);
     isLoading = true;
     notifyListeners();
 
@@ -88,14 +90,21 @@ class NotesProvider with ChangeNotifier {
       _categories = decoded.map((item) => CategoryItem.fromMap(item)).toList();
     }
 
-    // 2. Cargar todas las listas de notas usando el Helper
-    items = await _loadList('notes') ?? await _loadDefaultNotesFromAssets(languageCode);
-    archivedItems = await _loadList('archived_notes') ?? [];
-    favoriteItems = await _loadList('favorite_notes') ?? [];
-    trashedItems = await _loadList('trashed_notes') ?? [];
+    // 2. Cargar todas las listas de notas en paralelo usando Future.wait
+    final results = await Future.wait([
+      _loadList('notes'),
+      _loadList('archived_notes'),
+      _loadList('favorite_notes'),
+      _loadList('trashed_notes'),
+    ]);
+    items = results[0] ?? await _loadDefaultNotesFromAssets(languageCode);
+    archivedItems = results[1] ?? [];
+    favoriteItems = results[2] ?? [];
+    trashedItems = results[3] ?? [];
 
     isLoading = false;
     notifyListeners();
+    Log.v('← loadAllData completado (${items.length} notas)');
   }
 
   Future<List<ListItem>?> _loadList(String key) async {
@@ -106,7 +115,7 @@ class NotesProvider with ChangeNotifier {
         return jsonList.map((json) => ListItem.fromJson(json)).toList();
       }
     } catch (e) {
-      debugPrint("Error cargando $key: $e");
+      Log.e("Error cargando $key", e);
     }
     return null;
   }
@@ -114,12 +123,14 @@ class NotesProvider with ChangeNotifier {
   // --- Lógica de Guardado ---
 
   Future<void> saveNotesList(String key, List<ListItem> listToSave) async {
+    Log.v('→ saveNotesList($key, ${listToSave.length} items)');
     try {
       final List<Map<String, dynamic>> jsonList = listToSave.map((item) => item.toJson()).toList();
       await _writeJsonData(key, jsonEncode(jsonList));
       notifyListeners();
+      Log.v('← saveNotesList($key) completado');
     } catch (e) {
-      debugPrint("Error guardando $key: $e");
+      Log.e("Error guardando $key", e);
     }
   }
 
@@ -191,7 +202,7 @@ class NotesProvider with ChangeNotifier {
       saveNotesList('notes', defaultNotes);
       return defaultNotes;
     } catch (e) {
-      if (kDebugMode) print('Error cargando notas por defecto: $e');
+      Log.e('Error cargando notas por defecto', e);
       return [];
     }
   }
@@ -259,6 +270,7 @@ Future<void> handleEditorResult({
   required dynamic result,
   required ListItem originalItem,
 }) async {
+  Log.v('→ handleEditorResult(${originalItem.id}, resultType: ${result.runtimeType})');
   // Caso 1: Eliminación explícita
   if (result == "DELETE") {
     // Buscamos en qué lista está para moverlo a la papelera
@@ -277,6 +289,7 @@ Future<void> handleEditorResult({
 
     await _saveAllLists();
     notifyListeners();
+    Log.v('← handleEditorResult: DELETE completado');
     return;
   }
 
@@ -329,6 +342,7 @@ Future<void> handleEditorResult({
 
     await _saveAllLists();
     notifyListeners();
+    Log.v('← handleEditorResult: ${result is ListItem ? result.title : "unknown"} procesado');
   }
 }
 
@@ -345,42 +359,30 @@ Future<void> _saveAllLists() async {
 /// Alterna el estado de favoritos para una lista de ítems seleccionados
   Future<void> toggleFavoriteMultiple(List<ListItem> selectedItems) async {
   if (selectedItems.isEmpty) return;
+  final Set<String> selectedIds = selectedItems.map((e) => e.id).toSet();
 
-  for (var selectedItem in selectedItems) {
-    final int indexInItems = items.indexWhere((i) => i.id == selectedItem.id);
-    final int indexInArchived = archivedItems.indexWhere((i) => i.id == selectedItem.id);
-    
-    final bool newFavoriteStatus = !selectedItem.isFavorite;
+  final bool anyFavorite = selectedItems.any((e) => e.isFavorite);
+  final bool newFavoriteStatus = !anyFavorite;
 
-    // Crear la nueva instancia mapeando todos los campos actuales
-    final updatedItem = ListItem(
-      id: selectedItem.id,
-      title: selectedItem.title,
-      summary: selectedItem.summary,
-      lastModified: selectedItem.lastModified,
-      backgroundColor: selectedItem.backgroundColor,
-      backgroundImagePath: selectedItem.backgroundImagePath,
-      tags: selectedItem.tags,
-      isArchived: selectedItem.isArchived,
-      isFavorite: newFavoriteStatus,
-      categoryId: selectedItem.categoryId, // <-- Preservar categoría
-    );
+  items = _updateInLists(items, selectedIds, (item) => item.copyWith(
+    isFavorite: newFavoriteStatus,
+    lastModified: DateTime.now(),
+  ));
+  archivedItems = _updateInLists(archivedItems, selectedIds, (item) => item.copyWith(
+    isFavorite: newFavoriteStatus,
+    lastModified: DateTime.now(),
+  ));
 
-    // Reemplazar en las listas de origen correspondientes
-    if (indexInItems != -1) items[indexInItems] = updatedItem;
-    if (indexInArchived != -1) archivedItems[indexInArchived] = updatedItem;
-
-    // Sincronizar la lista global de favoritos
-    if (newFavoriteStatus) {
-      if (!favoriteItems.any((i) => i.id == selectedItem.id)) {
-        favoriteItems.insert(0, updatedItem);
+  if (newFavoriteStatus) {
+    for (final item in selectedItems) {
+      if (!favoriteItems.any((i) => i.id == item.id)) {
+        favoriteItems.insert(0, item.copyWith(isFavorite: true));
       }
-    } else {
-      favoriteItems.removeWhere((i) => i.id == selectedItem.id);
     }
+  } else {
+    favoriteItems.removeWhere((i) => selectedIds.contains(i.id));
   }
 
-  // Guardamos todo en lote usando el helper que unifica la carga y escritura
   await _saveAllLists();
   notifyListeners();
   }
@@ -392,53 +394,24 @@ Future<void> _saveAllLists() async {
 }) async {
   if (selectedItems.isEmpty) return;
 
-  final List<String> selectedIds = selectedItems.map((e) => e.id).toList();
+  final Set<String> selectedIds = selectedItems.map((e) => e.id).toSet();
 
   if (toArchive) {
-    // Archivar: Quitar de principal, mutar bandera e insertar en archivados
     items.removeWhere((item) => selectedIds.contains(item.id));
-    
-    for (var item in selectedItems) {
-      final updated = ListItem(
-        id: item.id,
-        title: item.title,
-        summary: item.summary,
-        lastModified: item.lastModified,
-        backgroundColor: item.backgroundColor,
-        backgroundImagePath: item.backgroundImagePath,
-        tags: item.tags,
-        isArchived: true, // Forzamos destino
-        isFavorite: item.isFavorite,
-        categoryId: item.categoryId, // <-- Preservar categoría
-      );
-      // Evitar duplicados por si acaso
+    for (final item in selectedItems) {
       if (!archivedItems.any((a) => a.id == item.id)) {
-        archivedItems.insert(0, updated);
+        archivedItems.insert(0, item.copyWith(isArchived: true));
       }
     }
   } else {
-    // Desarchivar: Quitar de archivados, mutar bandera e insertar en principal
     archivedItems.removeWhere((item) => selectedIds.contains(item.id));
-
-    for (var item in selectedItems) {
-      final updated = ListItem(
-        id: item.id,
-        title: item.title,
-        summary: item.summary,
-        lastModified: item.lastModified,
-        backgroundColor: item.backgroundColor,
-        backgroundImagePath: item.backgroundImagePath,
-        tags: item.tags,
-        isArchived: false, // Forzamos destino
-        isFavorite: item.isFavorite,
-      );
+    for (final item in selectedItems) {
       if (!items.any((i) => i.id == item.id)) {
-        items.insert(0, updated);
+        items.insert(0, item.copyWith(isArchived: false));
       }
     }
   }
 
-  // Persistir cambios usando el helper centralizado
   await _saveAllLists();
   notifyListeners();
   }
@@ -610,55 +583,43 @@ Future<void> _saveAllLists() async {
 
 /// Actualiza el orden de las notas principales tras una acción de arrastrar y soltar
   Future<void> reorderNotes(List<ListItem> reorderedList) async {
+  Log.v('→ reorderNotes (${reorderedList.length} items)');
   items = reorderedList;
   
-  // Guardamos únicamente la lista de notas principales usando tu método existente
   await saveNotesList('notes', items);
   
-  // Notificamos para que cualquier Grid u otro widget se entere del nuevo orden
   notifyListeners();
+  Log.v('← reorderNotes completado');
   }
 
   /// Reordena un elemento mediante índices tradicionales (ReorderableListView)
   Future<void> reorderItemByIndex(int oldIndex, int newIndex) async {
-  // 1. Obtenemos las referencias visuales usando los mismos getters que ve la UI
-  final List<ListItem> visualList = sortedItems; 
+  Log.v('→ reorderItemByIndex(old: $oldIndex, new: $newIndex)');
+  if (currentSortMethod != SortMethod.custom) return;
 
-  if (oldIndex < newIndex) {
-    newIndex -= 1; 
-  }
+  final List<ListItem> visualList = sortedItems;
 
-  // 2. Extraemos el ítem basándonos en la posición real que el usuario vio en pantalla
   final item = visualList[oldIndex];
 
-  // 3. Buscamos dónde está realmente ese ítem en la lista cruda 'items'
   int realOldIndex = items.indexWhere((element) => element.id == item.id);
-  
-  if (realOldIndex == -1) return; // Validación por seguridad
+  if (realOldIndex == -1) return;
 
-  // 4. Removemos el elemento de su posición real en la lista cruda
-  items.removeAt(realOldIndex); 
+  items.removeAt(realOldIndex);
 
-  // 5. Calculamos la posición real de destino
-  // Si el destino es el final de la lista visual, lo mandamos al final de la cruda
   int realNewIndex;
   if (newIndex >= visualList.length - 1) {
     realNewIndex = items.length;
   } else {
-    // Si no, buscamos el ID del elemento que quedará justo en esa posición visual
     final targetVisualItem = visualList[newIndex >= oldIndex ? newIndex + 1 : newIndex];
     realNewIndex = items.indexWhere((element) => element.id == targetVisualItem.id);
-    if (realNewIndex == -1) realNewIndex = newIndex;
+    if (realNewIndex == -1) realNewIndex = items.length;
   }
 
-  // 6. Insertamos en la posición real de la lista cruda
   items.insert(realNewIndex, item);
 
-  // Persistimos los cambios de forma asíncrona en el almacenamiento
-  await saveNotesList('notes', items); 
-  
-  // Notificamos a todos los widgets que escuchan las notas
-  notifyListeners(); 
+  await saveNotesList('notes', items);
+  notifyListeners();
+  Log.v('← reorderItemByIndex completado');
   }
 
 /// Filtra y devuelve la lista de colores únicos presentes en las notas
@@ -683,7 +644,7 @@ Future<void> _saveAllLists() async {
     // Guardamos el índice del enum (0: alphabetical, 1: byDate, 2: custom)
     await prefs.setInt('selected_sort_method', method.index);
   } catch (e) {
-    debugPrint("Error guardando el método de ordenamiento: $e");
+    Log.e("Error guardando el método de ordenamiento", e);
   }
   }
 
@@ -810,29 +771,35 @@ Future<void> renameTagGlobal({required String oldTag, required String newTag}) a
     
     return filtered.toList();
   }
-  /// Alterna el estado de fijado (pin) para un bloque de notas seleccionadas
-  Future<void> togglePinMultiple(List<ListItem> selectedItems) async {
-  if (selectedItems.isEmpty) return;
-
-  final Set<String> selectedIds = selectedItems.map((e) => e.id).toSet();
-
-  List<ListItem> updatePinStatus(List<ListItem> targetList) {
+  List<ListItem> _updateInLists(
+    List<ListItem> targetList,
+    Set<String> selectedIds,
+    ListItem Function(ListItem) updater,
+  ) {
     return targetList.map((item) {
       if (selectedIds.contains(item.id)) {
-        return item.copyWith(
-          isPinned: !item.isPinned,
-          lastModified: DateTime.now(),
-        );
+        return updater(item);
       }
       return item;
     }).toList();
   }
 
-  items = updatePinStatus(items);
-  archivedItems = updatePinStatus(archivedItems);
-  favoriteItems = updatePinStatus(favoriteItems);
+  Future<void> _applyToAllLists(Set<String> selectedIds, ListItem Function(ListItem) updater) async {
+    items = _updateInLists(items, selectedIds, updater);
+    archivedItems = _updateInLists(archivedItems, selectedIds, updater);
+    favoriteItems = _updateInLists(favoriteItems, selectedIds, updater);
+    trashedItems = _updateInLists(trashedItems, selectedIds, updater);
+    await _saveAllLists();
+    notifyListeners();
+  }
 
-  await _saveAllLists();
-  notifyListeners();
+  /// Alterna el estado de fijado (pin) para un bloque de notas seleccionadas
+  Future<void> togglePinMultiple(List<ListItem> selectedItems) async {
+  if (selectedItems.isEmpty) return;
+  final Set<String> selectedIds = selectedItems.map((e) => e.id).toSet();
+  await _applyToAllLists(selectedIds, (item) => item.copyWith(
+    isPinned: !item.isPinned,
+    lastModified: DateTime.now(),
+  ));
   }
 }

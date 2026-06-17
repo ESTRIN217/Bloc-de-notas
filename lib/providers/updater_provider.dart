@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:bloc_de_notas/l10n/app_localizations.dart';
+import 'package:bloc_de_notas/services/log_service.dart';
 
 class UpdaterProvider with ChangeNotifier {
   bool _autoUpdate = false;
@@ -206,7 +207,7 @@ class UpdaterProvider with ChangeNotifier {
         }
       }
     } catch (e) {
-      if (kDebugMode) print('Error silencioso: $e');
+      Log.w('Error silencioso en actualizador', e);
     }
   }
 

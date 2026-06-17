@@ -111,7 +111,7 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                           }
                         },
                   leading: SettingsIconContainer(icon: updater.isChecking
-                        ? Icons.hourglass_empty
+                        ? Icons.hourglass_empty_outlined
                         : (updater.hasUpdate
                               ? Icons.download_outlined
                               : Icons.refresh_rounded)),
@@ -121,7 +121,7 @@ class _UpdaterScreenState extends State<UpdaterScreen> {
                         : AppLocalizations.of(context)!.buscar_actualizaciones,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: const Icon(Icons.chevron_right_outlined),
                 ),
                 ),
                 if (updater.hasUpdate && updater.latestChangelog != null) ...[

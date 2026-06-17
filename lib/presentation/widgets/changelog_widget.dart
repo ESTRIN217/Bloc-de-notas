@@ -46,7 +46,7 @@ class ChangelogSheet extends StatelessWidget {
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
-            icon: const Icon(Icons.close),
+            icon: const Icon(Icons.close_outlined),
             onPressed: () => Navigator.pop(context),
           ),
         ],

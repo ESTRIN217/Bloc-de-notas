@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:io' as io show Directory, File;
 import 'package:bloc_de_notas/embeds/audioembedbuilder.dart';
+import 'package:bloc_de_notas/services/log_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -424,7 +425,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.html, color: Colors.orange),
+                leading: const Icon(Icons.html_outlined, color: Colors.orange),
                 title: Text(AppLocalizations.of(context)!.html),
                 onTap: () {
                   Navigator.pop(context);
@@ -976,8 +977,8 @@ class _EditorScreenState extends State<EditorScreen> {
                   Icons.push_pin_outlined,
                 ), // Icono por defecto (sin seleccionar)
                 selectedIcon: const Icon(
-                  Icons.push_pin
-                ), // Icono cuando isSelected es true
+                  Icons.push_pin_outlined
+                ),
                 color: dynamicIconColor,
                 tooltip: _isPinned
                     ? AppLocalizations.of(context)!.unpin
@@ -990,8 +991,8 @@ class _EditorScreenState extends State<EditorScreen> {
                   Icons.star_outline,
                 ), // Icono por defecto (sin seleccionar)
                 selectedIcon: const Icon(
-                  Icons.star
-                ), // Icono cuando isSelected es true
+                  Icons.star_outline
+                ),
                 color: dynamicIconColor,
                 tooltip: _isFavorite
                     ? AppLocalizations.of(context)!.unfavoriteTooltip
@@ -1013,7 +1014,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 onPressed: _toggleArchive,
               ),
               IconButton(
-                icon: Icon(Icons.more_vert, color: dynamicIconColor),
+                icon: Icon(Icons.more_vert_outlined, color: dynamicIconColor),
                 onPressed: _showEditorMenu,
               ),
             ],
@@ -1313,7 +1314,7 @@ class _EditorScreenState extends State<EditorScreen> {
                           onPressed: _showAudioMenu,
                         ),
                         IconButton.outlined(
-                          icon: Icon(Icons.gesture, color: dynamicIconColor),
+                          icon: Icon(Icons.gesture_outlined, color: dynamicIconColor),
                           onPressed: _insertarLienzo,
                         ),
                       ],
@@ -1361,7 +1362,7 @@ class _EditorScreenState extends State<EditorScreen> {
         _insertarAudioAlEditor(audioPath);
       }
     } catch (e) {
-      debugPrint('Error al seleccionar audio: $e');
+      Log.e('Error al seleccionar audio', e);
     }
   }
 
@@ -1402,7 +1403,7 @@ class _EditorScreenState extends State<EditorScreen> {
         }
       }
     } catch (e) {
-      debugPrint('Error en la grabación: $e');
+      Log.e('Error en la grabación', e);
       // Si algo falla catastróficamente, liberamos la interfaz para que no quede atascada
       if (mounted) {
         setState(() => _isRecording = false);
